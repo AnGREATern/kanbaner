@@ -2,6 +2,29 @@ import sys
 import sqlite3
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel
 from PyQt5 import uic
+user = None
+
+
+class Enter(QWidget):
+    global user
+
+    def __init__(self):
+        super().__init__()
+        uic.loadUi('login.ui', self)
+        self.con = sqlite3.connect('personal.db')
+        self.cur = self.con.cursor()
+        self.pb_login.clicked.connect(self.switch)
+        self.new = None
+        self.crew = None
+
+    def switch(self):
+        global user
+        user = self.le_login.text()
+        self.crew = str(self.cur.execute('''SELECT SN FROM main''').fetchall())[3:-4].split("',), ('")
+        if user in self.crew:
+            self.new = Kanbaner()
+            self.new.show()
+            self.close()
 
 
 class New(QWidget):
@@ -15,18 +38,20 @@ class New(QWidget):
 
 
 class Kanbaner(QMainWindow):
+    global user
+
     def __init__(self):
         super().__init__()
         uic.loadUi('main.ui', self)
         self.con = sqlite3.connect('personal.db')
         self.cur = self.con.cursor()
+        self.label.setText(user)
         self.pb_create.clicked.connect(self.create)
         self.pb_open.clicked.connect(self.open)
         self.pb_delete.clicked.connect(self.delete)
-        self.pb_login.clicked.connect(self.login)
+        self.pb_login.clicked.connect(self.exit)
         self.title = []
         self.badTitle = []
-        self.user = None
         self.crew = None
 
     def create(self):
@@ -54,23 +79,11 @@ class Kanbaner(QMainWindow):
     def delete(self):
         pass
 
-    def login(self):
-        if self.pb_login.text() == 'Вход':
-            self.user = self.le_login.text()
-            self.crew = str(self.cur.execute('''SELECT SN FROM main''').fetchall())[3:-4].split("',), ('")
-            if self.user in self.crew:
-                self.pb_login.setText('Выход')
-                self.le_login.hide()
-                self.label.setText(self.user)
-                self.label.resize(271, 21)
-        else:
-            self.label.setText('')
-            self.label.resize(20, 21)
-            self.le_login.show()
-            self.pb_login.setText('Вход')
+    def exit(self):
+        exit()
 
 
 app = QApplication(sys.argv)
-window = Kanbaner()
+window = Enter()
 window.show()
 app.exec_()

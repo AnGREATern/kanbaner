@@ -392,7 +392,7 @@
      </font>
     </property>
     <property name="text">
-     <string>Вход</string>
+     <string>Выход</string>
     </property>
    </widget>
    <widget class="QPushButton" name="pb_archive">
@@ -431,22 +431,17 @@
      <string>График с нагрузкой персонала</string>
     </property>
    </widget>
-   <widget class="QLineEdit" name="le_login">
+   <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
-      <x>1002</x>
-      <y>15</y>
-      <width>181</width>
-      <height>41</height>
+      <x>950</x>
+      <y>20</y>
+      <width>231</width>
+      <height>31</height>
      </rect>
     </property>
-    <property name="font">
-     <font>
-      <pointsize>10</pointsize>
-     </font>
-    </property>
-    <property name="placeholderText">
-     <string>Введите логин</string>
+    <property name="text">
+     <string/>
     </property>
    </widget>
   </widget>

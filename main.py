@@ -39,6 +39,12 @@ class New(QWidget):
         uic.loadUi('create.ui', self)
 
 
+class Task(QWidget):
+    def __init__(self):
+        super().__init__()
+        uic.loadUi('tasks.ui', self)
+
+
 class Finance(QWidget):
     def __init__(self):
         super().__init__()
@@ -70,15 +76,19 @@ class Kanbaner(QMainWindow):
         self.new.pb_complete.clicked.connect(self.vvod)
 
     def vvod(self):
+
         self.rowTitles.extend([self.new.le2.text(), self.new.le3.text(), self.new.le4.text(), self.new.le5.text(),
                               self.new.le6.text(), self.new.le7.text(), self.new.le8.text(), self.new.le9.text()])
         self.title = self.new.leName.text()
+
         self.lw.addItem(self.title)
         self.title = ''
         self.new.close()
 
     def open(self):
-        pass
+        if [x.row() for x in self.lw.selectedIndexes()]:
+            self.task = Task()
+            self.task.show()
 
     def cash(self):
         self.finance = Finance()

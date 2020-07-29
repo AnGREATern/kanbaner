@@ -14,7 +14,7 @@ class Enter(QWidget):
         self.con = sqlite3.connect('C://Users//Максим//PycharmProjects//kanbaner1//personal.db')
         self.cur = self.con.cursor()
         self.pb_login.clicked.connect(self.switch)
-        memory = open('memory.txt', 'r')
+        memory = open('C://Users//Максим//PycharmProjects//kanbaner1//memory.txt', 'r')
         self.le_login.setText(memory.read())
         memory.close()
         self.new = None
@@ -39,7 +39,7 @@ class New(QWidget):
         uic.loadUi('C://Users//Максим//PycharmProjects//kanbaner1//create.ui', self)
 
 
-        uic.loadUi('create.ui', self)
+        uic.loadUi('C://Users//Максим//PycharmProjects//kanbaner1//create.ui', self)
 
 
 class Kanbaner(QMainWindow):
@@ -47,8 +47,8 @@ class Kanbaner(QMainWindow):
 
     def __init__(self):
         super().__init__()
-        uic.loadUi('main.ui', self)
-        self.con = sqlite3.connect('personal.db')
+        uic.loadUi('C://Users//Максим//PycharmProjects//kanbaner1//main.ui', self)
+        self.con = sqlite3.connect('C://Users//Максим//PycharmProjects//kanbaner1//personal.db')
         self.cur = self.con.cursor()
         self.label.setText(user)
         self.pb_create.clicked.connect(self.create)
@@ -78,7 +78,8 @@ class Kanbaner(QMainWindow):
         pass
 
     def delete(self):
-        pass
+        if [x.row() for x in self.lw.selectedIndexes()]:
+            self.lw.takeItem(int(str([x.row() for x in self.lw.selectedIndexes()])[1]))
 
     def exit(self):
         exit()

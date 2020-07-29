@@ -8,19 +8,10 @@ class New(QWidget):
     def __init__(self):
         super().__init__()
         uic.loadUi('create.ui', self)
-        self.title = []
-        self.pb_complete.clicked.connect(self.vvod)
 
-    def vvod(self):
-        self.title.extend([self.le2.text(), self.le3.text(), self.le4.text(), self.le5.text(),
-                          self.le6.text(), self.le7.text(), self.le8.text(), self.le9.text()])
-        a = ''
-        for i in range(8):
-            if self.title[i] == '':
-                a += str(i)
-        a = a[::-1]
-        for i in range(len(a)):
-            del self.title[int(a[i])]
+
+
+
 
 
 class Kanbaner(QMainWindow):
@@ -33,12 +24,29 @@ class Kanbaner(QMainWindow):
         self.pb_open.clicked.connect(self.open)
         self.pb_delete.clicked.connect(self.delete)
         self.pb_login.clicked.connect(self.login)
+        self.title = []
+        self.badTitle = []
         self.user = None
         self.crew = None
 
     def create(self):
         self.new = New()
         self.new.show()
+        self.new.pb_complete.clicked.connect(self.vvod)
+
+    def vvod(self):
+
+        self.badTitle.extend([self.new.le2.text(), self.new.le3.text(), self.new.le4.text(), self.new.le5.text(),
+                              self.new.le6.text(), self.new.le7.text(), self.new.le8.text(), self.new.le9.text()])
+
+        for i in self.badTitle:
+            if i:
+                print(i)
+                self.title.append(i)
+
+        self.lw.addItems(self.title)
+        self.title = []
+        self.new.close()
 
     def open(self):
         pass

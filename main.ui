@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1283</width>
-    <height>841</height>
+    <height>820</height>
    </rect>
   </property>
   <property name="palette">
@@ -84,7 +84,7 @@
       <x>20</x>
       <y>10</y>
       <width>131</width>
-      <height>41</height>
+      <height>51</height>
      </rect>
     </property>
     <property name="font">
@@ -371,7 +371,7 @@
       <x>1200</x>
       <y>10</y>
       <width>61</width>
-      <height>41</height>
+      <height>51</height>
      </rect>
     </property>
     <property name="font">
@@ -389,7 +389,7 @@
       <x>670</x>
       <y>10</y>
       <width>231</width>
-      <height>41</height>
+      <height>51</height>
      </rect>
     </property>
     <property name="font">
@@ -407,7 +407,7 @@
       <x>270</x>
       <y>10</y>
       <width>261</width>
-      <height>41</height>
+      <height>51</height>
      </rect>
     </property>
     <property name="font">
@@ -425,13 +425,16 @@
       <x>1000</x>
       <y>16</y>
       <width>181</width>
-      <height>31</height>
+      <height>41</height>
      </rect>
     </property>
     <property name="font">
      <font>
       <pointsize>10</pointsize>
      </font>
+    </property>
+    <property name="placeholderText">
+     <string>введите логин</string>
     </property>
    </widget>
    <widget class="QLabel" name="label">

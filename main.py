@@ -27,9 +27,14 @@ class Kanbaner(QMainWindow):
     def __init__(self):
         super().__init__()
         uic.loadUi('main.ui', self)
+        self.con = sqlite3.connect('personal.db')
+        self.cur = self.con.cursor()
         self.pb_create.clicked.connect(self.create)
         self.pb_open.clicked.connect(self.open)
         self.pb_delete.clicked.connect(self.delete)
+        self.pb_login.clicked.connect(self.login)
+        self.user = None
+        self.crew = None
 
     def create(self):
         self.new = New()
@@ -40,6 +45,12 @@ class Kanbaner(QMainWindow):
 
     def delete(self):
         pass
+
+    def login(self):
+        self.user = self.le_login.text()
+        self.crew = str(self.cur.execute('''SELECT SN FROM main''').fetchall())[3:-4].split("',), ('")
+        if self.user in self.crew:
+            print(1)
 
 
 app = QApplication(sys.argv)

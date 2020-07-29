@@ -58,7 +58,7 @@ class Kanbaner(QMainWindow):
         self.pb_create.clicked.connect(self.create)
         self.pb_open.clicked.connect(self.open)
         self.pb_delete.clicked.connect(self.delete)
-        self.pb_login.clicked.connect(self.login)
+        self.pb_login.clicked.connect(self.exit)
         self.new = None
         self.crew = None
 
@@ -72,7 +72,7 @@ class Kanbaner(QMainWindow):
     def delete(self):
         pass
 
-    def login(self):
+    def exit(self):
         exit()
 
 

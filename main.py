@@ -1,6 +1,6 @@
 import sys
 import sqlite3
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel
+from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget
 from PyQt5 import uic
 user = None
 
@@ -39,6 +39,11 @@ class New(QWidget):
         uic.loadUi('C://Users//Максим//PycharmProjects//kanbaner1//create.ui', self)
 
 
+class Task(QWidget):
+    def __init__(self):
+        super().__init__()
+        uic.loadUi('C://Users//Максим//PycharmProjects//kanbaner1//tasks.ui', self)
+
 
 class Kanbaner(QMainWindow):
     global user
@@ -73,7 +78,9 @@ class Kanbaner(QMainWindow):
         self.new.close()
 
     def open(self):
-        pass
+        if [x.row() for x in self.lw.selectedIndexes()]:
+            self.task = Task()
+            self.task.show()
 
     def delete(self):
         if [x.row() for x in self.lw.selectedIndexes()]:

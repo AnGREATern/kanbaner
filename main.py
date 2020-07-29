@@ -39,8 +39,6 @@ class New(QWidget):
         uic.loadUi('C://Users//Максим//PycharmProjects//kanbaner1//create.ui', self)
 
 
-        uic.loadUi('C://Users//Максим//PycharmProjects//kanbaner1//create.ui', self)
-
 
 class Kanbaner(QMainWindow):
     global user

@@ -1,6 +1,6 @@
 import sys
 import sqlite3
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel
+from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget
 from PyQt5 import uic
 user = None
 
@@ -14,6 +14,9 @@ class Enter(QWidget):
         self.con = sqlite3.connect('personal.db')
         self.cur = self.con.cursor()
         self.pb_login.clicked.connect(self.switch)
+        memory = open('memory.txt', 'r')
+        self.le_login.setText(memory.read())
+        memory.close()
         self.new = None
         self.crew = None
 
@@ -22,6 +25,9 @@ class Enter(QWidget):
         user = self.le_login.text()
         self.crew = str(self.cur.execute('''SELECT SN FROM main''').fetchall())[3:-4].split("',), ('")
         if user in self.crew:
+            memory = open('memory.txt', 'w')
+            memory.write(user)
+            memory.close()
             self.new = Kanbaner()
             self.new.show()
             self.close()
@@ -31,10 +37,6 @@ class New(QWidget):
     def __init__(self):
         super().__init__()
         uic.loadUi('create.ui', self)
-
-
-
-
 
 
 class Kanbaner(QMainWindow):
@@ -66,9 +68,7 @@ class Kanbaner(QMainWindow):
 
         for i in self.badTitle:
             if i:
-                print(i)
                 self.title.append(i)
-
         self.lw.addItems(self.title)
         self.title = []
         self.new.close()

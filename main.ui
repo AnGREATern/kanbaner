@@ -331,13 +331,6 @@
       <height>601</height>
      </rect>
     </property>
-    <property name="font">
-     <font>
-      <pointsize>24</pointsize>
-      <weight>75</weight>
-      <bold>true</bold>
-     </font>
-    </property>
    </widget>
    <widget class="QPushButton" name="pb_open">
     <property name="geometry">
@@ -395,7 +388,7 @@
      <string>Выход</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="pb_archive">
+   <widget class="QPushButton" name="pb_finance">
     <property name="geometry">
      <rect>
       <x>670</x>
@@ -410,7 +403,7 @@
      </font>
     </property>
     <property name="text">
-     <string>Архив</string>
+     <string>Финансовая ведомость</string>
     </property>
    </widget>
    <widget class="QPushButton" name="pb_graph">

@@ -1,6 +1,6 @@
 import sys
 import sqlite3
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget
+from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel
 from PyQt5 import uic
 
 
@@ -47,10 +47,19 @@ class Kanbaner(QMainWindow):
         pass
 
     def login(self):
-        self.user = self.le_login.text()
-        self.crew = str(self.cur.execute('''SELECT SN FROM main''').fetchall())[3:-4].split("',), ('")
-        if self.user in self.crew:
-            print(1)
+        if self.pb_login.text() == 'Вход':
+            self.user = self.le_login.text()
+            self.crew = str(self.cur.execute('''SELECT SN FROM main''').fetchall())[3:-4].split("',), ('")
+            if self.user in self.crew:
+                self.pb_login.setText('Выход')
+                self.le_login.hide()
+                self.label.setText(self.user)
+                self.label.resize(271, 21)
+        else:
+            self.label.setText('')
+            self.label.resize(20, 21)
+            self.le_login.show()
+            self.pb_login.setText('Вход')
 
 
 app = QApplication(sys.argv)

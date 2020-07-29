@@ -422,8 +422,8 @@
    <widget class="QLineEdit" name="le_login">
     <property name="geometry">
      <rect>
-      <x>1002</x>
-      <y>15</y>
+      <x>1000</x>
+      <y>16</y>
       <width>181</width>
       <height>31</height>
      </rect>
@@ -432,6 +432,24 @@
      <font>
       <pointsize>10</pointsize>
      </font>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>920</x>
+      <y>20</y>
+      <width>71</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string/>
     </property>
    </widget>
   </widget>

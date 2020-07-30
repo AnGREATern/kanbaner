@@ -114,7 +114,6 @@ class Finance(QWidget):
                 self.table.setRowCount(table_row)
             except:
                 pass
-        self.table.resizeColumnsToContents()
 
 
 class Kanbaner(QMainWindow):

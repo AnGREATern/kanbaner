@@ -1,8 +1,10 @@
 import sys
 import sqlite3
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget
 from PyQt5 import uic
 user = None
+table_row = 1
 
 
 class Enter(QWidget):
@@ -32,6 +34,10 @@ class Enter(QWidget):
             self.new.show()
             self.close()
 
+    def keyPressEvent(self, event):
+        if event.key() == 16777220:
+            self.switch()
+
 
 class New(QWidget):
     def __init__(self):
@@ -46,10 +52,20 @@ class Task(QWidget):
 
 
 class Finance(QWidget):
+    global table_row
+
     def __init__(self):
         super().__init__()
         uic.loadUi('finance.ui', self)
-        #  self.table.resizeColumnsToContents()
+        self.table.setRowCount(table_row)
+
+    def keyPressEvent(self, event):
+        global table_row
+        if event.key() == Qt.Key_Escape:
+            self.close()
+        elif event.key() == 16777220:
+            table_row += 1
+            self.table.setRowCount(table_row)
 
 
 class Kanbaner(QMainWindow):

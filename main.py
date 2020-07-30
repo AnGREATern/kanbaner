@@ -10,11 +10,11 @@ class Enter(QWidget):
 
     def __init__(self):
         super().__init__()
-        uic.loadUi('C://Users//Максим//PycharmProjects//kanbaner1//login.ui', self)
-        self.con = sqlite3.connect('C://Users//Максим//PycharmProjects//kanbaner1//personal.db')
+        uic.loadUi('login.ui', self)
+        self.con = sqlite3.connect('personal.db')
         self.cur = self.con.cursor()
         self.pb_login.clicked.connect(self.switch)
-        memory = open('C://Users//Максим//PycharmProjects//kanbaner1//memory.txt', 'r')
+        memory = open('memory.txt', 'r')
         self.le_login.setText(memory.read())
         memory.close()
         self.new = None
@@ -36,7 +36,7 @@ class Enter(QWidget):
 class New(QWidget):
     def __init__(self):
         super().__init__()
-        uic.loadUi('C://Users//Максим//PycharmProjects//kanbaner1//create.ui', self)
+        uic.loadUi('create.ui', self)
 
 
 class Task(QWidget):
@@ -53,13 +53,18 @@ class Task(QWidget):
             self.widgets.append(QWidget())
             self.scrolls[i].setWidget(self.widgets[i])
             self.scrolls[i].resize(1121, 711)
-            #self.scrolls[i].show()
+            # self.scrolls[i].show()
             self.layouts.append(QGridLayout)
             self.layoutsStats.append(QGridLayout())
-            #self.widgets[i].setLayout(self.layouts[i])
-            print(1)
+            # self.widgets[i].setLayout(self.layouts[i])
             self.tabWidget.addTab(self.scrolls[i], rowTitles[i])
-            print(1)
+
+
+class Finance(QWidget):
+    def __init__(self):
+        super().__init__()
+        uic.loadUi('finance.ui', self)
+        #  self.table.resizeColumnsToContents()
 
 
 class Kanbaner(QMainWindow):
@@ -67,16 +72,16 @@ class Kanbaner(QMainWindow):
 
     def __init__(self):
         super().__init__()
-        uic.loadUi('C://Users//Максим//PycharmProjects//kanbaner1//main.ui', self)
-        self.con = sqlite3.connect('C://Users//Максим//PycharmProjects//kanbaner1//personal.db')
+        uic.loadUi('main.ui', self)
+        self.con = sqlite3.connect('personal.db')
         self.cur = self.con.cursor()
         self.label.setText(user)
         self.pb_create.clicked.connect(self.create)
         self.pb_open.clicked.connect(self.open)
         self.pb_delete.clicked.connect(self.delete)
         self.pb_login.clicked.connect(self.exit)
+        self.pb_finance.clicked.connect(self.cash)
         self.title = ''
-        self.rowTitlesBad = []
         self.rowTitles = []
         self.crew = None
 
@@ -101,6 +106,10 @@ class Kanbaner(QMainWindow):
         if [x.row() for x in self.lw.selectedIndexes()]:
             self.task = Task(self.rowTitles)
             self.task.show()
+
+    def cash(self):
+        self.finance = Finance()
+        self.finance.show()
 
     def delete(self):
         if [x.row() for x in self.lw.selectedIndexes()]:

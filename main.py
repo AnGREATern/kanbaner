@@ -1,8 +1,11 @@
 import sys
 import sqlite3
 from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QGridLayout, QLabel, QScrollArea, QHBoxLayout, QTableWidgetItem, \
+    QVBoxLayout
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QGridLayout, QScrollArea, QTableWidgetItem
 from PyQt5 import uic
+
 user = None
 con = sqlite3.connect('personal.db')
 cur = con.cursor()
@@ -49,22 +52,40 @@ class New(QWidget):
 class Task(QWidget):
     def __init__(self, rowTitles):
         super().__init__()
-        uic.loadUi('tasks.ui', self)
+        uic.loadUi('C://Users//Максим//PycharmProjects//kanbaner1//tasks.ui', self)
+        self.pb_addT.clicked.connect(self.addTask)
         self.layoutsStats = []
-        self.layoutsRow = QGridLayout()
+        self.layoutRow = QHBoxLayout()
+        self.rowLabels = [QLabel('Исполнитель', self), QLabel('Время выдачи', self), QLabel('Срок сдачи', self),
+                          QLabel('Задача/чат', self), QLabel('Статус', self)]
+        self.layoutRow.addStretch(1)
+        for i in self.rowLabels:
+            self.layoutRow.addWidget(i)
+        self.layoutRows = []
         self.layouts = []
         self.scrolls = []
         self.widgets = []
+        self.ws = []
+        self.layoutRows.append(self.layoutRow)
         for i in range(len(rowTitles)):
+            self.layoutRows.append(self.layoutRow)
+            self.layouts.append(QVBoxLayout())
+            self.layouts[i].addStretch(1)
             self.scrolls.append(QScrollArea())
+
+            self.ws.append(QWidget())
+            self.ws[i].setLayout(self.layoutRows[i])
+            self.ws[i].resize(1118, 40)
+            self.layouts[i].addWidget(self.ws[i])
+
             self.widgets.append(QWidget())
+            self.widgets[i].setLayout(self.layouts[i])
             self.scrolls[i].setWidget(self.widgets[i])
             self.scrolls[i].resize(1121, 711)
-            # self.scrolls[i].show()
-            self.layouts.append(QGridLayout)
-            self.layoutsStats.append(QGridLayout())
-            # self.widgets[i].setLayout(self.layouts[i])
             self.tabWidget.addTab(self.scrolls[i], rowTitles[i])
+
+    def addTask(self):
+        pass
 
 
 class Finance(QWidget):

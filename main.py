@@ -9,7 +9,6 @@ user = None
 con = sqlite3.connect('personal.db')
 cur = con.cursor()
 table_row = int(str(cur.execute('''SELECT id FROM finance''').fetchall()[-1])[1:-2]) + 1
-print(table_row)
 
 
 class Enter(QWidget):

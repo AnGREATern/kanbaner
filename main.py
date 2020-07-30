@@ -86,12 +86,15 @@ class Finance(QWidget):
         if event.key() == Qt.Key_Escape:
             self.close()
         elif event.key() == 16777220:
-            bablo = [(str(table_row), self.table.item(table_row - 1, 0).text(),
-                      self.table.item(table_row - 1, 1).text(), self.table.item(table_row - 1, 2).text())]
-            cur.executemany("""INSERT INTO finance VALUES (?,?,?,?)""", bablo)
-            con.commit()
-            table_row += 1
-            self.table.setRowCount(table_row)
+            try:
+                bablo = [(str(table_row), self.table.item(table_row - 1, 0).text(),
+                          self.table.item(table_row - 1, 1).text(), self.table.item(table_row - 1, 2).text())]
+                cur.executemany("""INSERT INTO finance VALUES (?,?,?,?)""", bablo)
+                con.commit()
+                table_row += 1
+                self.table.setRowCount(table_row)
+            except:
+                pass
         self.table.resizeColumnsToContents()
 
 

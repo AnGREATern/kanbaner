@@ -250,7 +250,7 @@
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
-       <widget class="QLineEdit" name="le3">
+       <widget class="QLineEdit" name="le2">
         <property name="enabled">
          <bool>true</bool>
         </property>
@@ -271,7 +271,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QLineEdit" name="le6">
+       <widget class="QLineEdit" name="le3">
         <property name="minimumSize">
          <size>
           <width>0</width>
@@ -289,7 +289,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QLineEdit" name="le5">
+       <widget class="QLineEdit" name="le4">
         <property name="minimumSize">
          <size>
           <width>0</width>
@@ -310,7 +310,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QLineEdit" name="le7">
+       <widget class="QLineEdit" name="le5">
         <property name="minimumSize">
          <size>
           <width>30</width>
@@ -331,7 +331,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QLineEdit" name="le8">
+       <widget class="QLineEdit" name="le6">
         <property name="minimumSize">
          <size>
           <width>0</width>
@@ -358,7 +358,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QLineEdit" name="le9">
+       <widget class="QLineEdit" name="le7">
         <property name="minimumSize">
          <size>
           <width>0</width>
@@ -376,7 +376,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QLineEdit" name="le2">
+       <widget class="QLineEdit" name="le8">
         <property name="minimumSize">
          <size>
           <width>0</width>
@@ -394,7 +394,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QLineEdit" name="le4">
+       <widget class="QLineEdit" name="le9">
         <property name="minimumSize">
          <size>
           <width>0</width>

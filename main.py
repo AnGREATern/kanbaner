@@ -1,7 +1,7 @@
 import sys
 import sqlite3
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QGridLayout, QLabel, QScrollArea
+from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QGridLayout, QScrollArea
 from PyQt5 import uic
 user = None
 table_row = 1
@@ -12,11 +12,11 @@ class Enter(QWidget):
 
     def __init__(self):
         super().__init__()
-        uic.loadUi('C://Users//Максим//PycharmProjects//kanbaner1//login.ui', self)
-        self.con = sqlite3.connect('C://Users//Максим//PycharmProjects//kanbaner1//personal.db')
+        uic.loadUi('login.ui', self)
+        self.con = sqlite3.connect('personal.db')
         self.cur = self.con.cursor()
         self.pb_login.clicked.connect(self.switch)
-        memory = open('C://Users//Максим//PycharmProjects//kanbaner1//memory.txt', 'r')
+        memory = open('memory.txt', 'r')
         self.le_login.setText(memory.read())
         memory.close()
         self.new = None
@@ -27,7 +27,7 @@ class Enter(QWidget):
         user = self.le_login.text()
         self.crew = str(self.cur.execute('''SELECT SN FROM main''').fetchall())[3:-4].split("',), ('")
         if user in self.crew:
-            memory = open('C://Users//Максим//PycharmProjects//kanbaner1//memory.txt', 'w')
+            memory = open('memory.txt', 'w')
             memory.write(user)
             memory.close()
             self.new = Kanbaner()
@@ -42,13 +42,13 @@ class Enter(QWidget):
 class New(QWidget):
     def __init__(self):
         super().__init__()
-        uic.loadUi('C://Users//Максим//PycharmProjects//kanbaner1//create.ui', self)
+        uic.loadUi('create.ui', self)
 
 
 class Task(QWidget):
     def __init__(self, rowTitles):
         super().__init__()
-        uic.loadUi('C://Users//Максим//PycharmProjects//kanbaner1//tasks.ui', self)
+        uic.loadUi('tasks.ui', self)
         self.layoutsStats = []
         self.layoutsRow = QGridLayout()
         self.layouts = []
@@ -71,16 +71,25 @@ class Finance(QWidget):
 
     def __init__(self):
         super().__init__()
-        uic.loadUi('C://Users//Максим//PycharmProjects//kanbaner1//finance.ui', self)
+        uic.loadUi('finance.ui', self)
+        self.con = sqlite3.connect('personal.db')
+        self.cur = self.con.cursor()
         self.table.setRowCount(table_row)
 
     def keyPressEvent(self, event):
         global table_row
         if event.key() == Qt.Key_Escape:
-            self.close()
+            print(self.table.item(0, 0).text())
+            #  self.close()
         elif event.key() == 16777220:
+            bablo = [(str(table_row), self.table.item(table_row - 1, 0).text(),
+                      self.table.item(table_row - 1, 1).text(), self.table.item(table_row - 1, 2).text())]
+            print(bablo)
+            self.cur.executemany("""INSERT INTO finance VALUES (?,?,?,?)""", bablo)
+            self.con.commit()
             table_row += 1
             self.table.setRowCount(table_row)
+        self.table.resizeColumnsToContents()
 
 
 class Kanbaner(QMainWindow):
@@ -88,11 +97,11 @@ class Kanbaner(QMainWindow):
 
     def __init__(self):
         super().__init__()
-        uic.loadUi('C://Users//Максим//PycharmProjects//kanbaner1//main.ui', self)
-        self.con = sqlite3.connect('C://Users//Максим//PycharmProjects//kanbaner1//personal.db')
+        uic.loadUi('main.ui', self)
+        self.con = sqlite3.connect('personal.db')
         self.cur = self.con.cursor()
         self.label.setText(user)
-        self.pb_create.clicked.connect(self.create)
+        self.pb_create.clicked.connect(self.creater)
         self.pb_open.clicked.connect(self.open)
         self.pb_delete.clicked.connect(self.delete)
         self.pb_login.clicked.connect(self.exit)
@@ -101,15 +110,18 @@ class Kanbaner(QMainWindow):
         self.rowTitlesBad = []
         self.rowTitles = []
         self.crew = None
+        self.new = None
+        self.task = None
+        self.finance = None
 
-    def create(self):
+    def creater(self):
         self.new = New()
         self.new.show()
         self.new.pb_complete.clicked.connect(self.vvod)
 
     def vvod(self):
         self.rowTitlesBad.extend([self.new.le2.text(), self.new.le3.text(), self.new.le4.text(), self.new.le5.text(),
-                              self.new.le6.text(), self.new.le7.text(), self.new.le8.text(), self.new.le9.text()])
+                                  self.new.le6.text(), self.new.le7.text(), self.new.le8.text(), self.new.le9.text()])
         self.title = self.new.leName.text()
         for i in self.rowTitlesBad:
             if i:

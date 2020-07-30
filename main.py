@@ -1,9 +1,8 @@
 import sys
 import sqlite3
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QGridLayout, QLabel, QScrollArea, QHBoxLayout, QTableWidgetItem, \
-    QVBoxLayout
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QGridLayout, QScrollArea, QTableWidgetItem
+from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QScrollArea,\
+    QTableWidgetItem, QLabel, QHBoxLayout, QVBoxLayout
 from PyQt5 import uic
 
 user = None
@@ -131,6 +130,7 @@ class Kanbaner(QMainWindow):
         self.pb_delete.clicked.connect(self.delete)
         self.pb_login.clicked.connect(self.exit)
         self.pb_finance.clicked.connect(self.cash)
+        self.pb_graph.clicked.connect(self.graphics)
         self.title = ''
         self.rowTitlesBad = []
         self.rowTitles = []
@@ -143,6 +143,9 @@ class Kanbaner(QMainWindow):
         self.new = New()
         self.new.show()
         self.new.pb_complete.clicked.connect(self.vvod)
+
+    def graphics(self):
+        pass
 
     def vvod(self):
         self.rowTitlesBad.extend([self.new.le2.text(), self.new.le3.text(), self.new.le4.text(), self.new.le5.text(),
@@ -168,6 +171,20 @@ class Kanbaner(QMainWindow):
     def delete(self):
         if [x.row() for x in self.lw.selectedIndexes()]:
             self.lw.takeItem(int(str([x.row() for x in self.lw.selectedIndexes()])[1]))
+
+    def keyPressEvent(self, event):
+        if event.key() == 16777220:
+            self.open()
+        elif event.key() == Qt.Key_Backspace:
+            self.delete()
+        elif event.key() == Qt.Key_Delete:
+            self.delete()
+        elif event.key() == Qt.Key_Q:
+            self.creater()
+        elif event.key() == Qt.Key_W:
+            self.graphics()
+        elif event.key() == Qt.Key_E:
+            self.cash()
 
     def exit(self):
         self.close()

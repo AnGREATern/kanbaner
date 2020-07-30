@@ -12,11 +12,11 @@ class Enter(QWidget):
 
     def __init__(self):
         super().__init__()
-        uic.loadUi('login.ui', self)
-        self.con = sqlite3.connect('personal.db')
+        uic.loadUi('C://Users//Максим//PycharmProjects//kanbaner1//login.ui', self)
+        self.con = sqlite3.connect('C://Users//Максим//PycharmProjects//kanbaner1//personal.db')
         self.cur = self.con.cursor()
         self.pb_login.clicked.connect(self.switch)
-        memory = open('memory.txt', 'r')
+        memory = open('C://Users//Максим//PycharmProjects//kanbaner1//memory.txt', 'r')
         self.le_login.setText(memory.read())
         memory.close()
         self.new = None
@@ -27,7 +27,7 @@ class Enter(QWidget):
         user = self.le_login.text()
         self.crew = str(self.cur.execute('''SELECT SN FROM main''').fetchall())[3:-4].split("',), ('")
         if user in self.crew:
-            memory = open('memory.txt', 'w')
+            memory = open('C://Users//Максим//PycharmProjects//kanbaner1//memory.txt', 'w')
             memory.write(user)
             memory.close()
             self.new = Kanbaner()
@@ -42,7 +42,7 @@ class Enter(QWidget):
 class New(QWidget):
     def __init__(self):
         super().__init__()
-        uic.loadUi('create.ui', self)
+        uic.loadUi('C://Users//Максим//PycharmProjects//kanbaner1//create.ui', self)
 
 
 class Task(QWidget):
@@ -71,7 +71,7 @@ class Finance(QWidget):
 
     def __init__(self):
         super().__init__()
-        uic.loadUi('finance.ui', self)
+        uic.loadUi('C://Users//Максим//PycharmProjects//kanbaner1//finance.ui', self)
         self.table.setRowCount(table_row)
 
     def keyPressEvent(self, event):
@@ -88,8 +88,8 @@ class Kanbaner(QMainWindow):
 
     def __init__(self):
         super().__init__()
-        uic.loadUi('main.ui', self)
-        self.con = sqlite3.connect('personal.db')
+        uic.loadUi('C://Users//Максим//PycharmProjects//kanbaner1//main.ui', self)
+        self.con = sqlite3.connect('C://Users//Максим//PycharmProjects//kanbaner1//personal.db')
         self.cur = self.con.cursor()
         self.label.setText(user)
         self.pb_create.clicked.connect(self.create)
@@ -98,6 +98,7 @@ class Kanbaner(QMainWindow):
         self.pb_login.clicked.connect(self.exit)
         self.pb_finance.clicked.connect(self.cash)
         self.title = ''
+        self.rowTitlesBad = []
         self.rowTitles = []
         self.crew = None
 

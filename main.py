@@ -1,6 +1,6 @@
 import sys
 import sqlite3
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget
+from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QGridLayout, QLabel, QScrollArea
 from PyQt5 import uic
 user = None
 
@@ -40,9 +40,26 @@ class New(QWidget):
 
 
 class Task(QWidget):
-    def __init__(self):
+    def __init__(self, rowTitles):
         super().__init__()
         uic.loadUi('C://Users//Максим//PycharmProjects//kanbaner1//tasks.ui', self)
+        self.layoutsStats = []
+        self.layoutsRow = QGridLayout()
+        self.layouts = []
+        self.scrolls = []
+        self.widgets = []
+        for i in range(len(rowTitles)):
+            self.scrolls.append(QScrollArea())
+            self.widgets.append(QWidget())
+            self.scrolls[i].setWidget(self.widgets[i])
+            self.scrolls[i].resize(1121, 711)
+            #self.scrolls[i].show()
+            self.layouts.append(QGridLayout)
+            self.layoutsStats.append(QGridLayout())
+            #self.widgets[i].setLayout(self.layouts[i])
+            print(1)
+            self.tabWidget.addTab(self.scrolls[i], rowTitles[i])
+            print(1)
 
 
 class Kanbaner(QMainWindow):
@@ -59,6 +76,7 @@ class Kanbaner(QMainWindow):
         self.pb_delete.clicked.connect(self.delete)
         self.pb_login.clicked.connect(self.exit)
         self.title = ''
+        self.rowTitlesBad = []
         self.rowTitles = []
         self.crew = None
 
@@ -68,18 +86,20 @@ class Kanbaner(QMainWindow):
         self.new.pb_complete.clicked.connect(self.vvod)
 
     def vvod(self):
-
-        self.rowTitles.extend([self.new.le2.text(), self.new.le3.text(), self.new.le4.text(), self.new.le5.text(),
+        self.rowTitlesBad.extend([self.new.le2.text(), self.new.le3.text(), self.new.le4.text(), self.new.le5.text(),
                               self.new.le6.text(), self.new.le7.text(), self.new.le8.text(), self.new.le9.text()])
         self.title = self.new.leName.text()
-
-        self.lw.addItem(self.title)
+        for i in self.rowTitlesBad:
+            if i:
+                self.rowTitles.append(i)
+        if len(self.rowTitles) > 1:
+            self.lw.addItem(self.title)
         self.title = ''
         self.new.close()
 
     def open(self):
         if [x.row() for x in self.lw.selectedIndexes()]:
-            self.task = Task()
+            self.task = Task(self.rowTitles)
             self.task.show()
 
     def delete(self):

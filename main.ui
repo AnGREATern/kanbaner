@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1261</width>
+    <width>1201</width>
     <height>830</height>
    </rect>
   </property>
@@ -83,6 +83,19 @@
    <string>Kanbaner</string>
   </property>
   <widget class="QWidget" name="centralwidget">
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>950</x>
+      <y>20</y>
+      <width>231</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
    <widget class="QWidget" name="verticalLayoutWidget">
     <property name="geometry">
      <rect>
@@ -161,13 +174,6 @@
           </size>
          </property>
         </spacer>
-       </item>
-       <item>
-        <widget class="QLabel" name="label">
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
        </item>
        <item>
         <widget class="QPushButton" name="pb_login">
@@ -416,6 +422,9 @@
         <font>
          <pointsize>12</pointsize>
         </font>
+       </property>
+       <property name="dragEnabled">
+        <bool>false</bool>
        </property>
        <attribute name="headerDefaultSectionSize">
         <number>450</number>

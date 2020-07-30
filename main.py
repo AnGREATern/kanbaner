@@ -3,19 +3,16 @@ import sys
 import sqlite3
 import time
 
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QDateTime
 from PyQt5.QtGui import QFont
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QGridLayout, QLabel, QScrollArea, QHBoxLayout, \
-    QTableWidgetItem, \
-    QVBoxLayout, QTreeWidgetItem, QTreeWidget, QHeaderView
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QGridLayout, QScrollArea, QTableWidgetItem
-from PyQt5 import uic
+from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QTableWidgetItem, QTreeWidgetItem, QTreeWidget, \
+    QHeaderView, QLineEdit, QPushButton, QComboBox, QTableWidget, QDateTimeEdit
+from PyQt5 import uic, QtCore, QtGui, QtWidgets
 
 user = None
 con = sqlite3.connect('C://Users//Максим//PycharmProjects//kanbaner1//personal.db')
 cur = con.cursor()
 table_row = int(str(cur.execute('''SELECT id FROM finance''').fetchall()[-1])[1:-2]) + 1
-print(table_row)
 
 
 class Enter(QWidget):
@@ -59,15 +56,41 @@ class Task(QWidget):
         super().__init__()
         uic.loadUi('C://Users//Максим//PycharmProjects//kanbaner1//tasks.ui', self)
         self.pb_addT.clicked.connect(self.addTask)
+        self.c_num = 0
+        self.tabs = []
+        self.cbs = [[] for _ in range(len(rowTitles))]
+        self.dts = [[] for _ in range(len(rowTitles))]
+        self.dtss = [[] for _ in range(len(rowTitles))]
+        self.pbs = [[] for _ in range(len(rowTitles))]
+        self.cbss = [[] for _ in range(len(rowTitles))]
         for i in range(len(rowTitles)):
-            tree = QTreeWidget()#.columnResized([200 for _ in range(len(rowTitles))])
-            tree.setFont(QFont('Segoe UI', 12))
-            #tree.resizeHeaders(200)
-            tree.setHeaderItem(QTreeWidgetItem(['Исполнитель', 'Время выдачи', 'Срок сдачи', 'Задача/чат', 'Статус']))
-            self.tabWidget.addTab(tree, rowTitles[i])
+            self.tabs.append(QTableWidget(self))
+            self.tabs[i].setFont(QFont('Segoe UI', 12))
+            self.tabs[i].setColumnCount(5)
+            header = self.tabs[i].horizontalHeader()
+            for y in range(5):
+                header.setSectionResizeMode(y, QtWidgets.QHeaderView.Stretch)
+            self.tabs[i].setHorizontalHeaderLabels(['Исполнитель', 'Время выдачи', 'Срок сдачи',
+                                                    'Задача/чат', 'Статус'])
+            self.tabWidget.addTab(self.tabs[i], rowTitles[i])
 
     def addTask(self):
-        pass
+        self.c_num = self.tabWidget.currentIndex()
+        rowNum = self.tabs[self.c_num].rowCount()
+        if rowNum != 0:
+            self.tabs[self.c_num].insertRow(0)
+        else:
+            self.tabs[self.c_num].setRowCount(1)
+        self.cbs[self.c_num].append(QComboBox())
+        self.dts[self.c_num].append(QDateTimeEdit())
+        self.dtss[self.c_num].append(QDateTimeEdit())
+        self.pbs[self.c_num].append(QPushButton('Подробнее'))
+        self.cbss[self.c_num].append(QComboBox())
+        self.tabs[self.c_num].setCellWidget(0, 0, self.cbs[self.c_num][rowNum])
+        self.tabs[self.c_num].setCellWidget(0, 1, self.dts[self.c_num][rowNum])
+        self.tabs[self.c_num].setCellWidget(0, 2, self.dtss[self.c_num][rowNum])
+        self.tabs[self.c_num].setCellWidget(0, 3, self.pbs[self.c_num][rowNum])
+        self.tabs[self.c_num].setCellWidget(0, 4, self.cbss[self.c_num][rowNum])
 
 
 class Finance(QWidget):
@@ -154,8 +177,8 @@ class Kanbaner(QMainWindow):
         self.finance.show()
 
     def delete(self):
-        if [x.row() for x in self.lw.selectedIndexes()]:
-            self.lw.takeItem(int(str([x.row() for x in self.lw.selectedIndexes()])[1]))
+        if [x.row() for x in self.tw.selectedIndexes()]:
+            self.tw.takeTopLevelItem(int(str([x.row() for x in self.tw.selectedIndexes()])[1]))
 
     def keyPressEvent(self, event):
         if event.key() == 16777220:

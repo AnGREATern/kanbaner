@@ -15,6 +15,7 @@ user = None
 con = sqlite3.connect('C://Users//Максим//PycharmProjects//kanbaner1//personal.db')
 cur = con.cursor()
 table_row = int(str(cur.execute('''SELECT id FROM finance''').fetchall()[-1])[1:-2]) + 1
+print(table_row)
 
 
 class Enter(QWidget):
@@ -88,12 +89,15 @@ class Finance(QWidget):
         if event.key() == Qt.Key_Escape:
             self.close()
         elif event.key() == 16777220:
-            bablo = [(str(table_row), self.table.item(table_row - 1, 0).text(),
-                      self.table.item(table_row - 1, 1).text(), self.table.item(table_row - 1, 2).text())]
-            cur.executemany("""INSERT INTO finance VALUES (?,?,?,?)""", bablo)
-            con.commit()
-            table_row += 1
-            self.table.setRowCount(table_row)
+            try:
+                bablo = [(str(table_row), self.table.item(table_row - 1, 0).text(),
+                          self.table.item(table_row - 1, 1).text(), self.table.item(table_row - 1, 2).text())]
+                cur.executemany("""INSERT INTO finance VALUES (?,?,?,?)""", bablo)
+                con.commit()
+                table_row += 1
+                self.table.setRowCount(table_row)
+            except:
+                pass
         self.table.resizeColumnsToContents()
 
 
@@ -109,6 +113,7 @@ class Kanbaner(QMainWindow):
         self.pb_delete.clicked.connect(self.delete)
         self.pb_login.clicked.connect(self.exit)
         self.pb_finance.clicked.connect(self.cash)
+        self.pb_graph.clicked.connect(self.graphics)
         self.title = ''
         self.rowTitlesBad = []
         self.dz = '-'
@@ -122,6 +127,9 @@ class Kanbaner(QMainWindow):
         self.new = New()
         self.new.show()
         self.new.pb_complete.clicked.connect(self.vvod)
+
+    def graphics(self):
+        pass
 
     def vvod(self):
         self.rowTitlesBad.extend([self.new.le2.text(), self.new.le3.text(), self.new.le4.text(), self.new.le5.text(),
@@ -149,6 +157,20 @@ class Kanbaner(QMainWindow):
     def delete(self):
         if [x.row() for x in self.lw.selectedIndexes()]:
             self.lw.takeItem(int(str([x.row() for x in self.lw.selectedIndexes()])[1]))
+
+    def keyPressEvent(self, event):
+        if event.key() == 16777220:
+            self.open()
+        elif event.key() == Qt.Key_Backspace:
+            self.delete()
+        elif event.key() == Qt.Key_Delete:
+            self.delete()
+        elif event.key() == Qt.Key_Q:
+            self.creater()
+        elif event.key() == Qt.Key_W:
+            self.graphics()
+        elif event.key() == Qt.Key_E:
+            self.cash()
 
     def exit(self):
         self.close()

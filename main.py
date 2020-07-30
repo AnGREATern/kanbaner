@@ -10,13 +10,11 @@ table_row = int(str(cur.execute('''SELECT id FROM finance''').fetchall()[-1])[1:
 
 
 class Enter(QWidget):
-    global user
+    global user, con, cur
 
     def __init__(self):
         super().__init__()
         uic.loadUi('login.ui', self)
-        self.con = sqlite3.connect('personal.db')
-        self.cur = self.con.cursor()
         self.pb_login.clicked.connect(self.switch)
         memory = open('memory.txt', 'r')
         self.le_login.setText(memory.read())
@@ -25,9 +23,9 @@ class Enter(QWidget):
         self.crew = None
 
     def switch(self):
-        global user
+        global user, con, cur
         user = self.le_login.text()
-        self.crew = str(self.cur.execute('''SELECT SN FROM main''').fetchall())[3:-4].split("',), ('")
+        self.crew = str(cur.execute('''SELECT SN FROM main''').fetchall())[3:-4].split("',), ('")
         if user in self.crew:
             memory = open('memory.txt', 'w')
             memory.write(user)
@@ -69,43 +67,39 @@ class Task(QWidget):
 
 
 class Finance(QWidget):
-    global table_row
+    global table_row, con, cur
 
     def __init__(self):
         super().__init__()
         uic.loadUi('finance.ui', self)
-        self.con = sqlite3.connect('personal.db')
-        self.cur = self.con.cursor()
         self.table.setRowCount(table_row)
         for i in range(table_row - 1):
-            a, b, c = str(self.cur.execute('''SELECT * FROM finance WHERE id = ?''',
-                                           str(i + 1)).fetchall())[6:-3].split("', '")
+            a, b, c = str(cur.execute('''SELECT * FROM finance WHERE id = ?''',
+                                      str(i + 1)).fetchall())[6:-3].split("', '")
             self.table.setItem(i, 0, QTableWidgetItem(a))
             self.table.setItem(i, 1, QTableWidgetItem(b))
             self.table.setItem(i, 2, QTableWidgetItem(c))
 
     def keyPressEvent(self, event):
-        global table_row
+        global table_row, con, cur
         if event.key() == Qt.Key_Escape:
             self.close()
         elif event.key() == 16777220:
             bablo = [(str(table_row), self.table.item(table_row - 1, 0).text(),
                       self.table.item(table_row - 1, 1).text(), self.table.item(table_row - 1, 2).text())]
-            self.cur.executemany("""INSERT INTO finance VALUES (?,?,?,?)""", bablo)
-            self.con.commit()
+            cur.executemany("""INSERT INTO finance VALUES (?,?,?,?)""", bablo)
+            con.commit()
             table_row += 1
             self.table.setRowCount(table_row)
         self.table.resizeColumnsToContents()
 
 
 class Kanbaner(QMainWindow):
-    global user
+    global user, con, cur
 
     def __init__(self):
         super().__init__()
         uic.loadUi('main.ui', self)
-        self.con = sqlite3.connect('personal.db')
-        self.cur = self.con.cursor()
         self.label.setText(user)
         self.pb_create.clicked.connect(self.creater)
         self.pb_open.clicked.connect(self.open)

@@ -1,10 +1,12 @@
 import sys
 import sqlite3
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QGridLayout, QScrollArea
+from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QGridLayout, QScrollArea, QTableWidgetItem
 from PyQt5 import uic
 user = None
-table_row = 1
+con = sqlite3.connect('personal.db')
+cur = con.cursor()
+table_row = int(str(cur.execute('''SELECT id FROM finance''').fetchall()[-1])[1:-2]) + 1
 
 
 class Enter(QWidget):
@@ -75,16 +77,20 @@ class Finance(QWidget):
         self.con = sqlite3.connect('personal.db')
         self.cur = self.con.cursor()
         self.table.setRowCount(table_row)
+        for i in range(table_row - 1):
+            a, b, c = str(self.cur.execute('''SELECT * FROM finance WHERE id = ?''',
+                                           str(i + 1)).fetchall())[6:-3].split("', '")
+            self.table.setItem(i, 0, QTableWidgetItem(a))
+            self.table.setItem(i, 1, QTableWidgetItem(b))
+            self.table.setItem(i, 2, QTableWidgetItem(c))
 
     def keyPressEvent(self, event):
         global table_row
         if event.key() == Qt.Key_Escape:
-            print(self.table.item(0, 0).text())
-            #  self.close()
+            self.close()
         elif event.key() == 16777220:
             bablo = [(str(table_row), self.table.item(table_row - 1, 0).text(),
                       self.table.item(table_row - 1, 1).text(), self.table.item(table_row - 1, 2).text())]
-            print(bablo)
             self.cur.executemany("""INSERT INTO finance VALUES (?,?,?,?)""", bablo)
             self.con.commit()
             table_row += 1

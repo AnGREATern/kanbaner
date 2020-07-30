@@ -7,6 +7,7 @@ user = None
 con = sqlite3.connect('personal.db')
 cur = con.cursor()
 table_row = int(str(cur.execute('''SELECT id FROM finance''').fetchall()[-1])[1:-2]) + 1
+print(table_row)
 
 
 class Enter(QWidget):
@@ -75,7 +76,7 @@ class Finance(QWidget):
         self.table.setRowCount(table_row)
         for i in range(table_row - 1):
             a, b, c = str(cur.execute('''SELECT * FROM finance WHERE id = ?''',
-                                      str(i + 1)).fetchall())[6:-3].split("', '")
+                                      str(i + 1)).fetchall())[6:-2].replace("'", '').split(', ')
             self.table.setItem(i, 0, QTableWidgetItem(a))
             self.table.setItem(i, 1, QTableWidgetItem(b))
             self.table.setItem(i, 2, QTableWidgetItem(c))
@@ -145,7 +146,7 @@ class Kanbaner(QMainWindow):
             self.lw.takeItem(int(str([x.row() for x in self.lw.selectedIndexes()])[1]))
 
     def exit(self):
-        exit()
+        self.close()
 
 
 app = QApplication(sys.argv)

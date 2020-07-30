@@ -10,6 +10,9 @@
     <height>570</height>
    </rect>
   </property>
+  <property name="mouseTracking">
+   <bool>true</bool>
+  </property>
   <property name="windowTitle">
    <string>Финансы</string>
   </property>
@@ -21,6 +24,12 @@
      <width>731</width>
      <height>571</height>
     </rect>
+   </property>
+   <property name="mouseTracking">
+    <bool>true</bool>
+   </property>
+   <property name="sortingEnabled">
+    <bool>true</bool>
    </property>
    <row>
     <property name="text">

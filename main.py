@@ -58,11 +58,13 @@ class Task(QWidget):
         self.pb_addT.clicked.connect(self.addTask)
         self.c_num = 0
         self.tabs = []
-        self.cbs = [[] for _ in range(len(rowTitles))]
-        self.dts = [[] for _ in range(len(rowTitles))]
-        self.dtss = [[] for _ in range(len(rowTitles))]
-        self.pbs = [[] for _ in range(len(rowTitles))]
-        self.cbss = [[] for _ in range(len(rowTitles))]
+        # В двумерных списках помещены параметры задач, например self.cbs[Номер вкладки][Номер задачи](с нуля)
+        self.cbs = [[] for _ in range(len(rowTitles))]  # combobox с исполнителями
+        self.dts = [[] for _ in range(len(rowTitles))]  # Время начала
+        self.dtss = [[] for _ in range(len(rowTitles))]  # Время конца
+        self.pbs = [[] for _ in range(len(rowTitles))]  # Кнопка подробнее
+        self.cbss = [[] for _ in range(len(rowTitles))]  # combobox со статусом
+
         for i in range(len(rowTitles)):
             self.tabs.append(QTableWidget(self))
             self.tabs[i].setFont(QFont('Segoe UI', 12))

@@ -55,6 +55,24 @@ class More(QWidget):
     def __init__(self):
         super().__init__()
         uic.loadUi('C://Users//Максим//PycharmProjects//kanbaner1//more.ui', self)
+        self.pb_save.clicked.connect(self.save)
+        self.pb_send.clicked.connect(self.send)
+        # Здесь надо выгружать текст из бд в self.teTask и в self.teChat
+        self.lastText = ''  # Сюда нужно выгрузить текст из бд для задания
+        self.lastChat = 'aaaaaaa'  # Сюда нужно выгрузить текст из бд для чата
+        self.teTask.setText(self.lastText)
+        self.teChat.setText(self.lastChat)
+
+    def save(self):  # Здесь надо сохранять текст из self.teTask в бд
+        self.saveText = str(self.teTask.toPlainText())  # Текст из задания, его нужно загрузить в бд
+
+    def send(self):
+        if str(self.teSend.toPlainText()):
+            self.teChat.append(user + ': ' + str(self.teSend.toPlainText()))
+        else:
+            self.teSend.setPlaceholderText('Чтобы отправить сообщение, напишите что-нибудь!!!')
+        self.teSend.clear()
+        self.saveChat = str(self.teChat.toPlainText())
 
 
 class Task(QWidget):
@@ -104,7 +122,8 @@ class Task(QWidget):
         self.close()
 
     def more(self):
-        print(str(self.i) + str(self.y))
+        pass
+        # print(str(self.i) + str(self.y))
 
 
 class Finance(QWidget):

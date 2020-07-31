@@ -56,6 +56,7 @@ class More(QWidget):
         super().__init__()
         uic.loadUi('more.ui', self)
         self.role = cur.execute(f'''SELECT admin FROM main WHERE SN="{user}"''').fetchall()[0][0]
+        self.role = cur.execute(f'''SELECT admin FROM main WHERE SN="{user}"''').fetchall()[0][0]
         # Здесь надо выгружать текст из бд в self.teTask и в self.teChat
         if self.role in ['Editor', 'Admin']:
             self.pb_save.clicked.connect(self.save)
@@ -122,9 +123,6 @@ class Task(QWidget):
         self.tabs[self.c_num].setCellWidget(0, 2, self.dtss[self.c_num][self.rowNum])
         self.tabs[self.c_num].setCellWidget(0, 3, self.pbs[self.c_num][self.rowNum])
         self.tabs[self.c_num].setCellWidget(0, 4, self.cbss[self.c_num][self.rowNum])
-        self.more = More()
-        self.more.show()
-        self.close()
 
     def more(self):
         pass

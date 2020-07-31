@@ -10,9 +10,9 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QTableWidgetItem
 from PyQt5 import uic, QtCore, QtGui, QtWidgets
 
 user = None
-con = sqlite3.connect('C://Users//Максим//PycharmProjects//kanbaner1//personal.db')
+con = sqlite3.connect('personal.db')
 cur = con.cursor()
-table_row = int(str(cur.execute('''SELECT id FROM finance''').fetchall()[-1])[1:-2]) + 1
+table_row = len(cur.execute('''SELECT id FROM finance''').fetchall()) + 1
 
 
 class Enter(QWidget):
@@ -20,9 +20,9 @@ class Enter(QWidget):
 
     def __init__(self):
         super().__init__()
-        uic.loadUi('C://Users//Максим//PycharmProjects//kanbaner1//login.ui', self)
+        uic.loadUi('login.ui', self)
         self.pb_login.clicked.connect(self.switch)
-        memory = open('C://Users//Максим//PycharmProjects//kanbaner1//memory.txt', 'r')
+        memory = open('memory.txt', 'r')
         self.le_login.setText(memory.read())
         memory.close()
         self.new = None
@@ -33,7 +33,7 @@ class Enter(QWidget):
         user = self.le_login.text()
         self.crew = str(cur.execute('''SELECT SN FROM main''').fetchall())[3:-4].split("',), ('")
         if user in self.crew:
-            memory = open('C://Users//Максим//PycharmProjects//kanbaner1//memory.txt', 'w')
+            memory = open('memory.txt', 'w')
             memory.write(user)
             memory.close()
             self.new = Kanbaner()
@@ -48,13 +48,13 @@ class Enter(QWidget):
 class New(QWidget):
     def __init__(self):
         super().__init__()
-        uic.loadUi('C://Users//Максим//PycharmProjects//kanbaner1//create.ui', self)
+        uic.loadUi('create.ui', self)
 
 
 class Task(QWidget):
     def __init__(self, rowTitles):
         super().__init__()
-        uic.loadUi('C://Users//Максим//PycharmProjects//kanbaner1//tasks.ui', self)
+        uic.loadUi('tasks.ui', self)
         self.pb_addT.clicked.connect(self.addTask)
         self.c_num = 0
         self.tabs = []
@@ -100,7 +100,7 @@ class Finance(QWidget):
 
     def __init__(self):
         super().__init__()
-        uic.loadUi('C://Users//Максим//PycharmProjects//kanbaner1//finance.ui', self)
+        uic.loadUi('finance.ui', self)
         self.table.setRowCount(table_row)
         for i in range(table_row - 1):
             a, b, c = str(cur.execute('''SELECT * FROM finance WHERE id = ?''',
@@ -130,7 +130,7 @@ class Kanbaner(QMainWindow):
 
     def __init__(self):
         super().__init__()
-        uic.loadUi('C://Users//Максим//PycharmProjects//kanbaner1//main.ui', self)
+        uic.loadUi('main.ui', self)
         self.label.setText(user)
         self.pb_create.clicked.connect(self.creater)
         self.pb_open.clicked.connect(self.open)
@@ -140,11 +140,18 @@ class Kanbaner(QMainWindow):
         self.pb_graph.clicked.connect(self.graphics)
         self.title = ''
         self.rowTitlesBad = []
-        self.dz = '-'
         self.rowTitles = []
+        self.id = len(cur.execute('''SELECT id FROM kanban''').fetchall())
+        for i in range(self.id, 0, -1):
+            a, b, c, d = str(cur.execute('''SELECT * FROM kanban WHERE id = ?''',
+                                         [str(i)]).fetchall())[6:-2].replace("'", '').split(', ')
+            self.rowTitles.append(d.split())
+            self.tw.addTopLevelItem(QTreeWidgetItem([a, b, c]))
+        self.dz = '-'
         self.crew = None
         self.new = None
         self.task = None
+        self.enter = None
         self.finance = None
 
     def creater(self):
@@ -156,16 +163,28 @@ class Kanbaner(QMainWindow):
         pass
 
     def vvod(self):
+        self.rowTitlesBad.clear()
         self.rowTitlesBad.extend([self.new.le2.text(), self.new.le3.text(), self.new.le4.text(), self.new.le5.text(),
                                   self.new.le6.text(), self.new.le7.text(), self.new.le8.text(), self.new.le9.text()])
         self.title = self.new.leName.text()
+        self.rowTitles.append([])
         for i in self.rowTitlesBad:
             if i:
-                self.rowTitles.append(i)
-        if len(self.rowTitles) > 1:
-            self.tw.addTopLevelItem(QTreeWidgetItem([self.title, str(datetime.datetime.strftime(datetime.datetime.now(),
-                                                                                                "%Y.%m.%d %H:%M:%S")),
-                                                     self.dz]))
+                self.rowTitles[-1].append(i)
+        if len(self.rowTitles[-1]) > 1:
+            self.id += 1
+            cur.executemany("""INSERT INTO kanban VALUES (?,?,?,?,?)""",
+                            [(self.id, self.title,
+                             str(datetime.datetime.strftime(datetime.datetime.now(), "%Y.%m.%d %H:%M:%S")),
+                              self.dz, ' '.join(self.rowTitles[-1]))])
+            con.commit()
+            self.tw.clear()
+            for i in range(self.id, 0, -1):
+                a, b, c, _ = str(cur.execute('''SELECT * FROM kanban WHERE id = ?''',
+                                             [str(i)]).fetchall())[6:-2].replace("'", '').split(', ')
+                self.tw.addTopLevelItem(QTreeWidgetItem([a, b, c]))
+        else:
+            del self.rowTitles[-1]
         self.title = ''
         self.new.close()
 
@@ -180,7 +199,14 @@ class Kanbaner(QMainWindow):
 
     def delete(self):
         if [x.row() for x in self.tw.selectedIndexes()]:
-            self.tw.takeTopLevelItem(int(str([x.row() for x in self.tw.selectedIndexes()])[1]))
+            pos = int(str([x.row() for x in self.tw.selectedIndexes()])[1])
+            cur.execute("DELETE FROM kanban WHERE id = ?", [(str(self.id - pos))])
+            con.commit()
+            for i in range(self.id - pos, self.id):
+                cur.execute("""UPDATE kanban SET id = ? WHERE id = ?""", [str(i), str(i + 1)])
+                con.commit()
+            self.id -= 1
+            self.tw.takeTopLevelItem(pos)
 
     def keyPressEvent(self, event):
         if event.key() == 16777220:
@@ -197,6 +223,8 @@ class Kanbaner(QMainWindow):
             self.cash()
 
     def exit(self):
+        self.enter = Enter()
+        self.enter.show()
         self.close()
 
 

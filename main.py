@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QTableWidgetItem
 from PyQt5 import uic, QtCore, QtGui, QtWidgets
 
 user = None
-con = sqlite3.connect('personal.db')
+con = sqlite3.connect('C://Users//Максим//PycharmProjects//kanbaner1//personal.db')
 cur = con.cursor()
 table_row = len(cur.execute('''SELECT id FROM finance''').fetchall()) + 1
 
@@ -20,9 +20,9 @@ class Enter(QWidget):
 
     def __init__(self):
         super().__init__()
-        uic.loadUi('login.ui', self)
+        uic.loadUi('C://Users//Максим//PycharmProjects//kanbaner1//login.ui', self)
         self.pb_login.clicked.connect(self.switch)
-        memory = open('memory.txt', 'r')
+        memory = open('C://Users//Максим//PycharmProjects//kanbaner1//memory.txt', 'r')
         self.le_login.setText(memory.read())
         memory.close()
         self.new = None
@@ -33,10 +33,10 @@ class Enter(QWidget):
         user = self.le_login.text()
         self.crew = str(cur.execute('''SELECT SN FROM main''').fetchall())[3:-4].split("',), ('")
         if user in self.crew:
-            memory = open('memory.txt', 'w')
+            memory = open('C://Users//Максим//PycharmProjects//kanbaner1//memory.txt', 'w')
             memory.write(user)
             memory.close()
-            self.new = Kanbaner()
+            self.new = More() #  <------
             self.new.show()
             self.close()
 
@@ -55,11 +55,16 @@ class More(QWidget):
     def __init__(self):
         super().__init__()
         uic.loadUi('C://Users//Максим//PycharmProjects//kanbaner1//more.ui', self)
-        self.pb_save.clicked.connect(self.save)
-        self.pb_send.clicked.connect(self.send)
+        self.role = cur.execute(f'''SELECT admin FROM main WHERE SN="{user}"''').fetchall()[0][0]
         # Здесь надо выгружать текст из бд в self.teTask и в self.teChat
+        if self.role in ['Editor', 'Admin']:
+            self.pb_save.clicked.connect(self.save)
+        else:
+            self.pb_save.setParent(None)
+            self.teTask.setReadOnly(True)
+        self.pb_send.clicked.connect(self.send)
         self.lastText = ''  # Сюда нужно выгрузить текст из бд для задания
-        self.lastChat = 'aaaaaaa'  # Сюда нужно выгрузить текст из бд для чата
+        self.lastChat = ''  # Сюда нужно выгрузить текст из бд для чата
         self.teTask.setText(self.lastText)
         self.teChat.setText(self.lastChat)
 
@@ -131,7 +136,7 @@ class Finance(QWidget):
 
     def __init__(self):
         super().__init__()
-        uic.loadUi('finance.ui', self)
+        uic.loadUi('C://Users//Максим//PycharmProjects//kanbaner1//finance.ui', self)
         self.table.setRowCount(table_row)
         for i in range(table_row - 1):
             a, b, c = str(cur.execute('''SELECT * FROM finance WHERE id = ?''',
@@ -161,7 +166,7 @@ class Kanbaner(QMainWindow):
 
     def __init__(self):
         super().__init__()
-        uic.loadUi('main.ui', self)
+        uic.loadUi('C://Users//Максим//PycharmProjects//kanbaner1//main.ui', self)
         self.label.setText(user)
         self.pb_create.clicked.connect(self.creater)
         self.pb_open.clicked.connect(self.open)

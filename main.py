@@ -51,6 +51,12 @@ class New(QWidget):
         uic.loadUi('create.ui', self)
 
 
+class More(QWidget):
+    def __init__(self):
+        super().__init__()
+        uic.loadUi('C://Users//Максим//PycharmProjects//kanbaner1//more.ui', self)
+
+
 class Task(QWidget):
     def __init__(self, rowTitles):
         super().__init__()
@@ -78,8 +84,8 @@ class Task(QWidget):
 
     def addTask(self):
         self.c_num = self.tabWidget.currentIndex()
-        rowNum = self.tabs[self.c_num].rowCount()
-        if rowNum != 0:
+        self.rowNum = self.tabs[self.c_num].rowCount()
+        if self.rowNum != 0:
             self.tabs[self.c_num].insertRow(0)
         else:
             self.tabs[self.c_num].setRowCount(1)
@@ -88,11 +94,17 @@ class Task(QWidget):
         self.dtss[self.c_num].append(QDateTimeEdit())
         self.pbs[self.c_num].append(QPushButton('Подробнее'))
         self.cbss[self.c_num].append(QComboBox())
-        self.tabs[self.c_num].setCellWidget(0, 0, self.cbs[self.c_num][rowNum])
-        self.tabs[self.c_num].setCellWidget(0, 1, self.dts[self.c_num][rowNum])
-        self.tabs[self.c_num].setCellWidget(0, 2, self.dtss[self.c_num][rowNum])
-        self.tabs[self.c_num].setCellWidget(0, 3, self.pbs[self.c_num][rowNum])
-        self.tabs[self.c_num].setCellWidget(0, 4, self.cbss[self.c_num][rowNum])
+        self.tabs[self.c_num].setCellWidget(0, 0, self.cbs[self.c_num][self.rowNum])
+        self.tabs[self.c_num].setCellWidget(0, 1, self.dts[self.c_num][self.rowNum])
+        self.tabs[self.c_num].setCellWidget(0, 2, self.dtss[self.c_num][self.rowNum])
+        self.tabs[self.c_num].setCellWidget(0, 3, self.pbs[self.c_num][self.rowNum])
+        self.tabs[self.c_num].setCellWidget(0, 4, self.cbss[self.c_num][self.rowNum])
+        self.more = More()
+        self.more.show()
+        self.close()
+
+    def more(self):
+        print(str(self.i) + str(self.y))
 
 
 class Finance(QWidget):

@@ -16,98 +16,94 @@
   <property name="windowTitle">
    <string>Финансы</string>
   </property>
-  <widget class="QTableWidget" name="table">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>731</width>
-     <height>571</height>
-    </rect>
-   </property>
-   <property name="mouseTracking">
-    <bool>true</bool>
-   </property>
-   <property name="dragEnabled">
-    <bool>false</bool>
-   </property>
-   <property name="alternatingRowColors">
-    <bool>true</bool>
-   </property>
-   <property name="sortingEnabled">
-    <bool>true</bool>
-   </property>
-   <row>
-    <property name="text">
-     <string>1</string>
-    </property>
-   </row>
-   <row>
-    <property name="text">
-     <string>2</string>
-    </property>
-   </row>
-   <column>
-    <property name="text">
-     <string>Фамилия, имя</string>
-    </property>
-    <property name="font">
-     <font>
-      <italic>false</italic>
-     </font>
-    </property>
-   </column>
-   <column>
-    <property name="text">
-     <string>Задача</string>
-    </property>
-   </column>
-   <column>
-    <property name="text">
-     <string>Сумма</string>
-    </property>
-    <property name="font">
-     <font>
-      <weight>50</weight>
-      <italic>false</italic>
-      <bold>false</bold>
-      <underline>false</underline>
-     </font>
-    </property>
-    <property name="foreground">
-     <brush brushstyle="SolidPattern">
-      <color alpha="255">
-       <red>0</red>
-       <green>150</green>
-       <blue>0</blue>
-      </color>
-     </brush>
-    </property>
-   </column>
-   <item row="0" column="2">
-    <property name="text">
-     <string/>
-    </property>
-    <property name="background">
-     <brush brushstyle="NoBrush">
-      <color alpha="255">
-       <red>0</red>
-       <green>150</green>
-       <blue>0</blue>
-      </color>
-     </brush>
-    </property>
-    <property name="foreground">
-     <brush brushstyle="SolidPattern">
-      <color alpha="255">
-       <red>0</red>
-       <green>150</green>
-       <blue>0</blue>
-      </color>
-     </brush>
-    </property>
+  <layout class="QHBoxLayout" name="horizontalLayout">
+   <item>
+    <widget class="QTableWidget" name="table">
+     <property name="mouseTracking">
+      <bool>true</bool>
+     </property>
+     <property name="dragEnabled">
+      <bool>false</bool>
+     </property>
+     <property name="alternatingRowColors">
+      <bool>true</bool>
+     </property>
+     <property name="sortingEnabled">
+      <bool>true</bool>
+     </property>
+     <row>
+      <property name="text">
+       <string>1</string>
+      </property>
+     </row>
+     <row>
+      <property name="text">
+       <string>2</string>
+      </property>
+     </row>
+     <column>
+      <property name="text">
+       <string>Фамилия, имя</string>
+      </property>
+      <property name="font">
+       <font>
+        <italic>false</italic>
+       </font>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Задача</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Сумма</string>
+      </property>
+      <property name="font">
+       <font>
+        <weight>50</weight>
+        <italic>false</italic>
+        <bold>false</bold>
+        <underline>false</underline>
+       </font>
+      </property>
+      <property name="foreground">
+       <brush brushstyle="SolidPattern">
+        <color alpha="255">
+         <red>0</red>
+         <green>150</green>
+         <blue>0</blue>
+        </color>
+       </brush>
+      </property>
+     </column>
+     <item row="0" column="2">
+      <property name="text">
+       <string/>
+      </property>
+      <property name="background">
+       <brush brushstyle="NoBrush">
+        <color alpha="255">
+         <red>0</red>
+         <green>150</green>
+         <blue>0</blue>
+        </color>
+       </brush>
+      </property>
+      <property name="foreground">
+       <brush brushstyle="SolidPattern">
+        <color alpha="255">
+         <red>0</red>
+         <green>150</green>
+         <blue>0</blue>
+        </color>
+       </brush>
+      </property>
+     </item>
+    </widget>
    </item>
-  </widget>
+  </layout>
  </widget>
  <resources/>
  <connections/>

@@ -48,7 +48,7 @@ class Enter(QWidget):
 class New(QWidget):
     def __init__(self):
         super().__init__()
-        uic.loadUi('create.ui', self)
+        uic.loadUi('C://Users//Максим//PycharmProjects//kanbaner1//create.ui', self)
 
 
 class More(QWidget):
@@ -166,7 +166,6 @@ class Finance(QWidget):
 
 class Kanbaner(QMainWindow):
     global user, con, cur
-
     def __init__(self):
         super().__init__()
         uic.loadUi('C://Users//Максим//PycharmProjects//kanbaner1//main.ui', self)

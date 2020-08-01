@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QTableWidgetItem
 from PyQt5 import uic, QtCore, QtGui, QtWidgets
 
 user = None
-con = sqlite3.connect('C://Users//Максим//PycharmProjects//kanbaner1//personal.db')
+con = sqlite3.connect('personal.db')
 cur = con.cursor()
 table_row = len(cur.execute('''SELECT id FROM finance''').fetchall()) + 1
 
@@ -20,9 +20,9 @@ class Enter(QWidget):
 
     def __init__(self):
         super().__init__()
-        uic.loadUi('C://Users//Максим//PycharmProjects//kanbaner1//login.ui', self)
+        uic.loadUi('login.ui', self)
         self.pb_login.clicked.connect(self.switch)
-        memory = open('C://Users//Максим//PycharmProjects//kanbaner1//memory.txt', 'r')
+        memory = open('memory.txt', 'r')
         self.le_login.setText(memory.read())
         memory.close()
         self.new = None
@@ -33,7 +33,7 @@ class Enter(QWidget):
         user = self.le_login.text()
         self.crew = str(cur.execute('''SELECT SN FROM main''').fetchall())[3:-4].split("',), ('")
         if user in self.crew:
-            memory = open('C://Users//Максим//PycharmProjects//kanbaner1//memory.txt', 'w')
+            memory = open('memory.txt', 'w')
             memory.write(user)
             memory.close()
             self.new = Kanbaner()
@@ -48,13 +48,13 @@ class Enter(QWidget):
 class New(QWidget):
     def __init__(self):
         super().__init__()
-        uic.loadUi('C://Users//Максим//PycharmProjects//kanbaner1//create.ui', self)
+        uic.loadUi('create.ui', self)
 
 
 class More(QWidget):
     def __init__(self):
         super().__init__()
-        uic.loadUi('C://Users//Максим//PycharmProjects//kanbaner1//more.ui', self)
+        uic.loadUi('more.ui', self)
         self.role = cur.execute(f'''SELECT admin FROM main WHERE SN="{user}"''').fetchall()[0][0]
         # Здесь надо выгружать текст из бд в self.teTask и в self.teChat
         if self.role in ['Editor', 'Admin']:
@@ -63,16 +63,13 @@ class More(QWidget):
             self.pb_save.setParent(None)
             self.teTask.setReadOnly(True)
         self.pb_send.clicked.connect(self.send)
-        self.lastText = cur.execute(f'''SELECT task FROM tasks WHERE id="1"''').fetchall()[0][0]  # Сюда нужно выгрузить текст из бд для задания
-        self.lastChat = cur.execute(f'''SELECT chat FROM tasks WHERE id="1"''').fetchall()[0][0]  # Сюда нужно выгрузить текст из бд для чата
-        self.teTask.append(str(self.lastText))
-        self.teChat.append(str(self.lastChat))
+        self.lastText = ''  # Сюда нужно выгрузить текст из бд для задания
+        self.lastChat = ''  # Сюда нужно выгрузить текст из бд для чата
+        self.teTask.setText(self.lastText)
+        self.teChat.setText(self.lastChat)
 
     def save(self):  # Здесь надо сохранять текст из self.teTask в бд
         self.saveText = str(self.teTask.toPlainText())  # Текст из задания, его нужно загрузить в бд
-        cur.execute(f'''UPDATE tasks SET task = "{self.saveText}" WHERE id = "1"''')
-        con.commit()
-
 
     def send(self):
         if str(self.teSend.toPlainText()):
@@ -81,28 +78,26 @@ class More(QWidget):
             self.teSend.setPlaceholderText('Чтобы отправить сообщение, напишите что-нибудь!!!')
         self.teSend.clear()
         self.saveChat = str(self.teChat.toPlainText())
-        cur.execute(f'''UPDATE tasks SET chat = "{self.saveChat}" WHERE id = "1"''')
-        con.commit()
 
 
 class Task(QWidget):
-    def __init__(self, rowTitles, idi):
+    global con, cur
+
+    def __init__(self, rowTitles):
         super().__init__()
-        uic.loadUi('C://Users//Максим//PycharmProjects//kanbaner1//tasks.ui', self)
+        uic.loadUi('tasks.ui', self)
         self.pb_addT.clicked.connect(self.addTask)
-        for i in range(len(rowTitles)):
-            cur.executemany("""INSERT INTO column VALUES (?,?,?)""", [(None, str(rowTitles[i]), str(idi + 1))])
         self.c_num = 0
         self.tabs = []
+        self.vse_ispolniteli = [] #  переменная хранящая всех сотрудников
         # В двумерных списках помещены параметры задач, например self.cbs[Номер вкладки][Номер задачи](с нуля)
-        for i in range(len(cur.execute('''SELECT id FROM tasks''').fetchall())):
-            print(cur.execute('''SELECT id FROM tasks''').fetchall()[0][0])
-            self.cbs = [[] for _ in range(len(rowTitles))]  # combobox с исполнителями
-            self.dts = [[] for _ in range(len(rowTitles))]  # Время начала
-            self.dtss = [[] for _ in range(len(rowTitles))]  # Время конца
-            self.pbs = [[] for _ in range(len(rowTitles))]  # Кнопка подробнее
-            self.cbss = [[] for _ in range(len(rowTitles))]  # combobox со статусом
-        con.commit()
+        self.cbs = [[] for _ in range(len(rowTitles))]  # combobox с исполнителями
+        for i in range(len(cur.execute('''SELECT id FROM main''').fetchall())):
+            self.vse_ispolniteli.append(cur.execute('''SELECT SN FROM main''').fetchall()[i][0])
+        self.dts = [[] for _ in range(len(rowTitles))]  # Время начала
+        self.dtss = [[] for _ in range(len(rowTitles))]  # Время конца
+        self.pbs = [[] for _ in range(len(rowTitles))]  # Кнопка подробнее
+        self.cbss = [[] for _ in range(len(rowTitles))]  # combobox со статусом
 
         for i in range(len(rowTitles)):
             self.tabs.append(QTableWidget(self))
@@ -132,8 +127,6 @@ class Task(QWidget):
         self.tabs[self.c_num].setCellWidget(0, 2, self.dtss[self.c_num][self.rowNum])
         self.tabs[self.c_num].setCellWidget(0, 3, self.pbs[self.c_num][self.rowNum])
         self.tabs[self.c_num].setCellWidget(0, 4, self.cbss[self.c_num][self.rowNum])
-        cur.executemany("""INSERT INTO tasks VALUES (?,?,?,?,?,?,?,?)""", [(None, '', '', '', '', '', '', self.c_num)])
-        con.commit()
 
     def more(self):
         pass
@@ -145,7 +138,7 @@ class Finance(QWidget):
 
     def __init__(self):
         super().__init__()
-        uic.loadUi('C://Users//Максим//PycharmProjects//kanbaner1//finance.ui', self)
+        uic.loadUi('finance.ui', self)
         self.table.setRowCount(table_row)
         for i in range(table_row - 1):
             a, b, c = str(cur.execute('''SELECT * FROM finance WHERE id = ?''',
@@ -175,7 +168,7 @@ class Kanbaner(QMainWindow):
 
     def __init__(self):
         super().__init__()
-        uic.loadUi('C://Users//Максим//PycharmProjects//kanbaner1//main.ui', self)
+        uic.loadUi('main.ui', self)
         self.label.setText(user)
         self.pb_create.clicked.connect(self.creater)
         self.pb_open.clicked.connect(self.open)
@@ -235,7 +228,7 @@ class Kanbaner(QMainWindow):
 
     def open(self):
         if [x.row() for x in self.tw.selectedIndexes()]:
-            self.task = Task(self.rowTitles[int(str([x.row() for x in self.tw.selectedIndexes()])[1])], int(str([x.row() for x in self.tw.selectedIndexes()])[1]))
+            self.task = Task(self.rowTitles[int(str([x.row() for x in self.tw.selectedIndexes()])[1])])
             self.task.show()
 
     def cash(self):

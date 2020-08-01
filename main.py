@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QTableWidgetItem
 from PyQt5 import uic, QtCore, QtGui, QtWidgets
 
 user = None
-con = sqlite3.connect('personal.db')
+con = sqlite3.connect('C://Users//Максим//PycharmProjects//kanbaner1//personal.db')
 cur = con.cursor()
 table_row = len(cur.execute('''SELECT id FROM finance''').fetchall()) + 1
 
@@ -20,9 +20,9 @@ class Enter(QWidget):
 
     def __init__(self):
         super().__init__()
-        uic.loadUi('login.ui', self)
+        uic.loadUi('C://Users//Максим//PycharmProjects//kanbaner1//login.ui', self)
         self.pb_login.clicked.connect(self.switch)
-        memory = open('memory.txt', 'r')
+        memory = open('C://Users//Максим//PycharmProjects//kanbaner1//memory.txt', 'r')
         self.le_login.setText(memory.read())
         memory.close()
         self.new = None
@@ -33,7 +33,7 @@ class Enter(QWidget):
         user = self.le_login.text()
         self.crew = str(cur.execute('''SELECT SN FROM main''').fetchall())[3:-4].split("',), ('")
         if user in self.crew:
-            memory = open('memory.txt', 'w')
+            memory = open('C://Users//Максим//PycharmProjects//kanbaner1//memory.txt', 'w')
             memory.write(user)
             memory.close()
             self.new = Kanbaner()
@@ -54,7 +54,7 @@ class New(QWidget):
 class More(QWidget):
     def __init__(self):
         super().__init__()
-        uic.loadUi('more.ui', self)
+        uic.loadUi('C://Users//Максим//PycharmProjects//kanbaner1//more.ui', self)
         self.role = cur.execute(f'''SELECT admin FROM main WHERE SN="{user}"''').fetchall()[0][0]
         # Здесь надо выгружать текст из бд в self.teTask и в self.teChat
         if self.role in ['Editor', 'Admin']:
@@ -85,7 +85,7 @@ class Task(QWidget):
 
     def __init__(self, rowTitles):
         super().__init__()
-        uic.loadUi('tasks.ui', self)
+        uic.loadUi('C://Users//Максим//PycharmProjects//kanbaner1//tasks.ui', self)
         self.pb_addT.clicked.connect(self.addTask)
         self.c_num = 0
         self.tabs = []
@@ -118,6 +118,7 @@ class Task(QWidget):
         else:
             self.tabs[self.c_num].setRowCount(1)
         self.cbs[self.c_num].append(QComboBox())
+        self.cbs[self.c_num][-1].addItems(self.vse_ispolniteli)
         self.dts[self.c_num].append(QDateTimeEdit())
         self.dtss[self.c_num].append(QDateTimeEdit())
         self.pbs[self.c_num].append(QPushButton('Подробнее'))
@@ -138,7 +139,7 @@ class Finance(QWidget):
 
     def __init__(self):
         super().__init__()
-        uic.loadUi('finance.ui', self)
+        uic.loadUi('C://Users//Максим//PycharmProjects//kanbaner1//finance.ui', self)
         self.table.setRowCount(table_row)
         for i in range(table_row - 1):
             a, b, c = str(cur.execute('''SELECT * FROM finance WHERE id = ?''',
@@ -168,7 +169,7 @@ class Kanbaner(QMainWindow):
 
     def __init__(self):
         super().__init__()
-        uic.loadUi('main.ui', self)
+        uic.loadUi('C://Users//Максим//PycharmProjects//kanbaner1//main.ui', self)
         self.label.setText(user)
         self.pb_create.clicked.connect(self.creater)
         self.pb_open.clicked.connect(self.open)

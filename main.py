@@ -1,12 +1,15 @@
 import datetime
+import random
 import sys
 import sqlite3
-import time
 
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.figure import Figure
+import matplotlib.pyplot as plt
 from PyQt5.QtCore import Qt, QDateTime
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QTableWidgetItem, QTreeWidgetItem, QTreeWidget, \
-    QHeaderView, QLineEdit, QPushButton, QComboBox, QTableWidget, QDateTimeEdit
+    QHeaderView, QLineEdit, QPushButton, QComboBox, QTableWidget, QDateTimeEdit, QSizePolicy
 from PyQt5 import uic, QtCore, QtGui, QtWidgets
 
 user = None
@@ -49,6 +52,46 @@ class New(QWidget):
     def __init__(self):
         super().__init__()
         uic.loadUi('create.ui', self)
+
+
+class Graphics(QWidget):
+    def __init__(self):
+        super().__init__()
+        uic.loadUi('graphics.ui', self)
+        isp1 = str(cur.execute('''SELECT SN FROM main''').fetchall())[3:-4].split("',), ('")
+        ispT = [1 for i in range(len(isp1))]
+        print(isp1[0], ispT)
+        m = PlotCanvas(self, width=50, height=4, isp=isp1)
+        m1 = PlotCanvas(self, width=50, height=4, isp=isp1)
+        m2 = PlotCanvas(self, width=50, height=4, isp=isp1)
+        self.tabWidget.addTab(m, 'За месяц')
+        self.tabWidget.addTab(m1, 'За квартал')
+        self.tabWidget.addTab(m2, 'За год')
+
+
+class PlotCanvas(FigureCanvas):
+    def __init__(self, ispT=0, parent=None, width=5, height=4, isp=None, dpi=50):
+        if isp is None:
+            isp = []
+        fig = Figure(figsize=(width, height), dpi=dpi)
+        self.axes = fig.add_subplot(111)
+        self.isp = isp
+        self.ispT = ispT
+        FigureCanvas.__init__(self, fig)
+        self.setParent(parent)
+
+        FigureCanvas.setSizePolicy(self,
+                QSizePolicy.Expanding,
+                QSizePolicy.Expanding)
+        FigureCanvas.updateGeometry(self)
+        self.bar()
+
+    def bar(self):
+        data = [random.random() for i in range(len(self.isp))]
+        ax = self.figure.add_subplot(111)
+        ax.bar(self.isp, data)
+        ax.set_title('График с нагрузкой персонала')
+        self.draw()
 
 
 class More(QWidget):
@@ -140,7 +183,6 @@ class Task(QWidget):
     def more(self):
         self.mor = More()
         self.mor.show()
-        # print(str(self.i) + str(self.y))
 
     def reboot(self):
         for i in range(len(self.cbs[0]) - 1, -1, -1):
@@ -179,6 +221,7 @@ class Finance(QWidget):
 
 class Kanbaner(QMainWindow):
     global user, con, cur
+
     def __init__(self):
         super().__init__()
         uic.loadUi('main.ui', self)
@@ -211,7 +254,8 @@ class Kanbaner(QMainWindow):
         self.new.pb_complete.clicked.connect(self.vvod)
 
     def graphics(self):
-        pass
+        self.gr = Graphics()
+        self.gr.show()
 
     def vvod(self):
         self.rowTitlesBad.clear()

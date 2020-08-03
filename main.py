@@ -86,11 +86,15 @@ class Task(QWidget):
     def __init__(self, rowTitles):
         super().__init__()
         uic.loadUi('tasks.ui', self)
+        self.setMouseTracking(True)
         self.pb_addT.clicked.connect(self.addTask)
+        self.pb_reboot.clicked.connect(self.reboot)
+        self.mor = None
         self.c_num = 0
         self.tabs = []
         self.ispolniteli = []  # Переменная хранящая всех сотрудников
-        self.status = ['Редактирование', 'Выдано', 'Выполнено']
+        self.status = ['', 'Удалить']
+        self.status.extend(rowTitles)
         # В двумерных списках помещены параметры задач, например self.cbs[Номер вкладки][Номер задачи](с нуля)
         self.cbs = [[] for _ in range(len(rowTitles))]  # combobox с исполнителями
         for i in range(len(cur.execute('''SELECT id FROM main''').fetchall())):
@@ -122,7 +126,8 @@ class Task(QWidget):
         self.cbs[self.c_num][-1].addItems(self.ispolniteli)
         self.dts[self.c_num].append(QDateTimeEdit())
         self.dtss[self.c_num].append(QDateTimeEdit())
-        self.pbs[self.c_num].append(QPushButton('Подробнее'))
+        self.pb_more = QPushButton('Подробнее')
+        self.pbs[self.c_num].append(self.pb_more)
         self.cbss[self.c_num].append(QComboBox())
         self.cbss[self.c_num][-1].addItems(self.status)
         self.tabs[self.c_num].setCellWidget(0, 0, self.cbs[self.c_num][self.rowNum])
@@ -130,10 +135,16 @@ class Task(QWidget):
         self.tabs[self.c_num].setCellWidget(0, 2, self.dtss[self.c_num][self.rowNum])
         self.tabs[self.c_num].setCellWidget(0, 3, self.pbs[self.c_num][self.rowNum])
         self.tabs[self.c_num].setCellWidget(0, 4, self.cbss[self.c_num][self.rowNum])
+        self.pb_more.clicked.connect(self.more)
 
     def more(self):
-        pass
+        self.mor = More()
+        self.mor.show()
         # print(str(self.i) + str(self.y))
+
+    def reboot(self):
+        for i in range(len(self.cbs[0]) - 1, -1, -1):
+            print(self.cbs[0][i].currentText())
 
 
 class Finance(QWidget):

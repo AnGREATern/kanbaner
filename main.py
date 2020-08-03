@@ -1,13 +1,11 @@
 import datetime
 import sys
 import sqlite3
-import time
-
-from PyQt5.QtCore import Qt, QDateTime
+from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QTableWidgetItem, QTreeWidgetItem, QTreeWidget, \
-    QHeaderView, QLineEdit, QPushButton, QComboBox, QTableWidget, QDateTimeEdit
-from PyQt5 import uic, QtCore, QtGui, QtWidgets
+from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QTableWidgetItem, QTreeWidgetItem, QPushButton,\
+    QComboBox, QTableWidget, QDateTimeEdit
+from PyQt5 import uic, QtWidgets
 
 user = None
 con = sqlite3.connect('personal.db')
@@ -57,6 +55,8 @@ class More(QWidget):
         super().__init__()
         uic.loadUi('more.ui', self)
         self.role = cur.execute(f'''SELECT admin FROM main WHERE SN="{user}"''').fetchall()[0][0]
+        self.saveText = None
+        self.saveChat = None
         # Здесь надо выгружать текст из бд в self.teTask и в self.teChat
         if self.role in ['Editor', 'Admin']:
             self.pb_save.clicked.connect(self.save)
@@ -93,6 +93,8 @@ class Task(QWidget):
         self.mor = None
         self.c_num = 0
         self.tabs = []
+        self.rowNum = None
+        self.pb_more = None
         self.ispolniteli = []  # Переменная хранящая всех сотрудников
         self.status = ['', 'Удалить']
         self.status.extend(rowTitles)
@@ -130,6 +132,7 @@ class Task(QWidget):
         self.cbs[self.c_num][-1].addItems(self.ispolniteli)
         try:
             self.cbs[self.c_num][-1].setCurrentIndex(self.ispolniteli.index(self.sn))
+            self.sn = None
         except:
             pass
         self.dts[self.c_num].append(QDateTimeEdit())

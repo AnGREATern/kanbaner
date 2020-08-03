@@ -13,6 +13,7 @@ user = None
 con = sqlite3.connect('personal.db')
 cur = con.cursor()
 table_row = len(cur.execute('''SELECT id FROM finance''').fetchall()) + 1
+task_row = len(cur.execute('''SELECT id FROM tasks''').fetchall())
 
 
 class Enter(QWidget):
@@ -81,14 +82,14 @@ class More(QWidget):
 
 
 class Task(QWidget):
-    global con, cur
+    global con, cur, task_row
 
-    def __init__(self, rowTitles):
+    def __init__(self, rowTitles, name):
         super().__init__()
         uic.loadUi('tasks.ui', self)
-        self.setMouseTracking(True)
         self.pb_addT.clicked.connect(self.addTask)
         self.pb_reboot.clicked.connect(self.reboot)
+        self.name = name
         self.mor = None
         self.c_num = 0
         self.tabs = []
@@ -103,7 +104,6 @@ class Task(QWidget):
         self.dtss = [[] for _ in range(len(rowTitles))]  # Время конца
         self.pbs = [[] for _ in range(len(rowTitles))]  # Кнопка подробнее
         self.cbss = [[] for _ in range(len(rowTitles))]  # combobox со статусом
-
         for i in range(len(rowTitles)):
             self.tabs.append(QTableWidget(self))
             self.tabs[i].setFont(QFont('Segoe UI', 12))
@@ -114,6 +114,10 @@ class Task(QWidget):
             self.tabs[i].setHorizontalHeaderLabels(['Исполнитель', 'Время выдачи', 'Срок сдачи',
                                                     'Задача/чат', 'Статус'])
             self.tabWidget.addTab(self.tabs[i], rowTitles[i])
+        for i in range(task_row):
+            _, _, self.sn, self.startdate, self.enddate, _, _ =\
+                cur.execute('''SELECT * FROM tasks WHERE id = ?''', str(i)).fetchall()[0]
+            self.addTask()
 
     def addTask(self):
         self.c_num = self.tabWidget.currentIndex()
@@ -124,6 +128,10 @@ class Task(QWidget):
             self.tabs[self.c_num].setRowCount(1)
         self.cbs[self.c_num].append(QComboBox())
         self.cbs[self.c_num][-1].addItems(self.ispolniteli)
+        try:
+            self.cbs[self.c_num][-1].setCurrentIndex(self.ispolniteli.index(self.sn))
+        except:
+            pass
         self.dts[self.c_num].append(QDateTimeEdit())
         self.dtss[self.c_num].append(QDateTimeEdit())
         self.pb_more = QPushButton('Подробнее')
@@ -143,8 +151,15 @@ class Task(QWidget):
         # print(str(self.i) + str(self.y))
 
     def reboot(self):
-        for i in range(len(self.cbs[0]) - 1, -1, -1):
-            print(self.cbs[0][i].currentText())
+        for j in range(len(self.tabs)):
+            try:
+                for i in range(self.rowNum, -1, -1):
+                    bablo = [(str(i), self.name + ' ' + str(j), self.cbs[j][i].currentText(),
+                              self.dts[j][i].date().toString(), self.dtss[j][i].date().toString(), '', '')]
+                    cur.executemany("""INSERT INTO tasks VALUES (?,?,?,?,?,?,?)""", bablo)
+                    con.commit()
+            except:
+                pass
 
 
 class Finance(QWidget):
@@ -179,6 +194,7 @@ class Finance(QWidget):
 
 class Kanbaner(QMainWindow):
     global user, con, cur
+
     def __init__(self):
         super().__init__()
         uic.loadUi('main.ui', self)
@@ -241,7 +257,9 @@ class Kanbaner(QMainWindow):
 
     def open(self):
         if [x.row() for x in self.tw.selectedIndexes()]:
-            self.task = Task(self.rowTitles[int(str([x.row() for x in self.tw.selectedIndexes()])[1])])
+            self.task = Task(self.rowTitles[int(str([x.row() for x in self.tw.selectedIndexes()])[1])],
+                             cur.execute('''SELECT title FROM kanban WHERE id = ?''',
+                                         [(str(self.id))]).fetchall()[0][0])
             self.task.show()
 
     def cash(self):

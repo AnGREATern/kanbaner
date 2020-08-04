@@ -5,15 +5,10 @@ import sqlite3
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-import matplotlib.pyplot as plt
-from PyQt5.QtCore import Qt, QDateTime
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QDate
 from PyQt5.QtGui import QFont
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QTableWidgetItem, QTreeWidgetItem, QTreeWidget, \
-    QHeaderView, QLineEdit, QPushButton, QComboBox, QTableWidget, QDateTimeEdit, QSizePolicy
-from PyQt5 import uic, QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QTableWidgetItem, QTreeWidgetItem, QPushButton,\
-    QComboBox, QTableWidget, QDateTimeEdit
+from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QTableWidgetItem, QTreeWidgetItem, QPushButton, \
+    QComboBox, QTableWidget, QDateTimeEdit, QSizePolicy, QDateEdit
 from PyQt5 import uic, QtWidgets
 
 user = None
@@ -146,7 +141,7 @@ class Task(QWidget):
         self.rowNum = None
         self.pb_more = None
         self.ispolniteli = []  # Переменная хранящая всех сотрудников
-        self.status = ['', 'Удалить']
+        self.status = ['', 'Удалить', 'Обновить']
         self.status.extend(rowTitles)
         # В двумерных списках помещены параметры задач, например self.cbs[Номер вкладки][Номер задачи](с нуля)
         self.cbs = [[] for _ in range(len(rowTitles))]  # combobox с исполнителями
@@ -169,6 +164,8 @@ class Task(QWidget):
         for i in range(task_row):
             _, _, self.sn, self.startdate, self.enddate, _, _ =\
                 cur.execute('''SELECT * FROM tasks WHERE id = ?''', str(i)).fetchall()[0]
+            self.startdate = QDate.fromString(self.startdate, "dd/MM/yyyy")
+            self.enddate = QDate.fromString(self.enddate, "dd/MM/yyyy")
             self.addTask()
 
     def addTask(self):
@@ -185,8 +182,13 @@ class Task(QWidget):
             self.sn = None
         except:
             pass
-        self.dts[self.c_num].append(QDateTimeEdit())
-        self.dtss[self.c_num].append(QDateTimeEdit())
+        self.dts[self.c_num].append(QDateEdit())
+        self.dtss[self.c_num].append(QDateEdit())
+        try:
+            self.dts[self.c_num].setDate(self.startdate)  #Работать ЗДЕСЬ
+            self.dtss[self.c_num].setDate(self.enddate)
+        except:
+            pass
         self.pb_more = QPushButton('Подробнее')
         self.pbs[self.c_num].append(self.pb_more)
         self.cbss[self.c_num].append(QComboBox())
@@ -206,8 +208,12 @@ class Task(QWidget):
         for j in range(len(self.tabs)):
             try:
                 for i in range(self.rowNum, -1, -1):
+                    a = str(self.dts[j][i].date().day()) + '/' + str(self.dts[j][i].date().month()) + '/' +\
+                        str(self.dts[j][i].date().year())
+                    b = str(self.dtss[j][i].date().day()) + '/' + str(self.dtss[j][i].date().month()) + '/' +\
+                        str(self.dtss[j][i].date().year())
                     bablo = [(str(i), self.name + ' ' + str(j), self.cbs[j][i].currentText(),
-                              self.dts[j][i].date().toString(), self.dtss[j][i].date().toString(), '', '')]
+                              a, b, '', '')]
                     cur.executemany("""INSERT INTO tasks VALUES (?,?,?,?,?,?,?)""", bablo)
                     con.commit()
             except:

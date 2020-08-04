@@ -112,7 +112,7 @@
         </font>
        </property>
        <property name="text">
-        <string>Введите название канбан доски</string>
+        <string>Введите название канбан-доски</string>
        </property>
       </widget>
      </item>

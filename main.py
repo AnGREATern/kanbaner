@@ -62,7 +62,6 @@ class Graphics(QWidget):
         ispT = [1 for i in range(len(isp1))]
         for i in range(len(isp1)):
             isp1[i] = isp1[i].split()[0] + ' ' + isp1[i].split()[1][0] + '.'
-        print(isp1[0], ispT)
         m = PlotCanvas(self, width=50, height=4, isp=isp1)
         m1 = PlotCanvas(self, width=50, height=4, isp=isp1)
         m2 = PlotCanvas(self, width=50, height=4, isp=isp1)
@@ -130,13 +129,14 @@ class More(QWidget):
 class Task(QWidget):
     global con, cur, task_row
 
-    def __init__(self, rowTitles, name):
+    def __init__(self, rowTitles, name, id):
         super().__init__()
         uic.loadUi('tasks.ui', self)
         self.setMouseTracking(True)
         self.pb_addT.clicked.connect(self.addTask)
         self.pb_reboot.clicked.connect(self.reboot)
         self.name = name
+        self.id = id
         self.mor = None
         self.c_num = 0
         self.tabs = []
@@ -164,51 +164,52 @@ class Task(QWidget):
                                                     'Задача/чат', 'Статус'])
             self.tabWidget.addTab(self.tabs[i], rowTitles[i])
         for i in range(task_row):
-            _, _, self.sn, self.startdate, self.enddate, _, _ =\
+            _, bind, _, self.sn, self.startdate, self.enddate, _, _ =\
                 cur.execute('''SELECT * FROM tasks WHERE id = ?''', str(i)).fetchall()[0]
-            print(self.startdate)
-            if len(self.startdate) != 10:
-                if self.startdate[6] == '.':
-                    self.startdate = self.startdate[:5] + '0' + self.startdate[5:]
+            if bind == self.id:
+                print(self.startdate)
                 if len(self.startdate) != 10:
-                    self.startdate = self.startdate[:-1] + '0' + self.startdate[-1]
-            if len(self.enddate) != 10:
-                if self.enddate[6] == '.':
-                    self.enddate = self.enddate[:5] + '0' + self.enddate[5:]
+                    if self.startdate[6] == '.':
+                        self.startdate = self.startdate[:5] + '0' + self.startdate[5:]
+                    if len(self.startdate) != 10:
+                        self.startdate = self.startdate[:-1] + '0' + self.startdate[-1]
                 if len(self.enddate) != 10:
-                    self.enddate = self.enddate[:-1] + '0' + self.enddate[-1]
-            self.startdate1 = QDate.fromString(self.startdate, "yyyy.MM.dd")
-            self.enddate1 = QDate.fromString(self.enddate, "yyyy.MM.dd")
-            self.c_num = self.tabWidget.currentIndex()
-            self.rowNum = self.tabs[self.c_num].rowCount()
-            if self.rowNum != 0:
-                self.tabs[self.c_num].insertRow(0)
-            else:
-                self.tabs[self.c_num].setRowCount(1)
-            self.cbs[self.c_num].append(QComboBox())
-            self.cbs[self.c_num][-1].addItems(self.ispolniteli)
-            try:
-                self.cbs[self.c_num][-1].setCurrentIndex(self.ispolniteli.index(self.sn))
-                self.sn = None
-            except:
-                pass
-            self.dts[self.c_num].append(QDateEdit())
-            self.dtss[self.c_num].append(QDateEdit())
-            try:
-                print(self.startdate1.day())
-                self.dts[self.c_num][self.rowNum].setDate(self.startdate1)  # Работать ЗДЕСЬ
-                self.dtss[self.c_num][self.rowNum].setDate(self.enddate1)
-            except:
-                print(1)
-            self.pb_more = QPushButton('Подробнее')
-            self.pbs[self.c_num].append(self.pb_more)
-            self.cbss[self.c_num].append(QComboBox())
-            self.cbss[self.c_num][-1].addItems(self.status)
-            self.tabs[self.c_num].setCellWidget(0, 0, self.cbs[self.c_num][self.rowNum])
-            self.tabs[self.c_num].setCellWidget(0, 1, self.dts[self.c_num][self.rowNum])
-            self.tabs[self.c_num].setCellWidget(0, 2, self.dtss[self.c_num][self.rowNum])
-            self.tabs[self.c_num].setCellWidget(0, 3, self.pbs[self.c_num][self.rowNum])
-            self.tabs[self.c_num].setCellWidget(0, 4, self.cbss[self.c_num][self.rowNum])
+                    if self.enddate[6] == '.':
+                        self.enddate = self.enddate[:5] + '0' + self.enddate[5:]
+                    if len(self.enddate) != 10:
+                        self.enddate = self.enddate[:-1] + '0' + self.enddate[-1]
+                self.startdate1 = QDate.fromString(self.startdate, "yyyy.MM.dd")
+                self.enddate1 = QDate.fromString(self.enddate, "yyyy.MM.dd")
+                self.c_num = self.tabWidget.currentIndex()
+                self.rowNum = self.tabs[self.c_num].rowCount()
+                if self.rowNum != 0:
+                    self.tabs[self.c_num].insertRow(0)
+                else:
+                    self.tabs[self.c_num].setRowCount(1)
+                self.cbs[self.c_num].append(QComboBox())
+                self.cbs[self.c_num][-1].addItems(self.ispolniteli)
+                try:
+                    self.cbs[self.c_num][-1].setCurrentIndex(self.ispolniteli.index(self.sn))
+                    self.sn = None
+                except:
+                    pass
+                self.dts[self.c_num].append(QDateEdit())
+                self.dtss[self.c_num].append(QDateEdit())
+                try:
+                    print(self.startdate1.day())
+                    self.dts[self.c_num][self.rowNum].setDate(self.startdate1)  # Работать ЗДЕСЬ
+                    self.dtss[self.c_num][self.rowNum].setDate(self.enddate1)
+                except:
+                    print(1)
+                self.pb_more = QPushButton('Подробнее')
+                self.pbs[self.c_num].append(self.pb_more)
+                self.cbss[self.c_num].append(QComboBox())
+                self.cbss[self.c_num][-1].addItems(self.status)
+                self.tabs[self.c_num].setCellWidget(0, 0, self.cbs[self.c_num][self.rowNum])
+                self.tabs[self.c_num].setCellWidget(0, 1, self.dts[self.c_num][self.rowNum])
+                self.tabs[self.c_num].setCellWidget(0, 2, self.dtss[self.c_num][self.rowNum])
+                self.tabs[self.c_num].setCellWidget(0, 3, self.pbs[self.c_num][self.rowNum])
+                self.tabs[self.c_num].setCellWidget(0, 4, self.cbss[self.c_num][self.rowNum])
 
     def addTask(self):
         self.c_num = self.tabWidget.currentIndex()
@@ -244,9 +245,9 @@ class Task(QWidget):
                         str(self.dts[j][i].date().day())
                     b = str(self.dtss[j][i].date().year()) + '.' + str(self.dtss[j][i].date().month()) + '.' +\
                         str(self.dtss[j][i].date().day())
-                    bablo = [(str(i), self.name + ' ' + str(j), self.cbs[j][i].currentText(),
+                    bablo = [(None, str(self.id), str(j), self.cbs[j][i].currentText(),
                               a, b, '', '')]
-                    cur.executemany("""INSERT INTO tasks VALUES (?,?,?,?,?,?,?)""", bablo)
+                    cur.executemany("""INSERT INTO tasks VALUES (?,?,?,?,?,?,?,?)""", bablo)
                     con.commit()
             except:
                 pass
@@ -327,11 +328,12 @@ class Kanbaner(QMainWindow):
         self.rowTitlesBad.extend([self.new.le2.text(), self.new.le3.text(), self.new.le4.text(), self.new.le5.text(),
                                   self.new.le6.text(), self.new.le7.text(), self.new.le8.text(), self.new.le9.text()])
         self.title = self.new.leName.text()
-        self.rowTitles.append([])
+        self.rowTitles.insert(0, [])
         for i in self.rowTitlesBad:
             if i:
-                self.rowTitles[-1].append(i)
-        if len(self.rowTitles[-1]) > 1:
+                print(self.rowTitles)
+                self.rowTitles[0].append(i)
+        if len(self.rowTitles[0]) > 1:
             self.id += 1
             cur.executemany("""INSERT INTO kanban VALUES (?,?,?,?,?)""",
                             [(self.id, self.title,
@@ -342,18 +344,18 @@ class Kanbaner(QMainWindow):
             for i in range(self.id, 0, -1):
                 a, b, c, _ = str(cur.execute('''SELECT * FROM kanban WHERE id = ?''',
                                              [str(i)]).fetchall())[5:-2].replace("'", '').split(', ')
-                print(a, b, c)
                 self.tw.addTopLevelItem(QTreeWidgetItem([a, b, c]))
         else:
-            del self.rowTitles[-1]
+            del self.rowTitles[0]
         self.title = ''
         self.new.close()
 
     def open(self):
         if [x.row() for x in self.tw.selectedIndexes()]:
+            pos = int(str([x.row() for x in self.tw.selectedIndexes()])[1])
             self.task = Task(self.rowTitles[int(str([x.row() for x in self.tw.selectedIndexes()])[1])],
                              cur.execute('''SELECT title FROM kanban WHERE id = ?''',
-                                         [(str(self.id))]).fetchall()[0][0])
+                                         [(str(self.id - pos))]).fetchall()[0][0], self.id - pos)
             self.task.show()
 
     def cash(self):
@@ -370,6 +372,7 @@ class Kanbaner(QMainWindow):
                 con.commit()
             self.id -= 1
             self.tw.takeTopLevelItem(pos)
+            del self.rowTitles[pos]
 
     def keyPressEvent(self, event):
         if event.key() == 16777220:

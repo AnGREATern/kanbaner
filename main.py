@@ -62,7 +62,6 @@ class Graphics(QWidget):
         ispT = [1 for i in range(len(isp1))]
         for i in range(len(isp1)):
             isp1[i] = isp1[i].split()[0] + ' ' + isp1[i].split()[1][0] + '.'
-        print(isp1[0], ispT)
         m = PlotCanvas(self, width=50, height=4, isp=isp1)
         m1 = PlotCanvas(self, width=50, height=4, isp=isp1)
         m2 = PlotCanvas(self, width=50, height=4, isp=isp1)
@@ -297,11 +296,12 @@ class Kanbaner(QMainWindow):
         self.rowTitlesBad.extend([self.new.le2.text(), self.new.le3.text(), self.new.le4.text(), self.new.le5.text(),
                                   self.new.le6.text(), self.new.le7.text(), self.new.le8.text(), self.new.le9.text()])
         self.title = self.new.leName.text()
-        self.rowTitles.append([])
+        self.rowTitles.insert(0, [])
         for i in self.rowTitlesBad:
             if i:
-                self.rowTitles[-1].append(i)
-        if len(self.rowTitles[-1]) > 1:
+                print(self.rowTitles)
+                self.rowTitles[0].append(i)
+        if len(self.rowTitles[0]) > 1:
             self.id += 1
             cur.executemany("""INSERT INTO kanban VALUES (?,?,?,?,?)""",
                             [(self.id, self.title,
@@ -312,10 +312,9 @@ class Kanbaner(QMainWindow):
             for i in range(self.id, 0, -1):
                 a, b, c, _ = str(cur.execute('''SELECT * FROM kanban WHERE id = ?''',
                                              [str(i)]).fetchall())[5:-2].replace("'", '').split(', ')
-                print(a, b, c)
                 self.tw.addTopLevelItem(QTreeWidgetItem([a, b, c]))
         else:
-            del self.rowTitles[-1]
+            del self.rowTitles[0]
         self.title = ''
         self.new.close()
 
@@ -340,6 +339,7 @@ class Kanbaner(QMainWindow):
                 con.commit()
             self.id -= 1
             self.tw.takeTopLevelItem(pos)
+            del self.rowTitles[pos]
 
     def keyPressEvent(self, event):
         if event.key() == 16777220:

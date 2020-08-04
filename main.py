@@ -166,9 +166,49 @@ class Task(QWidget):
         for i in range(task_row):
             _, _, self.sn, self.startdate, self.enddate, _, _ =\
                 cur.execute('''SELECT * FROM tasks WHERE id = ?''', str(i)).fetchall()[0]
-            self.startdate = QDate.fromString(self.startdate, "dd/MM/yyyy")
-            self.enddate = QDate.fromString(self.enddate, "dd/MM/yyyy")
-            self.addTask()
+            print(self.startdate)
+            if len(self.startdate) != 10:
+                if self.startdate[6] == '.':
+                    self.startdate = self.startdate[:5] + '0' + self.startdate[5:]
+                if len(self.startdate) != 10:
+                    self.startdate = self.startdate[:-1] + '0' + self.startdate[-1]
+            if len(self.enddate) != 10:
+                if self.enddate[6] == '.':
+                    self.enddate = self.enddate[:5] + '0' + self.enddate[5:]
+                if len(self.enddate) != 10:
+                    self.enddate = self.enddate[:-1] + '0' + self.enddate[-1]
+            self.startdate1 = QDate.fromString(self.startdate, "yyyy.MM.dd")
+            self.enddate1 = QDate.fromString(self.enddate, "yyyy.MM.dd")
+            self.c_num = self.tabWidget.currentIndex()
+            self.rowNum = self.tabs[self.c_num].rowCount()
+            if self.rowNum != 0:
+                self.tabs[self.c_num].insertRow(0)
+            else:
+                self.tabs[self.c_num].setRowCount(1)
+            self.cbs[self.c_num].append(QComboBox())
+            self.cbs[self.c_num][-1].addItems(self.ispolniteli)
+            try:
+                self.cbs[self.c_num][-1].setCurrentIndex(self.ispolniteli.index(self.sn))
+                self.sn = None
+            except:
+                pass
+            self.dts[self.c_num].append(QDateEdit())
+            self.dtss[self.c_num].append(QDateEdit())
+            try:
+                print(self.startdate1.day())
+                self.dts[self.c_num][self.rowNum].setDate(self.startdate1)  # Работать ЗДЕСЬ
+                self.dtss[self.c_num][self.rowNum].setDate(self.enddate1)
+            except:
+                print(1)
+            self.pb_more = QPushButton('Подробнее')
+            self.pbs[self.c_num].append(self.pb_more)
+            self.cbss[self.c_num].append(QComboBox())
+            self.cbss[self.c_num][-1].addItems(self.status)
+            self.tabs[self.c_num].setCellWidget(0, 0, self.cbs[self.c_num][self.rowNum])
+            self.tabs[self.c_num].setCellWidget(0, 1, self.dts[self.c_num][self.rowNum])
+            self.tabs[self.c_num].setCellWidget(0, 2, self.dtss[self.c_num][self.rowNum])
+            self.tabs[self.c_num].setCellWidget(0, 3, self.pbs[self.c_num][self.rowNum])
+            self.tabs[self.c_num].setCellWidget(0, 4, self.cbss[self.c_num][self.rowNum])
 
     def addTask(self):
         self.c_num = self.tabWidget.currentIndex()
@@ -179,18 +219,8 @@ class Task(QWidget):
             self.tabs[self.c_num].setRowCount(1)
         self.cbs[self.c_num].append(QComboBox())
         self.cbs[self.c_num][-1].addItems(self.ispolniteli)
-        try:
-            self.cbs[self.c_num][-1].setCurrentIndex(self.ispolniteli.index(self.sn))
-            self.sn = None
-        except:
-            pass
         self.dts[self.c_num].append(QDateEdit())
         self.dtss[self.c_num].append(QDateEdit())
-        try:
-            self.dts[self.c_num].setDate(self.startdate)  #Работать ЗДЕСЬ
-            self.dtss[self.c_num].setDate(self.enddate)
-        except:
-            pass
         self.pb_more = QPushButton('Подробнее')
         self.pbs[self.c_num].append(self.pb_more)
         self.cbss[self.c_num].append(QComboBox())
@@ -210,10 +240,10 @@ class Task(QWidget):
         for j in range(len(self.tabs)):
             try:
                 for i in range(self.rowNum, -1, -1):
-                    a = str(self.dts[j][i].date().day()) + '/' + str(self.dts[j][i].date().month()) + '/' +\
-                        str(self.dts[j][i].date().year())
-                    b = str(self.dtss[j][i].date().day()) + '/' + str(self.dtss[j][i].date().month()) + '/' +\
-                        str(self.dtss[j][i].date().year())
+                    a = str(self.dts[j][i].date().year()) + '.' + str(self.dts[j][i].date().month()) + '.' +\
+                        str(self.dts[j][i].date().day())
+                    b = str(self.dtss[j][i].date().year()) + '.' + str(self.dtss[j][i].date().month()) + '.' +\
+                        str(self.dtss[j][i].date().day())
                     bablo = [(str(i), self.name + ' ' + str(j), self.cbs[j][i].currentText(),
                               a, b, '', '')]
                     cur.executemany("""INSERT INTO tasks VALUES (?,?,?,?,?,?,?)""", bablo)

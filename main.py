@@ -65,6 +65,8 @@ class Graphics(QWidget):
         uic.loadUi('graphics.ui', self)
         isp1 = str(cur.execute('''SELECT SN FROM main''').fetchall())[3:-4].split("',), ('")
         ispT = [1 for i in range(len(isp1))]
+        for i in range(len(isp1)):
+            isp1[i] = isp1[i].split()[0] + ' ' + isp1[i].split()[1][0] + '.'
         print(isp1[0], ispT)
         m = PlotCanvas(self, width=50, height=4, isp=isp1)
         m1 = PlotCanvas(self, width=50, height=4, isp=isp1)
@@ -75,7 +77,7 @@ class Graphics(QWidget):
 
 
 class PlotCanvas(FigureCanvas):
-    def __init__(self, ispT=0, parent=None, width=5, height=4, isp=None, dpi=60):
+    def __init__(self, ispT=0, parent=None, width=5, height=4, isp=None, dpi=80):
         if isp is None:
             isp = []
         fig = Figure(figsize=(width, height), dpi=dpi)

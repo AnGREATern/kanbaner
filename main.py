@@ -218,7 +218,6 @@ class Task(QWidget):
         window.new.task.show()
 
 
-
 class Finance(QWidget):
     global table_row, con, cur
 
@@ -306,7 +305,8 @@ class Kanbaner(QMainWindow):
             self.tw.clear()
             for i in range(self.id, 0, -1):
                 a, b, c, _ = str(cur.execute('''SELECT * FROM kanban WHERE id = ?''',
-                                             [str(i)]).fetchall())[6:-2].replace("'", '').split(', ')
+                                             [str(i)]).fetchall())[5:-2].replace("'", '').split(', ')
+                print(a, b, c)
                 self.tw.addTopLevelItem(QTreeWidgetItem([a, b, c]))
         else:
             del self.rowTitles[-1]

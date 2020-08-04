@@ -8,7 +8,7 @@ from matplotlib.figure import Figure
 from PyQt5.QtCore import Qt, QDate
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QTableWidgetItem, QTreeWidgetItem, QPushButton, \
-    QComboBox, QTableWidget, QDateTimeEdit, QSizePolicy, QDateEdit
+    QComboBox, QTableWidget, QSizePolicy, QDateEdit
 from PyQt5 import uic, QtWidgets
 
 user = None
@@ -59,7 +59,6 @@ class Graphics(QWidget):
         super().__init__()
         uic.loadUi('graphics.ui', self)
         isp1 = str(cur.execute('''SELECT SN FROM main''').fetchall())[3:-4].split("',), ('")
-        ispT = [1 for i in range(len(isp1))]
         for i in range(len(isp1)):
             isp1[i] = isp1[i].split()[0] + ' ' + isp1[i].split()[1][0] + '.'
         m = PlotCanvas(self, width=50, height=4, isp=isp1)
@@ -88,7 +87,7 @@ class PlotCanvas(FigureCanvas):
         self.bar()
 
     def bar(self):
-        data = [random.random() for i in range(len(self.isp))]
+        data = [random.random() for _ in range(len(self.isp))]
         ax = self.figure.add_subplot(111)
         ax.bar(self.isp, data)
         ax.set_title('График с нагрузкой персонала')
@@ -153,6 +152,7 @@ class Task(QWidget):
         self.dtss = [[] for _ in range(len(rowTitles))]  # Время конца
         self.pbs = [[] for _ in range(len(rowTitles))]  # Кнопка подробнее
         self.cbss = [[] for _ in range(len(rowTitles))]  # combobox со статусом
+        self.dlina_kalumny = [-1 for _ in range(len(rowTitles))]
         for i in range(len(rowTitles)):
             self.tabs.append(QTableWidget(self))
             self.tabs[i].setFont(QFont('Segoe UI', 12))
@@ -164,10 +164,9 @@ class Task(QWidget):
                                                     'Задача/чат', 'Статус'])
             self.tabWidget.addTab(self.tabs[i], rowTitles[i])
         for i in range(task_row):
-            _, bind, _, self.sn, self.startdate, self.enddate, _, _ =\
+            _, bind, row, self.sn, self.startdate, self.enddate, _, _ =\
                 cur.execute('''SELECT * FROM tasks WHERE id = ?''', str(i)).fetchall()[0]
             if bind == self.id:
-                print(self.startdate)
                 if len(self.startdate) != 10:
                     if self.startdate[6] == '.':
                         self.startdate = self.startdate[:5] + '0' + self.startdate[5:]
@@ -180,7 +179,7 @@ class Task(QWidget):
                         self.enddate = self.enddate[:-1] + '0' + self.enddate[-1]
                 self.startdate1 = QDate.fromString(self.startdate, "yyyy.MM.dd")
                 self.enddate1 = QDate.fromString(self.enddate, "yyyy.MM.dd")
-                self.c_num = self.tabWidget.currentIndex()
+                self.c_num = row
                 self.rowNum = self.tabs[self.c_num].rowCount()
                 if self.rowNum != 0:
                     self.tabs[self.c_num].insertRow(0)
@@ -196,11 +195,10 @@ class Task(QWidget):
                 self.dts[self.c_num].append(QDateEdit())
                 self.dtss[self.c_num].append(QDateEdit())
                 try:
-                    print(self.startdate1.day())
-                    self.dts[self.c_num][self.rowNum].setDate(self.startdate1)  # Работать ЗДЕСЬ
+                    self.dts[self.c_num][self.rowNum].setDate(self.startdate1)
                     self.dtss[self.c_num][self.rowNum].setDate(self.enddate1)
                 except:
-                    print(1)
+                    pass
                 self.pb_more = QPushButton('Подробнее')
                 self.pbs[self.c_num].append(self.pb_more)
                 self.cbss[self.c_num].append(QComboBox())
@@ -226,6 +224,7 @@ class Task(QWidget):
         self.pbs[self.c_num].append(self.pb_more)
         self.cbss[self.c_num].append(QComboBox())
         self.cbss[self.c_num][-1].addItems(self.status)
+        self.dlina_kalumny[self.c_num] += 1
         self.tabs[self.c_num].setCellWidget(0, 0, self.cbs[self.c_num][self.rowNum])
         self.tabs[self.c_num].setCellWidget(0, 1, self.dts[self.c_num][self.rowNum])
         self.tabs[self.c_num].setCellWidget(0, 2, self.dtss[self.c_num][self.rowNum])
@@ -238,17 +237,19 @@ class Task(QWidget):
         self.mor.show()
 
     def reboot(self):
+        global con, cur, task_row
         for j in range(len(self.tabs)):
             try:
-                for i in range(self.rowNum, -1, -1):
+                for i in range(self.rowNum, self.dlina_kalumny[j], -1):
                     a = str(self.dts[j][i].date().year()) + '.' + str(self.dts[j][i].date().month()) + '.' +\
                         str(self.dts[j][i].date().day())
                     b = str(self.dtss[j][i].date().year()) + '.' + str(self.dtss[j][i].date().month()) + '.' +\
                         str(self.dtss[j][i].date().day())
-                    bablo = [(None, str(self.id), str(j), self.cbs[j][i].currentText(),
+                    bablo = [(task_row, str(self.id), str(j), self.cbs[j][i].currentText(),
                               a, b, '', '')]
                     cur.executemany("""INSERT INTO tasks VALUES (?,?,?,?,?,?,?,?)""", bablo)
                     con.commit()
+                    task_row += 1
             except:
                 pass
         self.close()
@@ -308,6 +309,7 @@ class Kanbaner(QMainWindow):
             self.rowTitles.append(d.split())
             self.tw.addTopLevelItem(QTreeWidgetItem([a, b, c]))
         self.dz = '-'
+        self.gr = None
         self.crew = None
         self.new = None
         self.task = None
@@ -331,7 +333,6 @@ class Kanbaner(QMainWindow):
         self.rowTitles.insert(0, [])
         for i in self.rowTitlesBad:
             if i:
-                print(self.rowTitles)
                 self.rowTitles[0].append(i)
         if len(self.rowTitles[0]) > 1:
             self.id += 1
@@ -398,3 +399,5 @@ app = QApplication(sys.argv)
 window = Enter()
 window.show()
 app.exec_()
+cur.close()
+con.close()

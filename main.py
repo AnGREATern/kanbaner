@@ -75,7 +75,7 @@ class Graphics(QWidget):
 
 
 class PlotCanvas(FigureCanvas):
-    def __init__(self, ispT=0, parent=None, width=5, height=4, isp=None, dpi=50):
+    def __init__(self, ispT=0, parent=None, width=5, height=4, isp=None, dpi=60):
         if isp is None:
             isp = []
         fig = Figure(figsize=(width, height), dpi=dpi)
@@ -212,6 +212,9 @@ class Task(QWidget):
                     con.commit()
             except:
                 pass
+        self.close()
+        window.new.task.show()
+
 
 
 class Finance(QWidget):

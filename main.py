@@ -6,9 +6,9 @@ import sqlite3
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from PyQt5.QtCore import Qt, QDate
-from PyQt5.QtGui import QFont
+from PyQt5.QtGui import QFont, QPalette, QColor, QBrush
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QTableWidgetItem, QTreeWidgetItem, QPushButton, \
-    QComboBox, QTableWidget, QDateTimeEdit, QSizePolicy, QDateEdit
+    QComboBox, QTableWidget, QDateTimeEdit, QSizePolicy, QDateEdit, QLabel
 from PyQt5 import uic, QtWidgets
 
 user = None
@@ -133,7 +133,11 @@ class Task(QWidget):
         super().__init__()
         uic.loadUi('tasks.ui', self)
         self.setMouseTracking(True)
-        self.pb_addT.clicked.connect(self.addTask)
+        self.role = cur.execute(f'''SELECT admin FROM main WHERE SN="{user}"''').fetchall()[0][0]
+        if self.role == 'Admin':
+            self.pb_addT.clicked.connect(self.addTask)
+        else:
+            self.pb_addT.setParent(None)
         self.pb_reboot.clicked.connect(self.reboot)
         self.name = name
         self.id = id
@@ -143,8 +147,12 @@ class Task(QWidget):
         self.rowNum = None
         self.pb_more = None
         self.ispolniteli = []  # Переменная хранящая всех сотрудников
-        self.status = ['', 'Удалить', 'Обновить']
-        self.status.extend(rowTitles)
+        self.rT = rowTitles[:]
+        if self.role == 'Admin':
+            self.rT.extend(['Удалить', 'Обновить'])
+        elif self.role == 'Edit':
+            self.rT.extend(['Обновить'])
+        self.status = self.rT
         # В двумерных списках помещены параметры задач, например self.cbs[Номер вкладки][Номер задачи](с нуля)
         self.cbs = [[] for _ in range(len(rowTitles))]  # combobox с исполнителями
         for i in range(len(cur.execute('''SELECT id FROM main''').fetchall())):
@@ -178,6 +186,7 @@ class Task(QWidget):
                         self.enddate = self.enddate[:5] + '0' + self.enddate[5:]
                     if len(self.enddate) != 10:
                         self.enddate = self.enddate[:-1] + '0' + self.enddate[-1]
+                print(1)
                 self.startdate1 = QDate.fromString(self.startdate, "yyyy.MM.dd")
                 self.enddate1 = QDate.fromString(self.enddate, "yyyy.MM.dd")
                 self.c_num = self.tabWidget.currentIndex()
@@ -186,21 +195,22 @@ class Task(QWidget):
                     self.tabs[self.c_num].insertRow(0)
                 else:
                     self.tabs[self.c_num].setRowCount(1)
-                self.cbs[self.c_num].append(QComboBox())
-                self.cbs[self.c_num][-1].addItems(self.ispolniteli)
-                try:
+                if self.role in ['Admin', 'Edit']:
+                    self.cbs[self.c_num].append(QComboBox())
+                    self.cbs[self.c_num][-1].addItems(self.ispolniteli)
                     self.cbs[self.c_num][-1].setCurrentIndex(self.ispolniteli.index(self.sn))
                     self.sn = None
-                except:
-                    pass
+                else:
+                    self.cbs[self.c_num].append(QLabel(self.sn))
+                    self.sn = None
                 self.dts[self.c_num].append(QDateEdit())
                 self.dtss[self.c_num].append(QDateEdit())
-                try:
-                    print(self.startdate1.day())
-                    self.dts[self.c_num][self.rowNum].setDate(self.startdate1)  # Работать ЗДЕСЬ
-                    self.dtss[self.c_num][self.rowNum].setDate(self.enddate1)
-                except:
-                    print(1)
+                self.dts[self.c_num][self.rowNum].setDate(self.startdate1)  # Работать ЗДЕСЬ
+                self.dtss[self.c_num][self.rowNum].setDate(self.enddate1)
+
+                if self.role == 'False':
+                    self.dts[self.c_num][self.rowNum].setReadOnly(True)
+                    self.dtss[self.c_num][self.rowNum].setReadOnly(True)
                 self.pb_more = QPushButton('Подробнее')
                 self.pbs[self.c_num].append(self.pb_more)
                 self.cbss[self.c_num].append(QComboBox())
@@ -291,13 +301,20 @@ class Kanbaner(QMainWindow):
     def __init__(self):
         super().__init__()
         uic.loadUi('main.ui', self)
+        self.role = cur.execute(f'''SELECT admin FROM main WHERE SN="{user}"''').fetchall()[0][0]
         self.label.setText(user)
-        self.pb_create.clicked.connect(self.creater)
+        if self.role == 'Admin':
+            self.pb_create.clicked.connect(self.creater)
+            self.pb_delete.clicked.connect(self.delete)
+            self.pb_finance.clicked.connect(self.cash)
+            self.pb_graph.clicked.connect(self.graphics)
+        else:
+            self.pb_create.setParent(None)
+            self.pb_finance.setParent(None)
+            self.pb_delete.setParent(None)
+            self.pb_graph.setParent(None)
         self.pb_open.clicked.connect(self.open)
-        self.pb_delete.clicked.connect(self.delete)
         self.pb_login.clicked.connect(self.exit)
-        self.pb_finance.clicked.connect(self.cash)
-        self.pb_graph.clicked.connect(self.graphics)
         self.title = ''
         self.rowTitlesBad = []
         self.rowTitles = []

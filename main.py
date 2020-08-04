@@ -59,7 +59,6 @@ class Graphics(QWidget):
         super().__init__()
         uic.loadUi('graphics.ui', self)
         isp1 = str(cur.execute('''SELECT SN FROM main''').fetchall())[3:-4].split("',), ('")
-        ispT = [1 for i in range(len(isp1))]
         for i in range(len(isp1)):
             isp1[i] = isp1[i].split()[0] + ' ' + isp1[i].split()[1][0] + '.'
         m = PlotCanvas(self, width=50, height=4, isp=isp1)
@@ -88,7 +87,7 @@ class PlotCanvas(FigureCanvas):
         self.bar()
 
     def bar(self):
-        data = [random.random() for i in range(len(self.isp))]
+        data = [random.random() for _ in range(len(self.isp))]
         ax = self.figure.add_subplot(111)
         ax.bar(self.isp, data)
         ax.set_title('График с нагрузкой персонала')
@@ -147,12 +146,8 @@ class Task(QWidget):
         self.rowNum = None
         self.pb_more = None
         self.ispolniteli = []  # Переменная хранящая всех сотрудников
-        self.rT = rowTitles[:]
-        if self.role == 'Admin':
-            self.rT.extend(['Удалить', 'Обновить'])
-        elif self.role == 'Edit':
-            self.rT.extend(['Обновить'])
-        self.status = self.rT
+        self.status = ['', 'Удалить', 'Обновить']
+        self.status.extend(rowTitles)
         # В двумерных списках помещены параметры задач, например self.cbs[Номер вкладки][Номер задачи](с нуля)
         self.cbs = [[] for _ in range(len(rowTitles))]  # combobox с исполнителями
         for i in range(len(cur.execute('''SELECT id FROM main''').fetchall())):
@@ -186,7 +181,6 @@ class Task(QWidget):
                         self.enddate = self.enddate[:5] + '0' + self.enddate[5:]
                     if len(self.enddate) != 10:
                         self.enddate = self.enddate[:-1] + '0' + self.enddate[-1]
-                print(1)
                 self.startdate1 = QDate.fromString(self.startdate, "yyyy.MM.dd")
                 self.enddate1 = QDate.fromString(self.enddate, "yyyy.MM.dd")
                 self.c_num = self.tabWidget.currentIndex()
@@ -220,6 +214,7 @@ class Task(QWidget):
                 self.tabs[self.c_num].setCellWidget(0, 2, self.dtss[self.c_num][self.rowNum])
                 self.tabs[self.c_num].setCellWidget(0, 3, self.pbs[self.c_num][self.rowNum])
                 self.tabs[self.c_num].setCellWidget(0, 4, self.cbss[self.c_num][self.rowNum])
+                self.dlina_kalumny[self.c_num] += 1
 
     def addTask(self):
         self.c_num = self.tabWidget.currentIndex()
@@ -248,17 +243,19 @@ class Task(QWidget):
         self.mor.show()
 
     def reboot(self):
+        global con, cur, task_row
         for j in range(len(self.tabs)):
             try:
-                for i in range(self.rowNum, -1, -1):
+                for i in range(self.rowNum, self.dlina_kalumny[j], -1):
                     a = str(self.dts[j][i].date().year()) + '.' + str(self.dts[j][i].date().month()) + '.' +\
                         str(self.dts[j][i].date().day())
                     b = str(self.dtss[j][i].date().year()) + '.' + str(self.dtss[j][i].date().month()) + '.' +\
                         str(self.dtss[j][i].date().day())
-                    bablo = [(None, str(self.id), str(j), self.cbs[j][i].currentText(),
+                    bablo = [(task_row, str(self.id), str(j), self.cbs[j][i].currentText(),
                               a, b, '', '')]
                     cur.executemany("""INSERT INTO tasks VALUES (?,?,?,?,?,?,?,?)""", bablo)
                     con.commit()
+                    task_row += 1
             except:
                 pass
         self.close()
@@ -325,6 +322,7 @@ class Kanbaner(QMainWindow):
             self.rowTitles.append(d.split())
             self.tw.addTopLevelItem(QTreeWidgetItem([a, b, c]))
         self.dz = '-'
+        self.gr = None
         self.crew = None
         self.new = None
         self.task = None
@@ -348,7 +346,6 @@ class Kanbaner(QMainWindow):
         self.rowTitles.insert(0, [])
         for i in self.rowTitlesBad:
             if i:
-                print(self.rowTitles)
                 self.rowTitles[0].append(i)
         if len(self.rowTitles[0]) > 1:
             self.id += 1
@@ -415,3 +412,5 @@ app = QApplication(sys.argv)
 window = Enter()
 window.show()
 app.exec_()
+cur.close()
+con.close()

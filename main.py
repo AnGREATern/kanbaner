@@ -129,13 +129,14 @@ class More(QWidget):
 class Task(QWidget):
     global con, cur, task_row
 
-    def __init__(self, rowTitles, name):
+    def __init__(self, rowTitles, name, id):
         super().__init__()
         uic.loadUi('tasks.ui', self)
         self.setMouseTracking(True)
         self.pb_addT.clicked.connect(self.addTask)
         self.pb_reboot.clicked.connect(self.reboot)
         self.name = name
+        self.id = id
         self.mor = None
         self.c_num = 0
         self.tabs = []
@@ -163,11 +164,12 @@ class Task(QWidget):
                                                     'Задача/чат', 'Статус'])
             self.tabWidget.addTab(self.tabs[i], rowTitles[i])
         for i in range(task_row):
-            _, _, self.sn, self.startdate, self.enddate, _, _ =\
+            _, bind, _, self.sn, self.startdate, self.enddate, _, _ =\
                 cur.execute('''SELECT * FROM tasks WHERE id = ?''', str(i)).fetchall()[0]
             self.startdate = QDate.fromString(self.startdate, "dd/MM/yyyy")
             self.enddate = QDate.fromString(self.enddate, "dd/MM/yyyy")
-            self.addTask()
+            if bind == self.id:
+                self.addTask()
 
     def addTask(self):
         self.c_num = self.tabWidget.currentIndex()
@@ -213,9 +215,9 @@ class Task(QWidget):
                         str(self.dts[j][i].date().year())
                     b = str(self.dtss[j][i].date().day()) + '/' + str(self.dtss[j][i].date().month()) + '/' +\
                         str(self.dtss[j][i].date().year())
-                    bablo = [(str(i), self.name + ' ' + str(j), self.cbs[j][i].currentText(),
+                    bablo = [(None, str(self.id), str(j), self.cbs[j][i].currentText(),
                               a, b, '', '')]
-                    cur.executemany("""INSERT INTO tasks VALUES (?,?,?,?,?,?,?)""", bablo)
+                    cur.executemany("""INSERT INTO tasks VALUES (?,?,?,?,?,?,?,?)""", bablo)
                     con.commit()
             except:
                 pass
@@ -320,9 +322,10 @@ class Kanbaner(QMainWindow):
 
     def open(self):
         if [x.row() for x in self.tw.selectedIndexes()]:
+            pos = int(str([x.row() for x in self.tw.selectedIndexes()])[1])
             self.task = Task(self.rowTitles[int(str([x.row() for x in self.tw.selectedIndexes()])[1])],
                              cur.execute('''SELECT title FROM kanban WHERE id = ?''',
-                                         [(str(self.id))]).fetchall()[0][0])
+                                         [(str(self.id - pos))]).fetchall()[0][0], self.id - pos)
             self.task.show()
 
     def cash(self):

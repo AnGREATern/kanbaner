@@ -208,6 +208,7 @@ class Task(QWidget):
                 self.tabs[self.c_num].setCellWidget(0, 2, self.dtss[self.c_num][self.rowNum])
                 self.tabs[self.c_num].setCellWidget(0, 3, self.pbs[self.c_num][self.rowNum])
                 self.tabs[self.c_num].setCellWidget(0, 4, self.cbss[self.c_num][self.rowNum])
+                self.dlina_kalumny[self.c_num] += 1
 
     def addTask(self):
         self.c_num = self.tabWidget.currentIndex()
@@ -224,7 +225,6 @@ class Task(QWidget):
         self.pbs[self.c_num].append(self.pb_more)
         self.cbss[self.c_num].append(QComboBox())
         self.cbss[self.c_num][-1].addItems(self.status)
-        self.dlina_kalumny[self.c_num] += 1
         self.tabs[self.c_num].setCellWidget(0, 0, self.cbs[self.c_num][self.rowNum])
         self.tabs[self.c_num].setCellWidget(0, 1, self.dts[self.c_num][self.rowNum])
         self.tabs[self.c_num].setCellWidget(0, 2, self.dtss[self.c_num][self.rowNum])

@@ -60,6 +60,8 @@ class Graphics(QWidget):
         uic.loadUi('graphics.ui', self)
         isp1 = str(cur.execute('''SELECT SN FROM main''').fetchall())[3:-4].split("',), ('")
         ispT = [1 for i in range(len(isp1))]
+        for i in range(len(isp1)):
+            isp1[i] = isp1[i].split()[0] + ' ' + isp1[i].split()[1][0] + '.'
         print(isp1[0], ispT)
         m = PlotCanvas(self, width=50, height=4, isp=isp1)
         m1 = PlotCanvas(self, width=50, height=4, isp=isp1)
@@ -70,7 +72,7 @@ class Graphics(QWidget):
 
 
 class PlotCanvas(FigureCanvas):
-    def __init__(self, ispT=0, parent=None, width=5, height=4, isp=None, dpi=50):
+    def __init__(self, ispT=0, parent=None, width=5, height=4, isp=None, dpi=80):
         if isp is None:
             isp = []
         fig = Figure(figsize=(width, height), dpi=dpi)
@@ -218,6 +220,8 @@ class Task(QWidget):
                     con.commit()
             except:
                 pass
+        self.close()
+        window.new.task.show()
 
 
 class Finance(QWidget):
@@ -307,7 +311,8 @@ class Kanbaner(QMainWindow):
             self.tw.clear()
             for i in range(self.id, 0, -1):
                 a, b, c, _ = str(cur.execute('''SELECT * FROM kanban WHERE id = ?''',
-                                             [str(i)]).fetchall())[6:-2].replace("'", '').split(', ')
+                                             [str(i)]).fetchall())[5:-2].replace("'", '').split(', ')
+                print(a, b, c)
                 self.tw.addTopLevelItem(QTreeWidgetItem([a, b, c]))
         else:
             del self.rowTitles[-1]

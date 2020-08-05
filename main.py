@@ -5,9 +5,9 @@ import sqlite3
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from PyQt5.QtCore import Qt, QDate
-from PyQt5.QtGui import QFont, QPalette, QColor, QBrush
+from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QTableWidgetItem, QTreeWidgetItem, QPushButton, \
-    QComboBox, QTableWidget, QDateTimeEdit, QSizePolicy, QDateEdit, QLabel
+    QComboBox, QTableWidget, QSizePolicy, QDateEdit
 from PyQt5 import uic, QtWidgets
 
 user = None
@@ -58,7 +58,6 @@ class Graphics(QWidget):
         super().__init__()
         uic.loadUi('graphics.ui', self)
         isp1 = str(cur.execute('''SELECT SN FROM main''').fetchall())[3:-4].split("',), ('")
-        ispT = [1 for i in range(len(isp1))]
         for i in range(len(isp1)):
             isp1[i] = isp1[i].split()[0] + ' ' + isp1[i].split()[1][0] + '.'
         m = PlotCanvas(self, width=50, height=4, isp=isp1)
@@ -87,7 +86,7 @@ class PlotCanvas(FigureCanvas):
         self.bar()
 
     def bar(self):
-        data = [random.random() for i in range(len(self.isp))]
+        data = [random.random() for _ in range(len(self.isp))]
         ax = self.figure.add_subplot(111)
         ax.bar(self.isp, data)
         ax.set_title('График с нагрузкой персонала')
@@ -132,13 +131,10 @@ class Task(QWidget):
         super().__init__()
         uic.loadUi('tasks.ui', self)
         self.setMouseTracking(True)
-        self.role = cur.execute(f'''SELECT admin FROM main WHERE SN="{user}"''').fetchall()[0][0]
-        if self.role == 'Admin':
-            self.pb_addT.clicked.connect(self.addTask)
-        else:
-            self.pb_addT.setParent(None)
+        self.pb_addT.clicked.connect(self.addTask)
         self.pb_reboot.clicked.connect(self.reboot)
         self.name = name
+        self.poz = -1
         self.id = id
         self.mor = None
         self.c_num = 0
@@ -146,12 +142,8 @@ class Task(QWidget):
         self.rowNum = None
         self.pb_more = None
         self.ispolniteli = []  # Переменная хранящая всех сотрудников
-        self.rT = rowTitles[:]
-        if self.role == 'Admin':
-            self.rT.extend(['Удалить', 'Обновить'])
-        elif self.role == 'Edit':
-            self.rT.extend(['Обновить'])
-        self.status = self.rT
+        self.status = ['', 'Удалить', 'Обновить']
+        self.status.extend(rowTitles)
         # В двумерных списках помещены параметры задач, например self.cbs[Номер вкладки][Номер задачи](с нуля)
         self.cbs = [[] for _ in range(len(rowTitles))]  # combobox с исполнителями
         for i in range(len(cur.execute('''SELECT id FROM main''').fetchall())):
@@ -160,6 +152,7 @@ class Task(QWidget):
         self.dtss = [[] for _ in range(len(rowTitles))]  # Время конца
         self.pbs = [[] for _ in range(len(rowTitles))]  # Кнопка подробнее
         self.cbss = [[] for _ in range(len(rowTitles))]  # combobox со статусом
+        self.dlina_kalumny = [-1 for _ in range(len(rowTitles))]
         for i in range(len(rowTitles)):
             self.tabs.append(QTableWidget(self))
             self.tabs[i].setFont(QFont('Segoe UI', 12))
@@ -171,10 +164,9 @@ class Task(QWidget):
                                                     'Задача/чат', 'Статус'])
             self.tabWidget.addTab(self.tabs[i], rowTitles[i])
         for i in range(task_row):
-            _, bind, _, self.sn, self.startdate, self.enddate, _, _ =\
+            _, bind, row, self.position, self.sn, self.startdate, self.enddate, _, _ =\
                 cur.execute('''SELECT * FROM tasks WHERE id = ?''', str(i)).fetchall()[0]
             if bind == self.id:
-                print(self.startdate)
                 if len(self.startdate) != 10:
                     if self.startdate[6] == '.':
                         self.startdate = self.startdate[:5] + '0' + self.startdate[5:]
@@ -185,31 +177,28 @@ class Task(QWidget):
                         self.enddate = self.enddate[:5] + '0' + self.enddate[5:]
                     if len(self.enddate) != 10:
                         self.enddate = self.enddate[:-1] + '0' + self.enddate[-1]
-                print(1)
                 self.startdate1 = QDate.fromString(self.startdate, "yyyy.MM.dd")
                 self.enddate1 = QDate.fromString(self.enddate, "yyyy.MM.dd")
-                self.c_num = self.tabWidget.currentIndex()
+                self.c_num = row
                 self.rowNum = self.tabs[self.c_num].rowCount()
                 if self.rowNum != 0:
                     self.tabs[self.c_num].insertRow(0)
                 else:
                     self.tabs[self.c_num].setRowCount(1)
-                if self.role in ['Admin', 'Edit']:
-                    self.cbs[self.c_num].append(QComboBox())
-                    self.cbs[self.c_num][-1].addItems(self.ispolniteli)
+                self.cbs[self.c_num].append(QComboBox())
+                self.cbs[self.c_num][-1].addItems(self.ispolniteli)
+                try:
                     self.cbs[self.c_num][-1].setCurrentIndex(self.ispolniteli.index(self.sn))
                     self.sn = None
-                else:
-                    self.cbs[self.c_num].append(QLabel(self.sn))
-                    self.sn = None
+                except:
+                    pass
                 self.dts[self.c_num].append(QDateEdit())
                 self.dtss[self.c_num].append(QDateEdit())
-                self.dts[self.c_num][self.rowNum].setDate(self.startdate1)  # Работать ЗДЕСЬ
-                self.dtss[self.c_num][self.rowNum].setDate(self.enddate1)
-
-                if self.role == 'False':
-                    self.dts[self.c_num][self.rowNum].setReadOnly(True)
-                    self.dtss[self.c_num][self.rowNum].setReadOnly(True)
+                try:
+                    self.dts[self.c_num][self.rowNum].setDate(self.startdate1)
+                    self.dtss[self.c_num][self.rowNum].setDate(self.enddate1)
+                except:
+                    pass
                 self.pb_more = QPushButton('Подробнее')
                 self.pbs[self.c_num].append(self.pb_more)
                 self.cbss[self.c_num].append(QComboBox())
@@ -219,10 +208,12 @@ class Task(QWidget):
                 self.tabs[self.c_num].setCellWidget(0, 2, self.dtss[self.c_num][self.rowNum])
                 self.tabs[self.c_num].setCellWidget(0, 3, self.pbs[self.c_num][self.rowNum])
                 self.tabs[self.c_num].setCellWidget(0, 4, self.cbss[self.c_num][self.rowNum])
+                self.dlina_kalumny[self.c_num] += 1
 
     def addTask(self):
         self.c_num = self.tabWidget.currentIndex()
         self.rowNum = self.tabs[self.c_num].rowCount()
+        self.poz += 1
         if self.rowNum != 0:
             self.tabs[self.c_num].insertRow(0)
         else:
@@ -247,19 +238,47 @@ class Task(QWidget):
         self.mor.show()
 
     def reboot(self):
+        global con, cur, task_row
         for j in range(len(self.tabs)):
             try:
-                for i in range(self.rowNum, -1, -1):
+                for i in range(self.tabs[self.tabWidget.currentIndex()].rowCount() - 1, self.dlina_kalumny[j], -1):
                     a = str(self.dts[j][i].date().year()) + '.' + str(self.dts[j][i].date().month()) + '.' +\
                         str(self.dts[j][i].date().day())
                     b = str(self.dtss[j][i].date().year()) + '.' + str(self.dtss[j][i].date().month()) + '.' +\
                         str(self.dtss[j][i].date().day())
-                    bablo = [(None, str(self.id), str(j), self.cbs[j][i].currentText(),
-                              a, b, '', '')]
-                    cur.executemany("""INSERT INTO tasks VALUES (?,?,?,?,?,?,?,?)""", bablo)
+                    bablo = [(task_row, str(self.id), str(j),
+                              self.tabs[self.tabWidget.currentIndex()].rowCount() - 1 - self.poz,
+                              self.cbs[j][i].currentText(), a, b, '', '')]
+                    cur.executemany("""INSERT INTO tasks VALUES (?,?,?,?,?,?,?,?,?)""", bablo)
                     con.commit()
+                    self.dlina_kalumny[j] -= 1
+                    self.poz -= 1
+                    task_row += 1
             except:
                 pass
+        try:
+            for i in range(self.tabWidget.currentIndex() + 1):
+                for j in range(self.tabs[i].rowCount() + 1):
+                    if self.cbss[i][j].currentText() == 'Удалить':
+                        kapcha = 0
+                        y, bind, row, positioning, _, _, _, _, _ =\
+                            cur.execute('''SELECT * FROM tasks WHERE row = ? AND positioning = ?''',
+                                        (str(i), str(j))).fetchall()[0]
+                        cur.execute("DELETE FROM tasks WHERE id = ?", [(str(y))])
+                        con.commit()
+                        for h in range(y, task_row):
+                            cur.execute("""UPDATE tasks SET positioning = ? WHERE row = ? AND bind = ? AND id = ?""",
+                                        (str(positioning + kapcha), str(row), str(bind), str(h + 1)))
+                            cur.execute("""UPDATE tasks SET id = ? WHERE id = ?""", [str(h), str(h + 1)])
+                            con.commit()
+                            kapcha += 1
+
+                        task_row -= 1
+                        self.poz -= 1
+                        self.dlina_kalumny[j - 1] -= 1
+                        self.tabs[i].removeRow(self.tabs[self.tabWidget.currentIndex()].rowCount() - 1 - j)
+        except:
+            pass
         self.close()
         window.new.task.show()
 
@@ -300,20 +319,13 @@ class Kanbaner(QMainWindow):
     def __init__(self):
         super().__init__()
         uic.loadUi('main.ui', self)
-        self.role = cur.execute(f'''SELECT admin FROM main WHERE SN="{user}"''').fetchall()[0][0]
         self.label.setText(user)
-        if self.role == 'Admin':
-            self.pb_create.clicked.connect(self.creater)
-            self.pb_delete.clicked.connect(self.delete)
-            self.pb_finance.clicked.connect(self.cash)
-            self.pb_graph.clicked.connect(self.graphics)
-        else:
-            self.pb_create.setParent(None)
-            self.pb_finance.setParent(None)
-            self.pb_delete.setParent(None)
-            self.pb_graph.setParent(None)
+        self.pb_create.clicked.connect(self.creater)
         self.pb_open.clicked.connect(self.open)
+        self.pb_delete.clicked.connect(self.delete)
         self.pb_login.clicked.connect(self.exit)
+        self.pb_finance.clicked.connect(self.cash)
+        self.pb_graph.clicked.connect(self.graphics)
         self.title = ''
         self.rowTitlesBad = []
         self.rowTitles = []
@@ -324,6 +336,7 @@ class Kanbaner(QMainWindow):
             self.rowTitles.append(d.split())
             self.tw.addTopLevelItem(QTreeWidgetItem([a, b, c]))
         self.dz = '-'
+        self.gr = None
         self.crew = None
         self.new = None
         self.task = None
@@ -347,7 +360,6 @@ class Kanbaner(QMainWindow):
         self.rowTitles.insert(0, [])
         for i in self.rowTitlesBad:
             if i:
-                print(self.rowTitles)
                 self.rowTitles[0].append(i)
         if len(self.rowTitles[0]) > 1:
             self.id += 1
@@ -414,3 +426,5 @@ app = QApplication(sys.argv)
 window = Enter()
 window.show()
 app.exec_()
+cur.close()
+con.close()

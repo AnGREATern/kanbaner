@@ -2,7 +2,6 @@ import datetime
 import random
 import sys
 import sqlite3
-
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from PyQt5.QtCore import Qt, QDate

@@ -4,11 +4,12 @@ import sys
 import sqlite3
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-from PyQt5.QtCore import Qt, QDate
-from PyQt5.QtGui import QFont
+from PyQt5.QtCore import Qt, QDate, QTimer, QSize
+from PyQt5.QtGui import QFont, QIcon
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QTableWidgetItem, QTreeWidgetItem, QPushButton, \
-    QComboBox, QTableWidget, QSizePolicy, QDateEdit, QLabel
+    QComboBox, QTableWidget, QSizePolicy, QDateEdit, QLabel, QDesktopWidget
 from PyQt5 import uic, QtWidgets
+from win32api import GetSystemMetrics
 
 user = None
 con = sqlite3.connect('personal.db')
@@ -367,14 +368,39 @@ class Finance(QWidget):
                 pass
 
 
+class Push(QWidget):
+    def __init__(self):
+        super().__init__()
+        uic.loadUi('push.ui', self)
+        q = QDesktopWidget().availableGeometry()
+        self.move(q.width() - 680, q.height() - 250)
+        self.setWindowFlags(Qt.FramelessWindowHint)
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.closeTime)
+        self.timer.start(10000)
+
+    def closeTime(self):
+        print(1)
+        self.close()
+
+
+class AllPush(QWidget):
+    def __init__(self):
+        super().__init__()
+        uic.loadUi('allPush.ui', self)
+
+
 class Kanbaner(QMainWindow):
     global user, con, cur
 
     def __init__(self):
         super().__init__()
         uic.loadUi('main.ui', self)
+        self.pb_allPush.setIcon(QIcon('bell.ico'))
+        self.pb_allPush.setIconSize(QSize(40, 40))
         self.role = cur.execute(f'''SELECT admin FROM main WHERE SN="{user}"''').fetchall()[0][0]
         self.label.setText(user)
+        self.showPush()
         if self.role == 'Admin':
             self.pb_create.clicked.connect(self.creater)
             self.pb_delete.clicked.connect(self.delete)
@@ -387,6 +413,7 @@ class Kanbaner(QMainWindow):
             self.pb_graph.setParent(None)
         self.pb_open.clicked.connect(self.open)
         self.pb_login.clicked.connect(self.exit)
+        self.pb_allPush.clicked.connect(self.showAllPush)
         self.title = ''
         self.rowTitlesBad = []
         self.rowTitles = []
@@ -403,6 +430,14 @@ class Kanbaner(QMainWindow):
         self.task = None
         self.enter = None
         self.finance = None
+
+    def showAllPush(self):
+        self.allPush = AllPush()
+        self.allPush.show()
+
+    def showPush(self):
+        self.push = Push()
+        self.push.show()
 
     def creater(self):
         self.new = New()

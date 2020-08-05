@@ -13,6 +13,7 @@ from PyQt5 import uic, QtWidgets
 user = None
 con = sqlite3.connect('personal.db')
 cur = con.cursor()
+task_index = 0
 table_row = len(cur.execute('''SELECT id FROM finance''').fetchall()) + 1
 task_row = len(cur.execute('''SELECT id FROM tasks''').fetchall())
 
@@ -125,7 +126,7 @@ class More(QWidget):
 
 
 class Task(QWidget):
-    global con, cur, task_row
+    global con, cur, task_row, task_index
 
     def __init__(self, rowTitles, name, id):
         super().__init__()
@@ -138,7 +139,7 @@ class Task(QWidget):
             self.pb_addT.setParent(None)
         self.pb_reboot.clicked.connect(self.reboot)
         self.name = name
-        self.poz = -1
+        self.poz = [-1 for _ in range(len(rowTitles))]
         self.id = id
         self.mor = None
         self.c_num = 0
@@ -146,11 +147,12 @@ class Task(QWidget):
         self.rowNum = None
         self.pb_more = None
         self.ispolniteli = []  # Переменная хранящая всех сотрудников
+        self.statusbezadmina = rowTitles.copy()
         self.rT = rowTitles[:]
         if self.role == 'Admin':
-            self.rT.extend(['Удалить', 'Обновить'])
-        elif self.role == 'Edit':
-            self.rT.extend(['Обновить'])
+            self.rT.extend(['%Удалить%', '%Обновить%'])
+        elif self.role == 'Editor':
+            self.rT.extend(['%Обновить%'])
         self.status = self.rT
         # В двумерных списках помещены параметры задач, например self.cbs[Номер вкладки][Номер задачи](с нуля)
         self.cbs = [[] for _ in range(len(rowTitles))]  # combobox с исполнителями
@@ -193,7 +195,7 @@ class Task(QWidget):
                     self.tabs[self.c_num].insertRow(0)
                 else:
                     self.tabs[self.c_num].setRowCount(1)
-                if self.role in ['Admin', 'Edit']:
+                if self.role in ['Admin', 'Editor']:
                     self.cbs[self.c_num].append(QComboBox())
                     self.cbs[self.c_num][-1].addItems(self.ispolniteli)
                     self.cbs[self.c_num][-1].setCurrentIndex(self.ispolniteli.index(self.sn))
@@ -205,7 +207,6 @@ class Task(QWidget):
                 self.dtss[self.c_num].append(QDateEdit())
                 self.dts[self.c_num][self.rowNum].setDate(self.startdate1)  # Работать ЗДЕСЬ
                 self.dtss[self.c_num][self.rowNum].setDate(self.enddate1)
-
                 if self.role == 'False':
                     self.dts[self.c_num][self.rowNum].setReadOnly(True)
                     self.dtss[self.c_num][self.rowNum].setReadOnly(True)
@@ -213,17 +214,19 @@ class Task(QWidget):
                 self.pbs[self.c_num].append(self.pb_more)
                 self.cbss[self.c_num].append(QComboBox())
                 self.cbss[self.c_num][-1].addItems(self.status)
+                self.cbss[self.c_num][-1].setCurrentIndex(self.c_num)
                 self.tabs[self.c_num].setCellWidget(0, 0, self.cbs[self.c_num][self.rowNum])
                 self.tabs[self.c_num].setCellWidget(0, 1, self.dts[self.c_num][self.rowNum])
                 self.tabs[self.c_num].setCellWidget(0, 2, self.dtss[self.c_num][self.rowNum])
                 self.tabs[self.c_num].setCellWidget(0, 3, self.pbs[self.c_num][self.rowNum])
                 self.tabs[self.c_num].setCellWidget(0, 4, self.cbss[self.c_num][self.rowNum])
                 self.dlina_kalumny[self.c_num] += 1
+        self.tabWidget.setCurrentIndex(task_index)
 
     def addTask(self):
         self.c_num = self.tabWidget.currentIndex()
         self.rowNum = self.tabs[self.c_num].rowCount()
-        self.poz += 1
+        self.poz[self.c_num] += 1
         if self.rowNum != 0:
             self.tabs[self.c_num].insertRow(0)
         else:
@@ -236,6 +239,7 @@ class Task(QWidget):
         self.pbs[self.c_num].append(self.pb_more)
         self.cbss[self.c_num].append(QComboBox())
         self.cbss[self.c_num][-1].addItems(self.status)
+        self.cbss[self.c_num][-1].setCurrentIndex(self.c_num)
         self.tabs[self.c_num].setCellWidget(0, 0, self.cbs[self.c_num][self.rowNum])
         self.tabs[self.c_num].setCellWidget(0, 1, self.dts[self.c_num][self.rowNum])
         self.tabs[self.c_num].setCellWidget(0, 2, self.dtss[self.c_num][self.rowNum])
@@ -248,7 +252,7 @@ class Task(QWidget):
         self.mor.show()
 
     def reboot(self):
-        global con, cur, task_row
+        global con, cur, task_row, task_index
         for j in range(len(self.tabs)):
             try:
                 for i in range(self.tabs[self.tabWidget.currentIndex()].rowCount() - 1, self.dlina_kalumny[j], -1):
@@ -257,36 +261,78 @@ class Task(QWidget):
                     b = str(self.dtss[j][i].date().year()) + '.' + str(self.dtss[j][i].date().month()) + '.' +\
                         str(self.dtss[j][i].date().day())
                     bablo = [(task_row, str(self.id), str(j),
-                              self.tabs[self.tabWidget.currentIndex()].rowCount() - 1 - self.poz,
+                              self.tabs[self.tabWidget.currentIndex()].rowCount() - 1 - self.poz[j],
                               self.cbs[j][i].currentText(), a, b, '', '')]
                     cur.executemany("""INSERT INTO tasks VALUES (?,?,?,?,?,?,?,?,?)""", bablo)
                     con.commit()
                     self.dlina_kalumny[j] += 1
-                    self.poz -= 1
+                    self.poz[j] -= 1
                     task_row += 1
             except:
                 pass
         try:
-            for i in range(self.tabWidget.currentIndex() + 1):
-                for j in range(self.tabs[i].rowCount() - 1, -1, -1):
-                    if self.cbss[i][j].currentText() == 'Удалить':
-                        kapcha = 0
-                        y, bind, row, positioning, _, _, _, _, _ =\
-                            cur.execute('''SELECT * FROM tasks WHERE row = ? AND positioning = ?''',
-                                        (str(i), str(j))).fetchall()[0]
-                        cur.execute("DELETE FROM tasks WHERE id = ?", [(str(y))])
+            i = self.tabWidget.currentIndex()
+            for j in range(self.tabs[i].rowCount() - 1, -1, -1):
+                if self.cbss[i][j].currentText() == '%Удалить%':
+                    kapcha = 0
+                    y, bind, row, positioning, _, _, _, _, _ =\
+                        cur.execute('''SELECT * FROM tasks WHERE row = ? AND positioning = ?''',
+                                    (str(i), str(j))).fetchall()[0]
+                    cur.execute("DELETE FROM tasks WHERE id = ?", [(str(y))])
+                    con.commit()
+                    for h in range(y, task_row):
+                        cur.execute("""UPDATE tasks SET positioning = ? WHERE row = ? AND bind = ? AND id = ?""",
+                                    (str(positioning + kapcha), str(row), str(bind), str(h + 1)))
+                        cur.execute("""UPDATE tasks SET id = ? WHERE id = ? AND bind = ?""",
+                                    [str(h), str(h + 1), str(bind)])
                         con.commit()
-                        for h in range(y, task_row):
-                            cur.execute("""UPDATE tasks SET positioning = ? WHERE row = ? AND bind = ? AND id = ?""",
-                                        (str(positioning + kapcha), str(row), str(bind), str(h + 1)))
-                            cur.execute("""UPDATE tasks SET id = ? WHERE id = ?""", [str(h), str(h + 1)])
-                            con.commit()
-                            kapcha += 1
-                        self.tabs[i].removeRow(self.dlina_kalumny[i] - j)
-                        task_row -= 1
-                        self.dlina_kalumny[i] -= 1
+                        kapcha += 1
+                    self.tabs[i].removeRow(self.dlina_kalumny[i] - j)
+                    task_row -= 1
+                    self.dlina_kalumny[i] -= 1
+                elif self.cbss[i][j].currentText() == '%Обновить%':
+                    a = str(self.dts[i][j].date().year()) + '.' + str(self.dts[i][j].date().month()) + '.' + \
+                        str(self.dts[i][j].date().day())
+                    b = str(self.dtss[i][j].date().year()) + '.' + str(self.dtss[i][j].date().month()) + '.' + \
+                        str(self.dtss[i][j].date().day())
+                    cur.execute("""UPDATE tasks SET startdate = ? WHERE row = ? AND positioning = ? AND bind = ?""",
+                                [a, str(i), str(j), str(self.id)])
+                    cur.execute("""UPDATE tasks SET enddate = ? WHERE row = ? AND positioning = ? AND bind = ?""",
+                                [b, str(i), str(j), str(self.id)])
+                    cur.execute("""UPDATE tasks SET ispoln = ? WHERE row = ? AND positioning = ? AND bind = ?""",
+                                [self.cbs[i][j].currentText(), str(i), str(j), str(self.id)])
+                    con.commit()
+                elif self.cbss[i][j].currentText()\
+                        in self.statusbezadmina and not\
+                        self.cbss[i][j].currentText() in self.tabWidget.tabText(i):
+                    tab = self.statusbezadmina.index(self.cbss[i][j].currentText())
+                    kapcha = 0
+                    y, bind, row, positioning, c, a, b, _, _ = \
+                        cur.execute('''SELECT * FROM tasks WHERE row = ? AND positioning = ?''',
+                                    (str(i), str(j))).fetchall()[0]
+                    cur.execute("DELETE FROM tasks WHERE id = ?", [(str(y))])
+                    con.commit()
+                    for h in range(y, task_row):
+                        cur.execute("""UPDATE tasks SET positioning = ? WHERE row = ? AND bind = ? AND id = ?""",
+                                    (str(positioning + kapcha), str(row), str(bind), str(h + 1)))
+                        cur.execute("""UPDATE tasks SET id = ? WHERE id = ? AND bind = ?""",
+                                    [str(h), str(h + 1), str(bind)])
+                        con.commit()
+                        kapcha += 1
+                    self.tabs[i].removeRow(self.dlina_kalumny[i] - j)
+                    task_row -= 1
+                    self.dlina_kalumny[i] -= 1
+
+                    bablo = [(str(task_row), str(bind), str(tab), str(self.tabs[tab].rowCount() - 1 - self.poz[tab]), c,
+                              a, b, '', '')]
+                    cur.executemany("""INSERT INTO tasks VALUES (?,?,?,?,?,?,?,?,?)""", bablo)
+                    con.commit()
+                    self.dlina_kalumny[tab] += 1
+                    self.poz[tab] -= 1
+                    task_row += 1
         except:
-            pass
+            print('sasat')
+        task_index = self.tabWidget.currentIndex()
         self.close()
         window.new.open()
 

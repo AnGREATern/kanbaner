@@ -251,14 +251,14 @@ class Task(QWidget):
                               self.cbs[j][i].currentText(), a, b, '', '')]
                     cur.executemany("""INSERT INTO tasks VALUES (?,?,?,?,?,?,?,?,?)""", bablo)
                     con.commit()
-                    self.dlina_kalumny[j] -= 1
+                    self.dlina_kalumny[j] += 1
                     self.poz -= 1
                     task_row += 1
             except:
                 pass
         try:
             for i in range(self.tabWidget.currentIndex() + 1):
-                for j in range(self.tabs[i].rowCount() + 1):
+                for j in range(self.tabs[i].rowCount() - 1, -1, -1):
                     if self.cbss[i][j].currentText() == 'Удалить':
                         kapcha = 0
                         y, bind, row, positioning, _, _, _, _, _ =\
@@ -272,15 +272,13 @@ class Task(QWidget):
                             cur.execute("""UPDATE tasks SET id = ? WHERE id = ?""", [str(h), str(h + 1)])
                             con.commit()
                             kapcha += 1
-
+                        self.tabs[i].removeRow(self.dlina_kalumny[i] - j)
                         task_row -= 1
-                        self.poz -= 1
-                        self.dlina_kalumny[j - 1] -= 1
-                        self.tabs[i].removeRow(self.tabs[self.tabWidget.currentIndex()].rowCount() - 1 - j)
+                        self.dlina_kalumny[i] -= 1
         except:
             pass
         self.close()
-        window.new.task.show()
+        window.new.open()
 
 
 class Finance(QWidget):

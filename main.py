@@ -6,9 +6,9 @@ import sqlite3
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from PyQt5.QtCore import Qt, QDate
-from PyQt5.QtGui import QFont, QPalette, QColor, QBrush
+from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QTableWidgetItem, QTreeWidgetItem, QPushButton, \
-    QComboBox, QTableWidget, QDateTimeEdit, QSizePolicy, QDateEdit, QLabel
+    QComboBox, QTableWidget, QSizePolicy, QDateEdit
 from PyQt5 import uic, QtWidgets
 
 user = None
@@ -132,11 +132,7 @@ class Task(QWidget):
         super().__init__()
         uic.loadUi('tasks.ui', self)
         self.setMouseTracking(True)
-        self.role = cur.execute(f'''SELECT admin FROM main WHERE SN="{user}"''').fetchall()[0][0]
-        if self.role == 'Admin':
-            self.pb_addT.clicked.connect(self.addTask)
-        else:
-            self.pb_addT.setParent(None)
+        self.pb_addT.clicked.connect(self.addTask)
         self.pb_reboot.clicked.connect(self.reboot)
         self.name = name
         self.poz = -1
@@ -157,6 +153,7 @@ class Task(QWidget):
         self.dtss = [[] for _ in range(len(rowTitles))]  # Время конца
         self.pbs = [[] for _ in range(len(rowTitles))]  # Кнопка подробнее
         self.cbss = [[] for _ in range(len(rowTitles))]  # combobox со статусом
+        self.dlina_kalumny = [-1 for _ in range(len(rowTitles))]
         for i in range(len(rowTitles)):
             self.tabs.append(QTableWidget(self))
             self.tabs[i].setFont(QFont('Segoe UI', 12))
@@ -183,28 +180,26 @@ class Task(QWidget):
                         self.enddate = self.enddate[:-1] + '0' + self.enddate[-1]
                 self.startdate1 = QDate.fromString(self.startdate, "yyyy.MM.dd")
                 self.enddate1 = QDate.fromString(self.enddate, "yyyy.MM.dd")
-                self.c_num = self.tabWidget.currentIndex()
+                self.c_num = row
                 self.rowNum = self.tabs[self.c_num].rowCount()
                 if self.rowNum != 0:
                     self.tabs[self.c_num].insertRow(0)
                 else:
                     self.tabs[self.c_num].setRowCount(1)
-                if self.role in ['Admin', 'Edit']:
-                    self.cbs[self.c_num].append(QComboBox())
-                    self.cbs[self.c_num][-1].addItems(self.ispolniteli)
+                self.cbs[self.c_num].append(QComboBox())
+                self.cbs[self.c_num][-1].addItems(self.ispolniteli)
+                try:
                     self.cbs[self.c_num][-1].setCurrentIndex(self.ispolniteli.index(self.sn))
                     self.sn = None
-                else:
-                    self.cbs[self.c_num].append(QLabel(self.sn))
-                    self.sn = None
+                except:
+                    pass
                 self.dts[self.c_num].append(QDateEdit())
                 self.dtss[self.c_num].append(QDateEdit())
-                self.dts[self.c_num][self.rowNum].setDate(self.startdate1)  # Работать ЗДЕСЬ
-                self.dtss[self.c_num][self.rowNum].setDate(self.enddate1)
-
-                if self.role == 'False':
-                    self.dts[self.c_num][self.rowNum].setReadOnly(True)
-                    self.dtss[self.c_num][self.rowNum].setReadOnly(True)
+                try:
+                    self.dts[self.c_num][self.rowNum].setDate(self.startdate1)
+                    self.dtss[self.c_num][self.rowNum].setDate(self.enddate1)
+                except:
+                    pass
                 self.pb_more = QPushButton('Подробнее')
                 self.pbs[self.c_num].append(self.pb_more)
                 self.cbss[self.c_num].append(QComboBox())
@@ -325,20 +320,13 @@ class Kanbaner(QMainWindow):
     def __init__(self):
         super().__init__()
         uic.loadUi('main.ui', self)
-        self.role = cur.execute(f'''SELECT admin FROM main WHERE SN="{user}"''').fetchall()[0][0]
         self.label.setText(user)
-        if self.role == 'Admin':
-            self.pb_create.clicked.connect(self.creater)
-            self.pb_delete.clicked.connect(self.delete)
-            self.pb_finance.clicked.connect(self.cash)
-            self.pb_graph.clicked.connect(self.graphics)
-        else:
-            self.pb_create.setParent(None)
-            self.pb_finance.setParent(None)
-            self.pb_delete.setParent(None)
-            self.pb_graph.setParent(None)
+        self.pb_create.clicked.connect(self.creater)
         self.pb_open.clicked.connect(self.open)
+        self.pb_delete.clicked.connect(self.delete)
         self.pb_login.clicked.connect(self.exit)
+        self.pb_finance.clicked.connect(self.cash)
+        self.pb_graph.clicked.connect(self.graphics)
         self.title = ''
         self.rowTitlesBad = []
         self.rowTitles = []

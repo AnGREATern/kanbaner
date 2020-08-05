@@ -139,6 +139,7 @@ class Task(QWidget):
             self.pb_addT.setParent(None)
         self.pb_reboot.clicked.connect(self.reboot)
         self.name = name
+        self.poz = -1
         self.id = id
         self.mor = None
         self.c_num = 0
@@ -167,10 +168,9 @@ class Task(QWidget):
                                                     'Задача/чат', 'Статус'])
             self.tabWidget.addTab(self.tabs[i], rowTitles[i])
         for i in range(task_row):
-            _, bind, _, self.sn, self.startdate, self.enddate, _, _ =\
+            _, bind, row, self.position, self.sn, self.startdate, self.enddate, _, _ =\
                 cur.execute('''SELECT * FROM tasks WHERE id = ?''', str(i)).fetchall()[0]
             if bind == self.id:
-                print(self.startdate)
                 if len(self.startdate) != 10:
                     if self.startdate[6] == '.':
                         self.startdate = self.startdate[:5] + '0' + self.startdate[5:]
@@ -219,6 +219,7 @@ class Task(QWidget):
     def addTask(self):
         self.c_num = self.tabWidget.currentIndex()
         self.rowNum = self.tabs[self.c_num].rowCount()
+        self.poz += 1
         if self.rowNum != 0:
             self.tabs[self.c_num].insertRow(0)
         else:
@@ -246,18 +247,44 @@ class Task(QWidget):
         global con, cur, task_row
         for j in range(len(self.tabs)):
             try:
-                for i in range(self.rowNum, self.dlina_kalumny[j], -1):
+                for i in range(self.tabs[self.tabWidget.currentIndex()].rowCount() - 1, self.dlina_kalumny[j], -1):
                     a = str(self.dts[j][i].date().year()) + '.' + str(self.dts[j][i].date().month()) + '.' +\
                         str(self.dts[j][i].date().day())
                     b = str(self.dtss[j][i].date().year()) + '.' + str(self.dtss[j][i].date().month()) + '.' +\
                         str(self.dtss[j][i].date().day())
-                    bablo = [(task_row, str(self.id), str(j), self.cbs[j][i].currentText(),
-                              a, b, '', '')]
-                    cur.executemany("""INSERT INTO tasks VALUES (?,?,?,?,?,?,?,?)""", bablo)
+                    bablo = [(task_row, str(self.id), str(j),
+                              self.tabs[self.tabWidget.currentIndex()].rowCount() - 1 - self.poz,
+                              self.cbs[j][i].currentText(), a, b, '', '')]
+                    cur.executemany("""INSERT INTO tasks VALUES (?,?,?,?,?,?,?,?,?)""", bablo)
                     con.commit()
+                    self.dlina_kalumny[j] -= 1
+                    self.poz -= 1
                     task_row += 1
             except:
                 pass
+        try:
+            for i in range(self.tabWidget.currentIndex() + 1):
+                for j in range(self.tabs[i].rowCount() + 1):
+                    if self.cbss[i][j].currentText() == 'Удалить':
+                        kapcha = 0
+                        y, bind, row, positioning, _, _, _, _, _ =\
+                            cur.execute('''SELECT * FROM tasks WHERE row = ? AND positioning = ?''',
+                                        (str(i), str(j))).fetchall()[0]
+                        cur.execute("DELETE FROM tasks WHERE id = ?", [(str(y))])
+                        con.commit()
+                        for h in range(y, task_row):
+                            cur.execute("""UPDATE tasks SET positioning = ? WHERE row = ? AND bind = ? AND id = ?""",
+                                        (str(positioning + kapcha), str(row), str(bind), str(h + 1)))
+                            cur.execute("""UPDATE tasks SET id = ? WHERE id = ?""", [str(h), str(h + 1)])
+                            con.commit()
+                            kapcha += 1
+
+                        task_row -= 1
+                        self.poz -= 1
+                        self.dlina_kalumny[j - 1] -= 1
+                        self.tabs[i].removeRow(self.tabs[self.tabWidget.currentIndex()].rowCount() - 1 - j)
+        except:
+            pass
         self.close()
         window.new.task.show()
 

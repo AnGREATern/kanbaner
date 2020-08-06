@@ -276,16 +276,16 @@ class Task(QWidget):
             for j in range(self.tabs[i].rowCount() - 1, -1, -1):
                 if self.cbss[i][j].currentText() == '%Удалить%':
                     kapcha = 0
-                    y, bind, row, positioning, _, _, _, _, _ =\
-                        cur.execute('''SELECT * FROM tasks WHERE row = ? AND positioning = ?''',
-                                    (str(i), str(j))).fetchall()[0]
+                    y, bind, row, positioning, _, _, _, _, _ = \
+                        cur.execute('''SELECT * FROM tasks WHERE row = ? AND positioning = ? AND bind = ?''',
+                                    (str(i), str(j), str(self.id))).fetchall()[0]
                     cur.execute("DELETE FROM tasks WHERE id = ?", [(str(y))])
                     con.commit()
                     for h in range(y, task_row):
                         cur.execute("""UPDATE tasks SET positioning = ? WHERE row = ? AND bind = ? AND id = ?""",
                                     (str(positioning + kapcha), str(row), str(bind), str(h + 1)))
-                        cur.execute("""UPDATE tasks SET id = ? WHERE id = ? AND bind = ?""",
-                                    [str(h), str(h + 1), str(bind)])
+                        cur.execute("""UPDATE tasks SET id = ? WHERE id = ?""",
+                                    [str(h), str(h + 1)])
                         con.commit()
                         kapcha += 1
                     self.tabs[i].removeRow(self.dlina_kalumny[i] - j)
@@ -309,15 +309,15 @@ class Task(QWidget):
                     tab = self.statusbezadmina.index(self.cbss[i][j].currentText())
                     kapcha = 0
                     y, bind, row, positioning, c, a, b, _, _ = \
-                        cur.execute('''SELECT * FROM tasks WHERE row = ? AND positioning = ?''',
-                                    (str(i), str(j))).fetchall()[0]
+                        cur.execute('''SELECT * FROM tasks WHERE row = ? AND positioning = ? AND bind = ?''',
+                                    (str(i), str(j), str(self.id))).fetchall()[0]
                     cur.execute("DELETE FROM tasks WHERE id = ?", [(str(y))])
                     con.commit()
                     for h in range(y, task_row):
                         cur.execute("""UPDATE tasks SET positioning = ? WHERE row = ? AND bind = ? AND id = ?""",
                                     (str(positioning + kapcha), str(row), str(bind), str(h + 1)))
-                        cur.execute("""UPDATE tasks SET id = ? WHERE id = ? AND bind = ?""",
-                                    [str(h), str(h + 1), str(bind)])
+                        cur.execute("""UPDATE tasks SET id = ? WHERE id = ?""",
+                                    [str(h), str(h + 1)])
                         con.commit()
                         kapcha += 1
                     self.tabs[i].removeRow(self.dlina_kalumny[i] - j)
@@ -332,7 +332,7 @@ class Task(QWidget):
                     self.poz[tab] -= 1
                     task_row += 1
         except:
-            print('sasat')
+            print('sasatb')
         task_index = self.tabWidget.currentIndex()
         self.close()
         window.new.open()

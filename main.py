@@ -9,7 +9,6 @@ from PyQt5.QtGui import QFont, QIcon
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QTableWidgetItem, QTreeWidgetItem, QPushButton, \
     QComboBox, QTableWidget, QSizePolicy, QDateEdit, QLabel, QDesktopWidget
 from PyQt5 import uic, QtWidgets
-from win32api import GetSystemMetrics
 
 user = None
 con = sqlite3.connect('personal.db')
@@ -223,7 +222,6 @@ class Task(QWidget):
                 self.tabs[self.c_num].setCellWidget(0, 4, self.cbss[self.c_num][self.rowNum])
                 self.dlina_kalumny[self.c_num] += 1
         self.tabWidget.setCurrentIndex(task_index)
-        self.pb_more.clicked.connect(self.more)
 
     def addTask(self):
         self.c_num = self.tabWidget.currentIndex()

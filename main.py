@@ -176,7 +176,7 @@ class Task(QWidget):
             self.tabWidget.addTab(self.tabs[i], rowTitles[i])
         for i in range(task_row):
             _, bind, row, self.position, self.sn, self.startdate, self.enddate, _, _ =\
-                cur.execute('''SELECT * FROM tasks WHERE id = ?''', str(i)).fetchall()[0]
+                cur.execute('''SELECT * FROM tasks WHERE id = ?''', [(str(i))]).fetchall()[0]
             if bind == self.id:
                 if len(self.startdate) != 10:
                     if self.startdate[6] == '.':
@@ -206,7 +206,7 @@ class Task(QWidget):
                     self.sn = None
                 self.dts[self.c_num].append(QDateEdit())
                 self.dtss[self.c_num].append(QDateEdit())
-                self.dts[self.c_num][self.rowNum].setDate(self.startdate1)  # Работать ЗДЕСЬ
+                self.dts[self.c_num][self.rowNum].setDate(self.startdate1)
                 self.dtss[self.c_num][self.rowNum].setDate(self.enddate1)
                 if self.role == 'False':
                     self.dts[self.c_num][self.rowNum].setReadOnly(True)
@@ -223,6 +223,7 @@ class Task(QWidget):
                 self.tabs[self.c_num].setCellWidget(0, 4, self.cbss[self.c_num][self.rowNum])
                 self.dlina_kalumny[self.c_num] += 1
         self.tabWidget.setCurrentIndex(task_index)
+        self.pb_more.clicked.connect(self.more)
 
     def addTask(self):
         self.c_num = self.tabWidget.currentIndex()
@@ -246,7 +247,6 @@ class Task(QWidget):
         self.tabs[self.c_num].setCellWidget(0, 2, self.dtss[self.c_num][self.rowNum])
         self.tabs[self.c_num].setCellWidget(0, 3, self.pbs[self.c_num][self.rowNum])
         self.tabs[self.c_num].setCellWidget(0, 4, self.cbss[self.c_num][self.rowNum])
-        self.pb_more.clicked.connect(self.more)
 
     def more(self):
         self.mor = More()
@@ -337,6 +337,11 @@ class Task(QWidget):
         self.close()
         window.new.open()
 
+    def chat(self):
+        i = self.tabWidget.currentIndex()
+        for j in range(self.tabs[i].rowCount() - 1, -1, -1):
+            pass
+
 
 class Finance(QWidget):
     global table_row, con, cur
@@ -380,7 +385,6 @@ class Push(QWidget):
         self.timer.start(10000)
 
     def closeTime(self):
-        print(1)
         self.close()
 
 

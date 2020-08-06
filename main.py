@@ -4,7 +4,7 @@ import sys
 import sqlite3
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-from PyQt5.QtCore import Qt, QDate, QTimer, QSize
+from PyQt5.QtCore import Qt, QDate, QTimer, QSize, QEvent
 from PyQt5.QtGui import QFont, QIcon
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QTableWidgetItem, QTreeWidgetItem, QPushButton, \
     QComboBox, QTableWidget, QSizePolicy, QDateEdit, QLabel, QDesktopWidget
@@ -39,9 +39,12 @@ class Enter(QWidget):
             memory = open('memory.txt', 'w')
             memory.write(user)
             memory.close()
-            self.new = Kanbaner()
-            self.new.show()
-            self.close()
+            self.yyyy()
+
+    def yyyy(self):
+        self.new = Kanbaner()
+        self.new.show()
+        self.close()
 
     def keyPressEvent(self, event):
         if event.key() == 16777220:
@@ -331,9 +334,24 @@ class Task(QWidget):
                     task_row += 1
         except:
             print('sasatb')
+        for i in range(len(self.tabs)):
+            if self.tabs[i].rowCount() > 0:
+                cur.execute("""UPDATE kanban SET stage = ? WHERE id = ?""",
+                            [self.tabWidget.tabText(i), str(self.id)])
+                con.commit()
+                break
+            else:
+                cur.execute("""UPDATE kanban SET stage = ? WHERE id = ?""",
+                            [self.tabWidget.tabText(len(self.tabs) - 1), str(self.id)])
+                cur.execute("""UPDATE kanban SET end_date = ? WHERE id = ?""",
+                            [str(datetime.datetime.strftime(datetime.datetime.now(),
+                                                            "%Y.%m.%d %H:%M:%S")), str(self.id)])
+                con.commit()
+                break
         task_index = self.tabWidget.currentIndex()
         self.close()
         window.new.open()
+        window.new.reboot()
 
 
 class Finance(QWidget):
@@ -463,7 +481,6 @@ class Kanbaner(QMainWindow):
                                             [str(i)]).fetchall())[6:-2].replace("'", '').split(', ')
             self.rowTitles.append(d.split())
             self.tw.addTopLevelItem(QTreeWidgetItem([a, e, b, c]))
-        self.dz = '-'
         self.gr = None
         self.crew = None
         self.new = None
@@ -510,7 +527,7 @@ class Kanbaner(QMainWindow):
             cur.executemany("""INSERT INTO kanban VALUES (?,?,?,?,?,?)""",
                             [(self.id, self.title,
                              str(datetime.datetime.strftime(datetime.datetime.now(), "%Y.%m.%d %H:%M:%S")),
-                              self.dz, ' '.join(self.rowTitles[0]), self.rowTitles[0])])
+                              '-', ' '.join(self.rowTitles[0]), self.rowTitles[0][0])])
             con.commit()
             self.tw.clear()
             for i in range(self.id, 0, -1):
@@ -538,10 +555,13 @@ class Kanbaner(QMainWindow):
         if [x.row() for x in self.tw.selectedIndexes()]:
             pos = int(str([x.row() for x in self.tw.selectedIndexes()])[1])
             cur.execute("DELETE FROM kanban WHERE id = ?", [(str(self.id - pos))])
+            cur.execute("DELETE FROM tasks WHERE bind = ?", [(str(self.id - pos))])
             con.commit()
             for i in range(self.id - pos, self.id):
                 cur.execute("""UPDATE kanban SET id = ? WHERE id = ?""", [str(i), str(i + 1)])
                 con.commit()
+            cur.execute(f"""UPDATE tasks SET bind = '{str(self.id - pos - 1)}' WHERE bind > '{str(self.id - pos)}'""")
+            con.commit()
             self.id -= 1
             self.tw.takeTopLevelItem(pos)
             del self.rowTitles[pos]
@@ -559,6 +579,14 @@ class Kanbaner(QMainWindow):
             self.graphics()
         elif event.key() == Qt.Key_E and self.role == 'Admin':
             self.cash()
+
+    def reboot(self):
+        self.tw.clear()
+        for i in range(self.id, 0, -1):
+            a, b, c, d, e = str(cur.execute('''SELECT * FROM kanban WHERE id = ?''',
+                                            [str(i)]).fetchall())[6:-2].replace("'", '').split(', ')
+            self.rowTitles.append(d.split())
+            self.tw.addTopLevelItem(QTreeWidgetItem([a, e, b, c]))
 
     def exit(self):
         self.enter = Enter()

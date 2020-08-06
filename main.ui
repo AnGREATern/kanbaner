@@ -431,23 +431,52 @@
     </item>
     <item>
      <widget class="QTreeWidget" name="tw">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="baseSize">
+       <size>
+        <width>1000</width>
+        <height>608</height>
+       </size>
+      </property>
       <property name="font">
        <font>
         <pointsize>12</pointsize>
        </font>
       </property>
-      <property name="dragEnabled">
-       <bool>false</bool>
+      <property name="sizeAdjustPolicy">
+       <enum>QAbstractScrollArea::AdjustToContents</enum>
       </property>
+      <attribute name="headerCascadingSectionResizes">
+       <bool>false</bool>
+      </attribute>
       <attribute name="headerDefaultSectionSize">
-       <number>450</number>
+       <number>299</number>
+      </attribute>
+      <attribute name="headerHighlightSections">
+       <bool>true</bool>
       </attribute>
       <attribute name="headerMinimumSectionSize">
-       <number>49</number>
+       <number>20</number>
+      </attribute>
+      <attribute name="headerShowSortIndicator" stdset="0">
+       <bool>false</bool>
+      </attribute>
+      <attribute name="headerStretchLastSection">
+       <bool>true</bool>
       </attribute>
       <column>
        <property name="text">
         <string>Название</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Прогресс</string>
        </property>
       </column>
       <column>

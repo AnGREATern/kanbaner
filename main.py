@@ -1,4 +1,4 @@
-import datetime
+from datetime import timedelta, datetime
 import random
 import sys
 import sqlite3
@@ -16,7 +16,7 @@ cur = con.cursor()
 task_index = 0
 table_row = len(cur.execute('''SELECT id FROM finance''').fetchall()) + 1
 task_row = len(cur.execute('''SELECT id FROM tasks''').fetchall())
-
+pushs = []
 
 class Enter(QWidget):
     global user, con, cur
@@ -398,6 +398,17 @@ class Push(QWidget):
         self.pb_10.clicked.connect(self.sleep10)
         self.pb_30.clicked.connect(self.sleep30)
         self.pb_120.clicked.connect(self.sleep120)
+        for i in range(len(pushs[0])):
+            dtl = datetime(int(pushs[3][i].split('.')[0]), int(pushs[3][i].split('.')[1]), int(pushs[3][i].split('.')[2]))
+            now = datetime.now()
+            if dtl > now:
+                lwt = f'У {pushs[2][i].split(".")[0]} осталось {str((dtl - now).days)} д. до завершения задания в ' \
+                      f'столбце "{pushs[1][i].split(".")[0]}" канбана "{pushs[0][i].split(".")[0]}" '
+            elif dtl < now:
+                lwt = f'У {pushs[2][i].split(".")[0]} просрочилось на {str((now - dtl).days)} д. задание в столбце "{pushs[1][i].split(".")[0]}" канбана "{pushs[0][i].split(".")[0]}" '
+            else:
+                lwt = f'У {pushs[2][i].split(".")[0]} сегодня завершается задание в столбце "{pushs[1][i].split(".")[0]}" канбана "{pushs[0][i].split(".")[0]}"'
+            self.listWidget.addItem(lwt)
         self.timerS = QTimer(self)
         self.timerS.timeout.connect(self.rePush)
         self.timer = QTimer(self)
@@ -447,10 +458,21 @@ class AllPush(QWidget):
     def __init__(self):
         super().__init__()
         uic.loadUi('allPush.ui', self)
+        for i in range(len(pushs[0])):
+            dtl = datetime(int(pushs[3][i].split('.')[0]), int(pushs[3][i].split('.')[1]), int(pushs[3][i].split('.')[2]))
+            now = datetime.now()
+            if dtl > now:
+                lwt = f'У {pushs[2][i].split(".")[0]} осталось {str((dtl - now).days)} д. до завершения задания в ' \
+                      f'столбце "{pushs[1][i].split(".")[0]}" канбана "{pushs[0][i].split(".")[0]}" '
+            elif dtl < now:
+                lwt = f'У {pushs[2][i].split(".")[0]} просрочилось на {str((now - dtl).days)} д. задание в столбце "{pushs[1][i].split(".")[0]}" канбана "{pushs[0][i].split(".")[0]}" '
+            else:
+                lwt = f'У {pushs[2][i].split(".")[0]} сегодня завершается задание в столбце "{pushs[1][i].split(".")[0]}" канбана "{pushs[0][i].split(".")[0]}"'
+            self.listWidget.addItem(lwt)
 
 
 class Kanbaner(QMainWindow):
-    global user, con, cur
+    global user, con, cur, pushs
 
     def __init__(self):
         super().__init__()
@@ -489,7 +511,7 @@ class Kanbaner(QMainWindow):
         self.finance = None
         self.reloadPush = QTimer(self)
         self.reloadPush.timeout.connect(self.reloadPushing)
-        self.reloadPush.start(10)
+        self.reloadPushing()
         self.showPush()
 
     def showAllPush(self):
@@ -499,6 +521,21 @@ class Kanbaner(QMainWindow):
     def reloadPushing(self):
         self.reloadPush.stop()
         self.reloadPush.start(120000)
+        self.rowTitlesR, self.titles, self.rowNum, self.kanbanid, self.ispolns, self.datesK = [], [], [], [], [], []
+        for i in cur.execute('''SELECT * FROM tasks''').fetchall():
+            self.rowNum.append(i[2])
+            self.kanbanid.append(i[1])
+            self.ispolns.append(i[4])
+            self.datesK.append(i[6])
+        for j in self.kanbanid:
+            a = cur.execute(f'''SELECT * FROM kanban WHERE id={str(j)}''').fetchall()
+            for i in range(len(a)):
+                self.titles.append(a[i][1])
+                self.rowTitlesR.append(a[i][4].split()[self.rowNum[i]])
+        pushs.append(self.rowTitlesR)
+        pushs.append(self.titles)
+        pushs.append(self.ispolns)
+        pushs.append(self.datesK)
 
     def showPush(self):
         self.push = Push()
@@ -526,8 +563,8 @@ class Kanbaner(QMainWindow):
             self.id += 1
             cur.executemany("""INSERT INTO kanban VALUES (?,?,?,?,?,?)""",
                             [(self.id, self.title,
-                             str(datetime.datetime.strftime(datetime.datetime.now(), "%Y.%m.%d %H:%M:%S")),
-                              '-', ' '.join(self.rowTitles[0]), self.rowTitles[0][0])])
+                             str(datetime.strftime(datetime.now(), "%Y.%m.%d %H:%M:%S")),
+                              '-', ' '.join(self.rowTitles[0]), self.rowTitles[0])])
             con.commit()
             self.tw.clear()
             for i in range(self.id, 0, -1):

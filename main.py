@@ -373,15 +373,58 @@ class Push(QWidget):
         super().__init__()
         uic.loadUi('push.ui', self)
         q = QDesktopWidget().availableGeometry()
-        self.move(q.width() - 680, q.height() - 250)
+        self.move(q.width() - 680, q.height() - 260)
         self.setWindowFlags(Qt.FramelessWindowHint)
+        self.f = True
+        self.pb_10.pressed.connect(self.sleep10p)
+        self.pb_30.pressed.connect(self.sleep30p)
+        self.pb_120.pressed.connect(self.sleep120p)
+        self.pb_10.clicked.connect(self.sleep10)
+        self.pb_30.clicked.connect(self.sleep30)
+        self.pb_120.clicked.connect(self.sleep120)
+        self.timerS = QTimer(self)
+        self.timerS.timeout.connect(self.rePush)
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.closeTime)
-        self.timer.start(10000)
+        self.timer.start(15000)
 
     def closeTime(self):
-        print(1)
+        if self.f:
+            self.close()
+            self.timer.stop()
+
+    def sleep10(self):
+        self.f = False
+        self.timerS.start(600000)
         self.close()
+
+    def sleep10p(self):
+        self.pb_10.setStyleSheet('border-radius: 5px;\nborder-bottom: 4px solid  rgb(154, 91, 40);\nbackground-color: '
+                                 'rgb(195, 113, 51);\ncolor: rgb(233, 233, 233);\nmargin-top: 3px;\nfont: 81 10pt '
+                                 '"Rockwell Extra Bold";')
+
+    def sleep30p(self):
+        self.pb_30.setStyleSheet('border-radius: 5px;\nborder-bottom: 4px solid  rgb(154, 91, 40);\nbackground-color: '
+                                 'rgb(195, 113, 51);\ncolor: rgb(233, 233, 233);\nmargin-top: 3px;\nfont: 81 10pt '
+                                 '"Rockwell Extra Bold";')
+
+    def sleep120p(self):
+        self.pb_120.setStyleSheet('border-radius: 5px;\nborder-bottom: 4px solid  rgb(154, 91, 40);\nbackground-color: '
+                                 'rgb(195, 113, 51);\ncolor: rgb(233, 233, 233);\nmargin-top: 3px;\nfont: 81 10pt '
+                                 '"Rockwell Extra Bold";')
+
+    def sleep30(self):
+        self.f = False
+        self.timerS.start(1800000)
+        self.close()
+
+    def sleep120(self):
+        self.f = False
+        self.timerS.start(7200000)
+        self.close()
+
+    def rePush(self):
+        self.show()
 
 
 class AllPush(QWidget):
@@ -400,7 +443,6 @@ class Kanbaner(QMainWindow):
         self.pb_allPush.setIconSize(QSize(40, 40))
         self.role = cur.execute(f'''SELECT admin FROM main WHERE SN="{user}"''').fetchall()[0][0]
         self.label.setText(user)
-        self.showPush()
         if self.role == 'Admin':
             self.pb_create.clicked.connect(self.creater)
             self.pb_delete.clicked.connect(self.delete)
@@ -430,10 +472,18 @@ class Kanbaner(QMainWindow):
         self.task = None
         self.enter = None
         self.finance = None
+        self.reloadPush = QTimer(self)
+        self.reloadPush.timeout.connect(self.reloadPushing)
+        self.reloadPush.start(10)
+        self.showPush()
 
     def showAllPush(self):
         self.allPush = AllPush()
         self.allPush.show()
+
+    def reloadPushing(self):
+        self.reloadPush.stop()
+        self.reloadPush.start(120000)
 
     def showPush(self):
         self.push = Push()

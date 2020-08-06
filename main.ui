@@ -476,7 +476,7 @@
       </column>
       <column>
        <property name="text">
-        <string>Прогресс</string>
+        <string>Этап</string>
        </property>
       </column>
       <column>

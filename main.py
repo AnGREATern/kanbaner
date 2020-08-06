@@ -459,10 +459,10 @@ class Kanbaner(QMainWindow):
         self.rowTitles = []
         self.id = len(cur.execute('''SELECT id FROM kanban''').fetchall())
         for i in range(self.id, 0, -1):
-            a, b, c, d = str(cur.execute('''SELECT * FROM kanban WHERE id = ?''',
-                                         [str(i)]).fetchall())[6:-2].replace("'", '').split(', ')
+            a, b, c, d, e = str(cur.execute('''SELECT * FROM kanban WHERE id = ?''',
+                                            [str(i)]).fetchall())[6:-2].replace("'", '').split(', ')
             self.rowTitles.append(d.split())
-            self.tw.addTopLevelItem(QTreeWidgetItem([a, b, c]))
+            self.tw.addTopLevelItem(QTreeWidgetItem([a, e, b, c]))
         self.dz = '-'
         self.gr = None
         self.crew = None
@@ -507,16 +507,16 @@ class Kanbaner(QMainWindow):
                 self.rowTitles[0].append(i)
         if len(self.rowTitles[0]) > 1:
             self.id += 1
-            cur.executemany("""INSERT INTO kanban VALUES (?,?,?,?,?)""",
+            cur.executemany("""INSERT INTO kanban VALUES (?,?,?,?,?,?)""",
                             [(self.id, self.title,
                              str(datetime.datetime.strftime(datetime.datetime.now(), "%Y.%m.%d %H:%M:%S")),
-                              self.dz, ' '.join(self.rowTitles[-1]))])
+                              self.dz, ' '.join(self.rowTitles[0]), self.rowTitles[0])])
             con.commit()
             self.tw.clear()
             for i in range(self.id, 0, -1):
-                a, b, c, _ = str(cur.execute('''SELECT * FROM kanban WHERE id = ?''',
-                                             [str(i)]).fetchall())[5:-2].replace("'", '').split(', ')
-                self.tw.addTopLevelItem(QTreeWidgetItem([a, b, c]))
+                a, b, c, _, d = str(cur.execute('''SELECT * FROM kanban WHERE id = ?''',
+                                                [str(i)]).fetchall())[5:-2].replace("'", '').split(', ')
+                self.tw.addTopLevelItem(QTreeWidgetItem([a, d, b, c]))
         else:
             del self.rowTitles[0]
         self.title = ''

@@ -252,6 +252,26 @@ class Task(QWidget):
         self.mor = More()
         self.mor.show()
 
+    def delete_for_main(self, bind, row):
+        global task_row
+        i = bind
+        print(row)
+        print(len(cur.execute(f'''SELECT id FROM tasks WHERE row = "{0}" AND bind = "{i}"''').fetchall()))
+        for p in range(row):
+            for j in range(len(cur.execute(f'''SELECT id FROM tasks WHERE row = "{p}" AND bind = "{i}"''').fetchall()) - 1, -1, -1):
+                y = cur.execute('''SELECT id FROM tasks WHERE row = ? AND positioning = ? AND bind = ?''',
+                                (str(p), str(j), str(i))).fetchall()[0][0]
+                cur.execute("DELETE FROM tasks WHERE id = ?", [(str(y))])
+                con.commit()
+                for h in range(y, task_row):
+                    cur.execute("""UPDATE tasks SET id = ? WHERE id = ?""", [str(h), str(h + 1)])
+                con.commit()
+                task_row -= 1
+                self.dlina_kalumny[i] -= 1
+        for j in range(i, len(cur.execute('''SELECT id FROM kanban''').fetchall())):
+            cur.execute("""UPDATE tasks SET bind = ? WHERE bind = ?""", [str(j), str(j + 1)])
+        con.commit()
+
     def reboot(self):
         global con, cur, task_row, task_index
         for j in range(len(self.tabs)):
@@ -286,8 +306,8 @@ class Task(QWidget):
                                     (str(positioning + kapcha), str(row), str(bind), str(h + 1)))
                         cur.execute("""UPDATE tasks SET id = ? WHERE id = ?""",
                                     [str(h), str(h + 1)])
-                        con.commit()
                         kapcha += 1
+                    con.commit()
                     self.tabs[i].removeRow(self.dlina_kalumny[i] - j)
                     task_row -= 1
                     self.dlina_kalumny[i] -= 1
@@ -316,8 +336,8 @@ class Task(QWidget):
                                     (str(positioning + kapcha), str(row), str(bind), str(h + 1)))
                         cur.execute("""UPDATE tasks SET id = ? WHERE id = ?""",
                                     [str(h), str(h + 1)])
-                        con.commit()
                         kapcha += 1
+                    con.commit()
                     self.tabs[i].removeRow(self.dlina_kalumny[i] - j)
                     task_row -= 1
                     self.dlina_kalumny[i] -= 1
@@ -564,7 +584,7 @@ class Kanbaner(QMainWindow):
         for i in self.rowTitlesBad:
             if i:
                 self.rowTitles[0].append(i)
-        if len(self.rowTitles[0]) > 1 and self.rowTitles[0] == list(set(self.rowTitles[0])):
+        if len(self.rowTitles[0]) > 1:
             self.id += 1
             cur.executemany("""INSERT INTO kanban VALUES (?,?,?,?,?,?)""",
                             [(self.id, self.title,
@@ -600,12 +620,11 @@ class Kanbaner(QMainWindow):
     def delete(self):
         if [x.row() for x in self.tw.selectedIndexes()]:
             pos = int(str([x.row() for x in self.tw.selectedIndexes()])[1])
+            self.task.delete_for_main(self.id - pos, len(self.rowTitles[pos]))
             cur.execute("DELETE FROM kanban WHERE id = ?", [(str(self.id - pos))])
-            cur.execute("DELETE FROM tasks WHERE bind = ?", [(str(self.id - pos))])
             con.commit()
             for i in range(self.id - pos, self.id):
                 cur.execute("""UPDATE kanban SET id = ? WHERE id = ?""", [str(i), str(i + 1)])
-            cur.execute(f"""UPDATE tasks SET bind = '{str(self.id - pos - 1)}' WHERE bind > '{str(self.id - pos)}'""")
             con.commit()
             self.id -= 1
             self.tw.takeTopLevelItem(pos)

@@ -4,11 +4,12 @@ import sys
 import sqlite3
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-from PyQt5.QtCore import Qt, QDate, QTimer, QSize
+from PyQt5.QtCore import Qt, QDate, QTimer, QSize, QTime
 from PyQt5.QtGui import QFont, QIcon
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QTableWidgetItem, QTreeWidgetItem, QPushButton, \
     QComboBox, QTableWidget, QSizePolicy, QDateEdit, QLabel, QDesktopWidget
 from PyQt5 import uic, QtWidgets
+from dateutil.relativedelta import relativedelta
 
 user = None
 con = sqlite3.connect('personal.db')
@@ -62,11 +63,64 @@ class Graphics(QWidget):
     def __init__(self):
         super().__init__()
         uic.loadUi('graphics.ui', self)
-        isp1 = str(cur.execute('''SELECT SN FROM main''').fetchall())[3:-4].split("',), ('")
-        for i in range(len(isp1)):
-            isp1[i] = isp1[i].split()[0] + ' ' + isp1[i].split()[1][0] + '.'
-        m = PlotCanvas(self, width=50, height=4, isp=isp1)
-        m1 = PlotCanvas(self, width=50, height=4, isp=isp1)
+        isp1, isp2, isp3 = {}, {}, {}
+        self.rowTitlesR, self.titles, self.rowNum, self.kanbanid, self.ispolns, self.datesK = [], [], [], [], [], []
+
+        for i in cur.execute('''SELECT * FROM tasks''').fetchall():
+            self.rowNum.append(i[2])
+            self.kanbanid.append(i[1])
+            self.ispolns.append(i[4])
+            self.datesK.append(i[6])
+        for j in self.kanbanid:
+            a = cur.execute(f'''SELECT * FROM kanban WHERE id={str(j)}''').fetchall()
+            for i in range(len(a)):
+                self.titles.append(a[i][1])
+                self.rowTitlesR.append(a[i][4].split())
+
+        for i in range(len(self.ispolns)):
+            col = 0
+            if self.rowNum[i] == len(self.rowTitlesR[i]) - 1:
+                if datetime.datetime(int(pushs[3][i].split('.')[0]), int(pushs[3][i].split('.')[1]),
+                                     int(pushs[3][i].split('.')[2])) + relativedelta(
+                        months=+12) >= datetime.datetime.now():
+                    col = 3
+                if datetime.datetime(int(pushs[3][i].split('.')[0]), int(pushs[3][i].split('.')[1]),
+                                       int(pushs[3][i].split('.')[2])) + relativedelta(
+                        months=+3) >= datetime.datetime.now():
+                    col = 2
+                if datetime.datetime(int(pushs[3][i].split('.')[0]), int(pushs[3][i].split('.')[1]),
+                                       int(pushs[3][i].split('.')[2])) + relativedelta(
+                        months=+1) >= datetime.datetime.now():
+                    col = 1
+                if col == 1:
+                    if not self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.' in isp1.keys():
+                        isp1[self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.'] = 1
+                    else:
+                        isp1[self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.'] += 1
+                    if not self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.' in isp2.keys():
+                        isp2[self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.'] = 1
+                    else:
+                        isp2[self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.'] += 1
+                    if not self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.' in isp3.keys():
+                        isp3[self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.'] = 1
+                    else:
+                        isp3[self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.'] += 1
+                if col == 2:
+                    if not self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.' in isp1.keys():
+                        isp1[self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.'] = 1
+                    else:
+                        isp1[self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.'] += 1
+                    if not self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.' in isp2.keys():
+                        isp2[self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.'] = 1
+                    else:
+                        isp2[self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.'] += 1
+                if col == 3:
+                    if not self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.' in isp1.keys():
+                        isp1[self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.'] = 1
+                    else:
+                        isp1[self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.'] += 1
+        m = PlotCanvas(self, width=50, height=4, isp=isp3)
+        m1 = PlotCanvas(self, width=50, height=4, isp=isp2)
         m2 = PlotCanvas(self, width=50, height=4, isp=isp1)
         self.tabWidget.addTab(m, 'За месяц')
         self.tabWidget.addTab(m1, 'За квартал')
@@ -74,13 +128,12 @@ class Graphics(QWidget):
 
 
 class PlotCanvas(FigureCanvas):
-    def __init__(self, ispT=0, parent=None, width=5, height=4, isp=None, dpi=80):
+    def __init__(self, parent=None, width=5, height=4, isp=None, dpi=80):
         if isp is None:
             isp = []
         fig = Figure(figsize=(width, height), dpi=dpi)
         self.axes = fig.add_subplot(111)
         self.isp = isp
-        self.ispT = ispT
         FigureCanvas.__init__(self, fig)
         self.setParent(parent)
 
@@ -89,9 +142,8 @@ class PlotCanvas(FigureCanvas):
         self.bar()
 
     def bar(self):
-        data = [random.random() for _ in range(len(self.isp))]
         ax = self.figure.add_subplot(111)
-        ax.bar(self.isp, data)
+        ax.bar(self.isp.keys(), [self.isp.get(i) for i in self.isp.keys()])
         ax.set_title('График с нагрузкой персонала')
         self.draw()
 
@@ -235,8 +287,8 @@ class Task(QWidget):
             self.tabs[self.c_num].setRowCount(1)
         self.cbs[self.c_num].append(QComboBox())
         self.cbs[self.c_num][-1].addItems(self.ispolniteli)
-        self.dts[self.c_num].append(QDateEdit())
-        self.dtss[self.c_num].append(QDateEdit())
+        self.dts[self.c_num].append(QDateEdit(datetime.datetime.now()))
+        self.dtss[self.c_num].append(QDateEdit(datetime.datetime.now()))
         self.pb_more = QPushButton('Подробнее')
         self.pbs[self.c_num].append(self.pb_more)
         self.cbss[self.c_num].append(QComboBox())
@@ -491,6 +543,16 @@ class AllPush(QWidget):
                 lwt = f'У {pushs[2][i].split(".")[0]} сегодня завершается задание в столбце' \
                       f' "{pushs[1][i].split(".")[0]}" канбана "{pushs[0][i].split(".")[0]}"'
             self.listWidget.addItem(lwt)
+        memory = open('timeE.txt', 'r')
+        m = memory.read()
+        self.timeEdit.setTime(QTime(int(m.split(':')[0]), int(m.split(':')[1])))
+        memory.close()
+        self.pb_save.clicked.connect(self.save)
+
+    def save(self):
+        memory = open('timeE.txt', 'w')
+        memory.write(':'.join([str(self.timeEdit.time().hour()), str(self.timeEdit.time().minute())]))
+        memory.close()
 
 
 class Kanbaner(QMainWindow):
@@ -537,11 +599,23 @@ class Kanbaner(QMainWindow):
         self.reloadPush = QTimer(self)
         self.reloadPush.timeout.connect(self.reloadPushing)
         self.reloadPushing()
+        self.timeForPush = QTimer(self)
+        self.timeForPush.timeout.connect(self.showAllPush1)
+        self.timeForPush.setInterval(1000)
+        self.timeForPush.start()
         self.showPush()
 
     def showAllPush(self):
         self.allPush = AllPush()
         self.allPush.show()
+
+    def showAllPush1(self):
+        memory = open('timeE.txt', 'r')
+        m = memory.read()
+        if datetime.datetime.now().hour == int(m.split(':')[0]) and datetime.datetime.now().minute == int(m.split(':')[1]):
+            self.showPush()
+            self.timeForPush.stop()
+        memory.close()
 
     def reloadPushing(self):
         self.reloadPush.stop()
@@ -584,6 +658,7 @@ class Kanbaner(QMainWindow):
         for i in self.rowTitlesBad:
             if i:
                 self.rowTitles[0].append(i)
+        self.rowTitles[0].append('Готово')
         if len(self.rowTitles[0]) > 1:
             self.id += 1
             cur.executemany("""INSERT INTO kanban VALUES (?,?,?,?,?,?)""",

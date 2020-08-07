@@ -1,10 +1,10 @@
-from datetime import timedelta, datetime
 import random
+import datetime
 import sys
 import sqlite3
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-from PyQt5.QtCore import Qt, QDate, QTimer, QSize, QEvent
+from PyQt5.QtCore import Qt, QDate, QTimer, QSize
 from PyQt5.QtGui import QFont, QIcon
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QTableWidgetItem, QTreeWidgetItem, QPushButton, \
     QComboBox, QTableWidget, QSizePolicy, QDateEdit, QLabel, QDesktopWidget
@@ -17,6 +17,7 @@ task_index = 0
 table_row = len(cur.execute('''SELECT id FROM finance''').fetchall()) + 1
 task_row = len(cur.execute('''SELECT id FROM tasks''').fetchall())
 pushs = []
+
 
 class Enter(QWidget):
     global user, con, cur
@@ -83,9 +84,7 @@ class PlotCanvas(FigureCanvas):
         FigureCanvas.__init__(self, fig)
         self.setParent(parent)
 
-        FigureCanvas.setSizePolicy(self,
-                QSizePolicy.Expanding,
-                QSizePolicy.Expanding)
+        FigureCanvas.setSizePolicy(self, QSizePolicy.Expanding, QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
         self.bar()
 
@@ -304,9 +303,7 @@ class Task(QWidget):
                     cur.execute("""UPDATE tasks SET ispoln = ? WHERE row = ? AND positioning = ? AND bind = ?""",
                                 [self.cbs[i][j].currentText(), str(i), str(j), str(self.id)])
                     con.commit()
-                elif self.cbss[i][j].currentText()\
-                        in self.statusbezadmina and not\
-                        self.cbss[i][j].currentText() in self.tabWidget.tabText(i):
+                elif not self.cbss[i][j].currentText() == self.tabWidget.tabText(i):
                     tab = self.statusbezadmina.index(self.cbss[i][j].currentText())
                     kapcha = 0
                     y, bind, row, positioning, c, a, b, _, _ = \
@@ -335,12 +332,12 @@ class Task(QWidget):
         except:
             print('sasatb')
         for i in range(len(self.tabs)):
-            if self.tabs[i].rowCount() > 0:
+            if self.dlina_kalumny[i] > -1:
                 cur.execute("""UPDATE kanban SET stage = ? WHERE id = ?""",
                             [self.tabWidget.tabText(i), str(self.id)])
                 con.commit()
                 break
-            else:
+            elif i == len(self.tabs) - 1:
                 cur.execute("""UPDATE kanban SET stage = ? WHERE id = ?""",
                             [self.tabWidget.tabText(len(self.tabs) - 1), str(self.id)])
                 cur.execute("""UPDATE kanban SET end_date = ? WHERE id = ?""",
@@ -350,8 +347,7 @@ class Task(QWidget):
                 break
         task_index = self.tabWidget.currentIndex()
         self.close()
-        window.new.open()
-        window.new.reboot()
+        window.new.reboot(self.id)
 
 
 class Finance(QWidget):
@@ -399,15 +395,18 @@ class Push(QWidget):
         self.pb_30.clicked.connect(self.sleep30)
         self.pb_120.clicked.connect(self.sleep120)
         for i in range(len(pushs[0])):
-            dtl = datetime(int(pushs[3][i].split('.')[0]), int(pushs[3][i].split('.')[1]), int(pushs[3][i].split('.')[2]))
-            now = datetime.now()
+            dtl = datetime.datetime(int(pushs[3][i].split('.')[0]),
+                                    int(pushs[3][i].split('.')[1]), int(pushs[3][i].split('.')[2]))
+            now = datetime.datetime.now()
             if dtl > now:
                 lwt = f'У {pushs[2][i].split(".")[0]} осталось {str((dtl - now).days)} д. до завершения задания в ' \
                       f'столбце "{pushs[1][i].split(".")[0]}" канбана "{pushs[0][i].split(".")[0]}" '
             elif dtl < now:
-                lwt = f'У {pushs[2][i].split(".")[0]} просрочилось на {str((now - dtl).days)} д. задание в столбце "{pushs[1][i].split(".")[0]}" канбана "{pushs[0][i].split(".")[0]}" '
+                lwt = f'У {pushs[2][i].split(".")[0]} просрочилось на {str((now - dtl).days)} д. задание в столбце' \
+                      f' "{pushs[1][i].split(".")[0]}" канбана "{pushs[0][i].split(".")[0]}" '
             else:
-                lwt = f'У {pushs[2][i].split(".")[0]} сегодня завершается задание в столбце "{pushs[1][i].split(".")[0]}" канбана "{pushs[0][i].split(".")[0]}"'
+                lwt = f'У {pushs[2][i].split(".")[0]} сегодня завершается задание в столбце' \
+                      f' "{pushs[1][i].split(".")[0]}" канбана "{pushs[0][i].split(".")[0]}"'
             self.listWidget.addItem(lwt)
         self.timerS = QTimer(self)
         self.timerS.timeout.connect(self.rePush)
@@ -437,8 +436,8 @@ class Push(QWidget):
 
     def sleep120p(self):
         self.pb_120.setStyleSheet('border-radius: 5px;\nborder-bottom: 4px solid  rgb(154, 91, 40);\nbackground-color: '
-                                 'rgb(195, 113, 51);\ncolor: rgb(233, 233, 233);\nmargin-top: 3px;\nfont: 81 10pt '
-                                 '"Rockwell Extra Bold";')
+                                  'rgb(195, 113, 51);\ncolor: rgb(233, 233, 233);\nmargin-top: 3px;\nfont: 81 10pt '
+                                  '"Rockwell Extra Bold";')
 
     def sleep30(self):
         self.f = False
@@ -459,15 +458,18 @@ class AllPush(QWidget):
         super().__init__()
         uic.loadUi('allPush.ui', self)
         for i in range(len(pushs[0])):
-            dtl = datetime(int(pushs[3][i].split('.')[0]), int(pushs[3][i].split('.')[1]), int(pushs[3][i].split('.')[2]))
-            now = datetime.now()
+            dtl = datetime.datetime(int(pushs[3][i].split('.')[0]), int(pushs[3][i].split('.')[1]),
+                                    int(pushs[3][i].split('.')[2]))
+            now = datetime.datetime.now()
             if dtl > now:
                 lwt = f'У {pushs[2][i].split(".")[0]} осталось {str((dtl - now).days)} д. до завершения задания в ' \
                       f'столбце "{pushs[1][i].split(".")[0]}" канбана "{pushs[0][i].split(".")[0]}" '
             elif dtl < now:
-                lwt = f'У {pushs[2][i].split(".")[0]} просрочилось на {str((now - dtl).days)} д. задание в столбце "{pushs[1][i].split(".")[0]}" канбана "{pushs[0][i].split(".")[0]}" '
+                lwt = f'У {pushs[2][i].split(".")[0]} просрочилось на {str((now - dtl).days)} д. задание в столбце' \
+                      f' "{pushs[1][i].split(".")[0]}" канбана "{pushs[0][i].split(".")[0]}" '
             else:
-                lwt = f'У {pushs[2][i].split(".")[0]} сегодня завершается задание в столбце "{pushs[1][i].split(".")[0]}" канбана "{pushs[0][i].split(".")[0]}"'
+                lwt = f'У {pushs[2][i].split(".")[0]} сегодня завершается задание в столбце' \
+                      f' "{pushs[1][i].split(".")[0]}" канбана "{pushs[0][i].split(".")[0]}"'
             self.listWidget.addItem(lwt)
 
 
@@ -508,7 +510,10 @@ class Kanbaner(QMainWindow):
         self.new = None
         self.task = None
         self.enter = None
+        self.allPush = None
         self.finance = None
+        self.push = None
+        self.rowTitlesR, self.titles, self.rowNum, self.kanbanid, self.ispolns, self.datesK = [], [], [], [], [], []
         self.reloadPush = QTimer(self)
         self.reloadPush.timeout.connect(self.reloadPushing)
         self.reloadPushing()
@@ -559,12 +564,12 @@ class Kanbaner(QMainWindow):
         for i in self.rowTitlesBad:
             if i:
                 self.rowTitles[0].append(i)
-        if len(self.rowTitles[0]) > 1:
+        if len(self.rowTitles[0]) > 1 and self.rowTitles[0] == list(set(self.rowTitles[0])):
             self.id += 1
             cur.executemany("""INSERT INTO kanban VALUES (?,?,?,?,?,?)""",
                             [(self.id, self.title,
-                             str(datetime.strftime(datetime.now(), "%Y.%m.%d %H:%M:%S")),
-                              '-', ' '.join(self.rowTitles[0]), self.rowTitles[0])])
+                              str(datetime.datetime.strftime(datetime.datetime.now(), "%Y.%m.%d %H:%M:%S")),
+                              '-', ' '.join(self.rowTitles[0]), self.rowTitles[0][0])])
             con.commit()
             self.tw.clear()
             for i in range(self.id, 0, -1):
@@ -576,12 +581,16 @@ class Kanbaner(QMainWindow):
         self.title = ''
         self.new.close()
 
-    def open(self):
+    def open(self, *ide):
         if [x.row() for x in self.tw.selectedIndexes()]:
             pos = int(str([x.row() for x in self.tw.selectedIndexes()])[1])
-            self.task = Task(self.rowTitles[int(str([x.row() for x in self.tw.selectedIndexes()])[1])],
-                             cur.execute('''SELECT title FROM kanban WHERE id = ?''',
-                                         [(str(self.id - pos))]).fetchall()[0][0], self.id - pos)
+            self.task = Task(self.rowTitles[pos], cur.execute('''SELECT title FROM kanban WHERE id = ?''',
+                                                              [(str(self.id - pos))]).fetchall()[0][0], self.id - pos)
+            self.task.show()
+        elif ide:
+            pos = ide[0]
+            self.task = Task(self.rowTitles[self.id - pos], cur.execute('''SELECT title FROM kanban WHERE id = ?''',
+                                                                        [(str(pos))]).fetchall()[0][0], pos)
             self.task.show()
 
     def cash(self):
@@ -596,7 +605,6 @@ class Kanbaner(QMainWindow):
             con.commit()
             for i in range(self.id - pos, self.id):
                 cur.execute("""UPDATE kanban SET id = ? WHERE id = ?""", [str(i), str(i + 1)])
-                con.commit()
             cur.execute(f"""UPDATE tasks SET bind = '{str(self.id - pos - 1)}' WHERE bind > '{str(self.id - pos)}'""")
             con.commit()
             self.id -= 1
@@ -617,13 +625,14 @@ class Kanbaner(QMainWindow):
         elif event.key() == Qt.Key_E and self.role == 'Admin':
             self.cash()
 
-    def reboot(self):
+    def reboot(self, id):
         self.tw.clear()
         for i in range(self.id, 0, -1):
             a, b, c, d, e = str(cur.execute('''SELECT * FROM kanban WHERE id = ?''',
                                             [str(i)]).fetchall())[6:-2].replace("'", '').split(', ')
             self.rowTitles.append(d.split())
             self.tw.addTopLevelItem(QTreeWidgetItem([a, e, b, c]))
+        self.open(id)
 
     def exit(self):
         self.enter = Enter()

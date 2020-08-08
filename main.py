@@ -409,12 +409,33 @@ class Finance(QWidget):
         super().__init__()
         uic.loadUi('finance.ui', self)
         self.table.setRowCount(table_row)
+        self.ispolniteli = []
+        for i in range(len(cur.execute('''SELECT id FROM main''').fetchall())):
+            self.ispolniteli.append(cur.execute('''SELECT SN FROM main''').fetchall()[i][0])
+        self.cbss = []
+        self.dtss = []
         for i in range(table_row - 1):
-            _, b, c, d, e = cur.execute('''SELECT * FROM finance WHERE id = ?''', str(i + 1)).fetchall()[0]
-            self.table.setItem(i, 0, QTableWidgetItem(b))
+            self.dtss.append(QDateEdit())
+            self.cbss.append(QComboBox())
+            self.cbss[-1].addItems(self.ispolniteli)
+            _, b, c, d, e = cur.execute('''SELECT * FROM finance WHERE id = ?''', [str(i + 1)]).fetchall()[0]
+            if len(d) != 10:
+                if d[6] == '.':
+                    d = d[:5] + '0' + d[5:]
+                if len(d) != 10:
+                    d = d[:-1] + '0' + d[-1]
+            d = QDate.fromString(d, "yyyy.MM.dd")
+            self.dtss[i].setDate(d)
+            self.cbss[-1].setCurrentIndex(self.ispolniteli.index(b))
+            self.table.setCellWidget(i, 0, self.cbss[i])
             self.table.setItem(i, 1, QTableWidgetItem(c))
-            self.table.setItem(i, 2, QTableWidgetItem(d))
+            self.table.setCellWidget(i, 2, self.dtss[i])
             self.table.setItem(i, 3, QTableWidgetItem(str(e)))
+        self.dtss.append(QDateEdit(datetime.datetime.now()))
+        self.cbss.append(QComboBox())
+        self.cbss[-1].addItems(self.ispolniteli)
+        self.table.setCellWidget(table_row - 1, 2, self.dtss[-1])
+        self.table.setCellWidget(table_row - 1, 0, self.cbss[-1])
 
     def keyPressEvent(self, event):
         global table_row, con, cur
@@ -422,13 +443,19 @@ class Finance(QWidget):
             self.close()
         elif event.key() == 16777220:
             try:
-                bablo = [(str(table_row), self.table.item(table_row - 1, 0).text(),
-                          self.table.item(table_row - 1, 1).text(), self.table.item(table_row - 1, 2).text(),
-                          self.table.item(table_row - 1, 3).text())]
+                b = str(self.dtss[-1].date().year()) + '.' + str(self.dtss[-1].date().month()) + '.' +\
+                    str(self.dtss[-1].date().day())
+                bablo = [(str(table_row), self.cbss[-1].currentText(),
+                          self.table.item(table_row - 1, 1).text(), b, self.table.item(table_row - 1, 3).text())]
                 cur.executemany("""INSERT INTO finance VALUES (?,?,?,?,?)""", bablo)
                 con.commit()
                 table_row += 1
                 self.table.setRowCount(table_row)
+                self.dtss.append(QDateEdit(datetime.datetime.now()))
+                self.table.setCellWidget(table_row, 2, self.dtss[-1])
+                self.cbss.append(QComboBox())
+                self.cbss[-1].addItems(self.ispolniteli)
+                self.table.setCellWidget(table_row, 2, self.dtss[-1])
             except:
                 pass
 

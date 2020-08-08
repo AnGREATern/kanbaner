@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>683</width>
+    <width>890</width>
     <height>570</height>
    </rect>
   </property>
@@ -29,10 +29,10 @@
       <bool>true</bool>
      </property>
      <property name="sortingEnabled">
-      <bool>true</bool>
+      <bool>false</bool>
      </property>
      <attribute name="horizontalHeaderDefaultSectionSize">
-      <number>150</number>
+      <number>200</number>
      </attribute>
      <row>
       <property name="text">

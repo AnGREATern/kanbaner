@@ -304,25 +304,6 @@ class Task(QWidget):
         self.mor = More()
         self.mor.show()
 
-    def delete_for_main(self, bind, row):
-        global task_row
-        i = bind
-        print(row)
-        print(len(cur.execute(f'''SELECT id FROM tasks WHERE row = "{0}" AND bind = "{i}"''').fetchall()))
-        for p in range(row):
-            for j in range(len(cur.execute(f'''SELECT id FROM tasks WHERE row = "{p}" AND bind = "{i}"''').fetchall()) - 1, -1, -1):
-                y = cur.execute('''SELECT id FROM tasks WHERE row = ? AND positioning = ? AND bind = ?''',
-                                (str(p), str(j), str(i))).fetchall()[0][0]
-                cur.execute("DELETE FROM tasks WHERE id = ?", [(str(y))])
-                con.commit()
-                for h in range(y, task_row):
-                    cur.execute("""UPDATE tasks SET id = ? WHERE id = ?""", [str(h), str(h + 1)])
-                con.commit()
-                task_row -= 1
-        for j in range(i, len(cur.execute('''SELECT id FROM kanban''').fetchall())):
-            cur.execute("""UPDATE tasks SET bind = ? WHERE bind = ?""", [str(j), str(j + 1)])
-        con.commit()
-
     def reboot(self):
         global con, cur, task_row, task_index
         for j in range(len(self.tabs)):
@@ -429,11 +410,11 @@ class Finance(QWidget):
         uic.loadUi('finance.ui', self)
         self.table.setRowCount(table_row)
         for i in range(table_row - 1):
-            a, b, c = str(cur.execute('''SELECT * FROM finance WHERE id = ?''',
-                                      str(i + 1)).fetchall())[6:-2].replace("'", '').split(', ')
-            self.table.setItem(i, 0, QTableWidgetItem(a))
-            self.table.setItem(i, 1, QTableWidgetItem(b))
-            self.table.setItem(i, 2, QTableWidgetItem(c))
+            _, b, c, d, e = cur.execute('''SELECT * FROM finance WHERE id = ?''', str(i + 1)).fetchall()[0]
+            self.table.setItem(i, 0, QTableWidgetItem(b))
+            self.table.setItem(i, 1, QTableWidgetItem(c))
+            self.table.setItem(i, 2, QTableWidgetItem(d))
+            self.table.setItem(i, 3, QTableWidgetItem(str(e)))
 
     def keyPressEvent(self, event):
         global table_row, con, cur
@@ -442,8 +423,9 @@ class Finance(QWidget):
         elif event.key() == 16777220:
             try:
                 bablo = [(str(table_row), self.table.item(table_row - 1, 0).text(),
-                          self.table.item(table_row - 1, 1).text(), self.table.item(table_row - 1, 2).text())]
-                cur.executemany("""INSERT INTO finance VALUES (?,?,?,?)""", bablo)
+                          self.table.item(table_row - 1, 1).text(), self.table.item(table_row - 1, 2).text(),
+                          self.table.item(table_row - 1, 3).text())]
+                cur.executemany("""INSERT INTO finance VALUES (?,?,?,?,?)""", bablo)
                 con.commit()
                 table_row += 1
                 self.table.setRowCount(table_row)

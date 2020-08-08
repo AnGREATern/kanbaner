@@ -676,16 +676,19 @@ class Kanbaner(QMainWindow):
         self.new.close()
 
     def open(self, *ide):
-        if [x.row() for x in self.tw.selectedIndexes()]:
-            pos = int(str([x.row() for x in self.tw.selectedIndexes()])[1])
-            self.task = Task(self.rowTitles[pos], cur.execute('''SELECT title FROM kanban WHERE id = ?''',
-                                                              [(str(self.id - pos))]).fetchall()[0][0], self.id - pos)
-            self.task.show()
-        elif ide:
-            pos = ide[0]
-            self.task = Task(self.rowTitles[self.id - pos], cur.execute('''SELECT title FROM kanban WHERE id = ?''',
-                                                                        [(str(pos))]).fetchall()[0][0], pos)
-            self.task.show()
+        try:
+            if [x.row() for x in self.tw.selectedIndexes()]:
+                pos = int(str([x.row() for x in self.tw.selectedIndexes()])[1])
+                self.task = Task(self.rowTitles[pos], cur.execute('''SELECT title FROM kanban WHERE id = ?''',
+                                                                  [(str(self.id - pos))]).fetchall()[0][0], self.id - pos)
+                self.task.show()
+            elif ide:
+                pos = ide[0]
+                self.task = Task(self.rowTitles[self.id - pos], cur.execute('''SELECT title FROM kanban WHERE id = ?''',
+                                                                            [(str(pos))]).fetchall()[0][0], pos)
+                self.task.show()
+        except:
+            pass
 
     def cash(self):
         self.finance = Finance()

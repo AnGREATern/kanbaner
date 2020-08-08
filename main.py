@@ -319,7 +319,6 @@ class Task(QWidget):
                     cur.execute("""UPDATE tasks SET id = ? WHERE id = ?""", [str(h), str(h + 1)])
                 con.commit()
                 task_row -= 1
-                self.dlina_kalumny[i] -= 1
         for j in range(i, len(cur.execute('''SELECT id FROM kanban''').fetchall())):
             cur.execute("""UPDATE tasks SET bind = ? WHERE bind = ?""", [str(j), str(j + 1)])
         con.commit()
@@ -693,13 +692,30 @@ class Kanbaner(QMainWindow):
         self.finance.show()
 
     def delete(self):
+        global task_row
         if [x.row() for x in self.tw.selectedIndexes()]:
             pos = int(str([x.row() for x in self.tw.selectedIndexes()])[1])
-            self.task.delete_for_main(self.id - pos, len(self.rowTitles[pos]))
-            cur.execute("DELETE FROM kanban WHERE id = ?", [(str(self.id - pos))])
+            i = self.id - pos
+            row = len(self.rowTitles[pos])
+            for p in range(row):
+                for j in range(
+                        len(cur.execute(f'''SELECT id FROM tasks WHERE row = "{p}" AND bind = "{i}"''').fetchall()) - 1,
+                        -1, -1):
+                    y = cur.execute('''SELECT id FROM tasks WHERE row = ? AND positioning = ? AND bind = ?''',
+                                    (str(p), str(j), str(i))).fetchall()[0][0]
+                    cur.execute("DELETE FROM tasks WHERE id = ?", [(str(y))])
+                    con.commit()
+                    for h in range(y, task_row):
+                        cur.execute("""UPDATE tasks SET id = ? WHERE id = ?""", [str(h), str(h + 1)])
+                    con.commit()
+                    task_row -= 1
+            for j in range(i, len(cur.execute('''SELECT id FROM kanban''').fetchall())):
+                cur.execute("""UPDATE tasks SET bind = ? WHERE bind = ?""", [str(j), str(j + 1)])
             con.commit()
-            for i in range(self.id - pos, self.id):
-                cur.execute("""UPDATE kanban SET id = ? WHERE id = ?""", [str(i), str(i + 1)])
+            cur.execute("DELETE FROM kanban WHERE id = ?", [(str(i))])
+            con.commit()
+            for p in range(i, self.id):
+                cur.execute("""UPDATE kanban SET id = ? WHERE id = ?""", [str(p), str(p + 1)])
             con.commit()
             self.id -= 1
             self.tw.takeTopLevelItem(pos)

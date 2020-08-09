@@ -470,6 +470,8 @@ class Finance(QWidget):
     def __init__(self):
         super().__init__()
         uic.loadUi('finance.ui', self)
+        for y in range(4):
+            self.table.horizontalHeader().setSectionResizeMode(y, QtWidgets.QHeaderView.Stretch)
         self.table.setRowCount(table_row)
         self.ispolniteli = []
         for i in range(len(cur.execute('''SELECT id FROM main''').fetchall())):

@@ -202,26 +202,29 @@ class PlotCanvas(FigureCanvas):
 
 
 class More(QWidget):
-    def __init__(self):
+    def __init__(self, a):
         super().__init__()
         uic.loadUi('more.ui', self)
         self.role = cur.execute(f'''SELECT admin FROM main WHERE SN="{user}"''').fetchall()[0][0]
         self.saveText = None
         self.saveChat = None
-        # Здесь надо выгружать текст из бд в self.teTask и в self.teChat
+        self.a = a
+        _, _, _, _, _, _, _, task, chat = cur.execute(f'''SELECT * FROM tasks WHERE bind = {str(a[0])} AND row = {str(a[1])} AND positioning = {str(a[2])}''').fetchall()[0]
         if self.role in ['Editor', 'Admin']:
             self.pb_save.clicked.connect(self.save)
         else:
             self.pb_save.setParent(None)
             self.teTask.setReadOnly(True)
         self.pb_send.clicked.connect(self.send)
-        self.lastText = ''  # Сюда нужно выгрузить текст из бд для задания
-        self.lastChat = ''  # Сюда нужно выгрузить текст из бд для чата
+        self.lastText = task  # Сюда нужно выгрузить текст из бд для задания
+        self.lastChat = chat  # Сюда нужно выгрузить текст из бд для чата
         self.teTask.setText(self.lastText)
         self.teChat.setText(self.lastChat)
 
     def save(self):  # Здесь надо сохранять текст из self.teTask в бд
         self.saveText = str(self.teTask.toPlainText())  # Текст из задания, его нужно загрузить в бд
+        cur.execute(f"""UPDATE tasks SET task = '{self.saveText}' WHERE bind = {str(self.a[0])} AND row = {str(self.a[1])} AND positioning = {str(self.a[2])}""")
+        con.commit()
 
     def send(self):
         if str(self.teSend.toPlainText()):
@@ -230,6 +233,9 @@ class More(QWidget):
             self.teSend.setPlaceholderText('Чтобы отправить сообщение, напишите что-нибудь!!!')
         self.teSend.clear()
         self.saveChat = str(self.teChat.toPlainText())
+        cur.execute(
+            f"""UPDATE tasks SET chat = '{self.saveChat}' WHERE bind = {str(self.a[0])} AND row = {str(self.a[1])} AND positioning = {str(self.a[2])}""")
+        con.commit()
 
 
 class Task(QWidget):
@@ -325,6 +331,7 @@ class Task(QWidget):
                     self.dtss[self.c_num][self.rowNum].setReadOnly(True)
                 self.pb_more = QPushButton('Подробнее')
                 self.pbs[self.c_num].append(self.pb_more)
+                self.pbs[self.c_num][-1].clicked.connect(lambda checked, a=[bind, row, self.position]: self.more(a))
                 self.cbss[self.c_num].append(QComboBox())
                 self.cbss[self.c_num][-1].addItems(self.status)
                 self.cbss[self.c_num][-1].setCurrentIndex(self.c_num)
@@ -335,6 +342,10 @@ class Task(QWidget):
                 self.tabs[self.c_num].setCellWidget(0, 4, self.cbss[self.c_num][self.rowNum])
                 self.dlina_kalumny[self.c_num] += 1
         self.tabWidget.setCurrentIndex(task_index)
+
+    def more(self, a):
+        self.mor = More(a)
+        self.mor.show()
 
     def addTask(self):
         self.c_num = self.tabWidget.currentIndex()
@@ -358,10 +369,6 @@ class Task(QWidget):
         self.tabs[self.c_num].setCellWidget(0, 2, self.dtss[self.c_num][self.rowNum])
         self.tabs[self.c_num].setCellWidget(0, 3, self.pbs[self.c_num][self.rowNum])
         self.tabs[self.c_num].setCellWidget(0, 4, self.cbss[self.c_num][self.rowNum])
-
-    def more(self):
-        self.mor = More()
-        self.mor.show()
 
     def reboot(self):
         global con, cur, task_row, task_index

@@ -82,15 +82,15 @@ class Graphics(QWidget):
             if self.rowNum[i] == len(self.rowTitlesR[i]) - 1:
                 if datetime.datetime(int(pushs[3][i].split('.')[0]), int(pushs[3][i].split('.')[1]),
                                      int(pushs[3][i].split('.')[2])) + relativedelta(
-                        months=+12) >= datetime.datetime.now():
+                    months=+12) >= datetime.datetime.now():
                     col = 3
                 if datetime.datetime(int(pushs[3][i].split('.')[0]), int(pushs[3][i].split('.')[1]),
-                                       int(pushs[3][i].split('.')[2])) + relativedelta(
-                        months=+3) >= datetime.datetime.now():
+                                     int(pushs[3][i].split('.')[2])) + relativedelta(
+                    months=+3) >= datetime.datetime.now():
                     col = 2
                 if datetime.datetime(int(pushs[3][i].split('.')[0]), int(pushs[3][i].split('.')[1]),
-                                       int(pushs[3][i].split('.')[2])) + relativedelta(
-                        months=+1) >= datetime.datetime.now():
+                                     int(pushs[3][i].split('.')[2])) + relativedelta(
+                    months=+1) >= datetime.datetime.now():
                     col = 1
                 if col == 1:
                     if not self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.' in isp1.keys():
@@ -119,21 +119,68 @@ class Graphics(QWidget):
                         isp1[self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.'] = 1
                     else:
                         isp1[self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.'] += 1
-        m = PlotCanvas(self, width=50, height=4, isp=isp3)
-        m1 = PlotCanvas(self, width=50, height=4, isp=isp2)
-        m2 = PlotCanvas(self, width=50, height=4, isp=isp1)
+        ispF1, ispF2, ispF3 = {}, {}, {}
+        self.dengi, self.ispolns, self.datesK = [], [], []
+
+        for i in cur.execute('''SELECT * FROM finance''').fetchall():
+            self.ispolns.append(i[1])
+            self.datesK.append(i[3])
+            self.dengi.append(i[4])
+        for i in range(len(self.ispolns)):
+            col = 0
+            if datetime.datetime(int(self.datesK[i].split('.')[0]), int(self.datesK[i].split('.')[1]),
+                                 int(self.datesK[i].split('.')[2])) + relativedelta(months=+12) >= datetime.datetime.now():
+                col = 3
+            if datetime.datetime(int(self.datesK[i].split('.')[0]), int(self.datesK[i].split('.')[1]),
+                                 int(self.datesK[i].split('.')[2])) + relativedelta(months=+3) >= datetime.datetime.now():
+                col = 2
+            if datetime.datetime(int(self.datesK[i].split('.')[0]), int(self.datesK[i].split('.')[1]),
+                                 int(self.datesK[i].split('.')[2])) + relativedelta(months=+1) >= datetime.datetime.now():
+                col = 1
+            if col == 1:
+                if not self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.' in ispF1.keys():
+                    ispF1[self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.'] = self.dengi[i]
+                else:
+                    ispF1[self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.'] += self.dengi[i]
+                if not self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.' in ispF2.keys():
+                    ispF2[self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.'] = self.dengi[i]
+                else:
+                    ispF2[self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.'] += self.dengi[i]
+                if not self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.' in ispF3.keys():
+                    ispF3[self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.'] = self.dengi[i]
+                else:
+                    ispF3[self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.'] += self.dengi[i]
+            if col == 2:
+                if not self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.' in ispF1.keys():
+                    ispF1[self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.'] = self.dengi[i]
+                else:
+                    ispF1[self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.'] += self.dengi[i]
+                if not self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.' in ispF2.keys():
+                    ispF2[self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.'] = self.dengi[i]
+                else:
+                    ispF2[self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.'] += self.dengi[i]
+            if col == 3:
+                if not self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.' in ispF1.keys():
+                    ispF1[self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.'] = self.dengi[i]
+                else:
+                    ispF1[self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.'] += self.dengi[i]
+        m = PlotCanvas(self, width=50, height=4, isp=isp3, ispF=ispF3)
+        m1 = PlotCanvas(self, width=50, height=4, isp=isp2, ispF=ispF2)
+        m2 = PlotCanvas(self, width=50, height=4, isp=isp1, ispF=ispF1)
         self.tabWidget.addTab(m, 'За месяц')
         self.tabWidget.addTab(m1, 'За квартал')
         self.tabWidget.addTab(m2, 'За год')
 
 
 class PlotCanvas(FigureCanvas):
-    def __init__(self, parent=None, width=5, height=4, isp=None, dpi=80):
+    def __init__(self, parent=None, width=5, height=4, isp=None, ispF=None, dpi=80):
         if isp is None:
             isp = []
         fig = Figure(figsize=(width, height), dpi=dpi)
-        self.axes = fig.add_subplot(111)
+        self.axes = fig.add_subplot(212)
+        self.axes1 = fig.add_subplot(211)
         self.isp = isp
+        self.ispF = ispF
         FigureCanvas.__init__(self, fig)
         self.setParent(parent)
 
@@ -142,9 +189,15 @@ class PlotCanvas(FigureCanvas):
         self.bar()
 
     def bar(self):
-        ax = self.figure.add_subplot(111)
+        ax = self.figure.add_subplot(212)
+        ax1 = self.figure.add_subplot(211)
+
         ax.bar(self.isp.keys(), [self.isp.get(i) for i in self.isp.keys()])
         ax.set_title('График с нагрузкой персонала')
+        print(self.isp)
+        ax1.bar(self.ispF.keys(), [self.ispF.get(i) for i in self.ispF.keys()])
+        ax1.set_title('График финансов')
+
         self.draw()
 
 
@@ -228,7 +281,7 @@ class Task(QWidget):
                                                     'Задача/чат', 'Статус'])
             self.tabWidget.addTab(self.tabs[i], rowTitles[i])
         for i in range(task_row):
-            _, bind, row, self.position, self.sn, self.startdate, self.enddate, _, _ =\
+            _, bind, row, self.position, self.sn, self.startdate, self.enddate, _, _ = \
                 cur.execute('''SELECT * FROM tasks WHERE id = ?''', [(str(i))]).fetchall()[0]
             if bind == self.id:
                 if len(self.startdate) != 10:
@@ -258,9 +311,15 @@ class Task(QWidget):
                     self.cbs[self.c_num].append(QLabel(self.sn))
                     self.sn = None
                 self.dts[self.c_num].append(QDateEdit())
+                self.dts[self.c_num][self.rowNum].setStyleSheet(
+                    'font: 75 12pt "MS Shell Dlg 2";')
                 self.dtss[self.c_num].append(QDateEdit())
+                self.dtss[self.c_num][self.rowNum].setStyleSheet(
+                    'font: 75 12pt "MS Shell Dlg 2";')
                 self.dts[self.c_num][self.rowNum].setDate(self.startdate1)
                 self.dtss[self.c_num][self.rowNum].setDate(self.enddate1)
+                if self.dtss[self.c_num][self.rowNum].date() < datetime.datetime.now():
+                    self.dtss[self.c_num][self.rowNum].setStyleSheet('background-color: red; font: 75 12pt "MS Shell Dlg 2";')
                 if self.role == 'False':
                     self.dts[self.c_num][self.rowNum].setReadOnly(True)
                     self.dtss[self.c_num][self.rowNum].setReadOnly(True)
@@ -309,9 +368,9 @@ class Task(QWidget):
         for j in range(len(self.tabs)):
             try:
                 for i in range(self.tabs[self.tabWidget.currentIndex()].rowCount() - 1, self.dlina_kalumny[j], -1):
-                    a = str(self.dts[j][i].date().year()) + '.' + str(self.dts[j][i].date().month()) + '.' +\
+                    a = str(self.dts[j][i].date().year()) + '.' + str(self.dts[j][i].date().month()) + '.' + \
                         str(self.dts[j][i].date().day())
-                    b = str(self.dtss[j][i].date().year()) + '.' + str(self.dtss[j][i].date().month()) + '.' +\
+                    b = str(self.dtss[j][i].date().year()) + '.' + str(self.dtss[j][i].date().month()) + '.' + \
                         str(self.dtss[j][i].date().day())
                     bablo = [(task_row, str(self.id), str(j),
                               self.tabs[self.tabWidget.currentIndex()].rowCount() - 1 - self.poz[j],
@@ -326,6 +385,9 @@ class Task(QWidget):
         try:
             i = self.tabWidget.currentIndex()
             for j in range(self.tabs[i].rowCount() - 1, -1, -1):
+                if [self.dtss[i][j].date().day(), self.dtss[i][j].date().month(), self.dtss[i][j].date().year()] == [datetime.datetime.now().day, datetime.datetime.now().month, datetime.datetime.now().year]:
+                    self.dtss[i][j].setStyleSheet('background-color: red')
+                    print(1)
                 if self.cbss[i][j].currentText() == '%Удалить%':
                     kapcha = 0
                     y, bind, row, positioning, _, _, _, _, _ = \
@@ -443,7 +505,7 @@ class Finance(QWidget):
             self.close()
         elif event.key() == 16777220:
             try:
-                b = str(self.dtss[-1].date().year()) + '.' + str(self.dtss[-1].date().month()) + '.' +\
+                b = str(self.dtss[-1].date().year()) + '.' + str(self.dtss[-1].date().month()) + '.' + \
                     str(self.dtss[-1].date().day())
                 bablo = [(str(table_row), self.cbss[-1].currentText(),
                           self.table.item(table_row - 1, 1).text(), b, self.table.item(table_row - 1, 3).text())]
@@ -620,7 +682,8 @@ class Kanbaner(QMainWindow):
     def showAllPush1(self):
         memory = open('timeE.txt', 'r')
         m = memory.read()
-        if datetime.datetime.now().hour == int(m.split(':')[0]) and datetime.datetime.now().minute == int(m.split(':')[1]):
+        if datetime.datetime.now().hour == int(m.split(':')[0]) and datetime.datetime.now().minute == int(
+                m.split(':')[1]):
             self.showPush()
             self.timeForPush.stop()
         memory.close()
@@ -689,7 +752,8 @@ class Kanbaner(QMainWindow):
             if [x.row() for x in self.tw.selectedIndexes()]:
                 pos = int(str([x.row() for x in self.tw.selectedIndexes()])[1])
                 self.task = Task(self.rowTitles[pos], cur.execute('''SELECT title FROM kanban WHERE id = ?''',
-                                                                  [(str(self.id - pos))]).fetchall()[0][0], self.id - pos)
+                                                                  [(str(self.id - pos))]).fetchall()[0][0],
+                                 self.id - pos)
                 self.task.show()
             elif ide:
                 pos = ide[0]

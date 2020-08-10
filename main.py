@@ -286,7 +286,7 @@ class Task_6(QWidget):
             for y in range(6):
                 header.setSectionResizeMode(y, QtWidgets.QHeaderView.Stretch)
             self.tabs[i].setHorizontalHeaderLabels(['Исполнитель', 'Время выдачи', 'Срок сдачи',
-                                                    'Задача/чат', 'Статус', 'Уведомления'])
+                                                    'Задача/чат', 'Уведомления', 'Статус'])
             self.tabWidget.addTab(self.tabs[i], rowTitles[i])
         for i in range(task_row):
             _, bind, row, self.position, self.sn, self.startdate, self.enddate, check_admin, check_editor, _, _ = \

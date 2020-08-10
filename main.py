@@ -200,14 +200,19 @@ class PlotCanvas(FigureCanvas):
 
 
 class More(QWidget):
+    global cur, con
+
     def __init__(self, a):
         super().__init__()
         uic.loadUi('more.ui', self)
         self.role = cur.execute(f'''SELECT admin FROM main WHERE SN="{user}"''').fetchall()[0][0]
+        cur.execute(f"""UPDATE tasks SET comment = 'none' WHERE bind = {str(a[0])}
+AND row = {str(a[1])} AND positioning = {str(a[2])}""")
+        con.commit()
         self.saveText = None
         self.saveChat = None
         self.a = a
-        _, _, _, _, _, _, _, _, _, task, chat = cur.execute(f'''SELECT * FROM tasks WHERE bind = {str(a[0])}
+        _, _, _, _, _, _, _, _, _, task, chat, _ = cur.execute(f'''SELECT * FROM tasks WHERE bind = {str(a[0])}
 AND row = {str(a[1])} AND positioning = {str(a[2])}''').fetchall()[0]
         if self.role in ['Editor', 'Admin']:
             self.pb_save.clicked.connect(self.save)
@@ -228,7 +233,9 @@ AND row = {str(self.a[1])} AND positioning = {str(self.a[2])}""")
 
     def send(self):
         if str(self.teSend.toPlainText()):
-            self.teChat.append(user + ': ' + str(self.teSend.toPlainText()))
+            self.teChat.append(user + ': ' + str(self.teSend.toPlainText()).rstrip())
+            cur.execute(f"""UPDATE tasks SET comment = '{user}'
+WHERE bind = {str(self.a[0])} AND row = {str(self.a[1])} AND positioning = {str(self.a[2])}""")
         else:
             self.teSend.setPlaceholderText('Чтобы отправить сообщение, напишите что-нибудь!!!')
         self.teSend.clear()
@@ -289,7 +296,7 @@ class Task_6(QWidget):
                                                     'Задача/чат', 'Уведомления', 'Статус'])
             self.tabWidget.addTab(self.tabs[i], rowTitles[i])
         for i in range(task_row):
-            _, bind, row, self.position, self.sn, self.startdate, self.enddate, check_admin, check_editor, _, _ = \
+            _, bind, row, self.position, self.sn, self.startdate, self.enddate, check_admin, check_editor, _, _, com = \
                 cur.execute('''SELECT * FROM tasks WHERE id = ?''', [(str(i))]).fetchall()[0]
             if bind == self.id:
                 if len(self.startdate) != 10:
@@ -331,6 +338,10 @@ class Task_6(QWidget):
                     self.chx[self.c_num][-1].setChecked(True)
                 self.pb_more = QPushButton('Подробнее')
                 self.pbs[self.c_num].append(self.pb_more)
+                self.pbs[self.c_num][-1].setStyleSheet('font: 75 12pt')
+                if com and user not in com and com != 'none':
+                    self.pbs[self.c_num][-1].setStyleSheet('QPushButton {background-color: blue; color: white;'
+                                                           ' font: 75 12pt}')
                 self.pbs[self.c_num][-1].clicked.connect(lambda checked, a=[bind, row, self.position]: self.more(a))
                 self.cbss[self.c_num].append(QComboBox())
                 self.cbss[self.c_num][-1].addItems(self.status)
@@ -345,6 +356,7 @@ class Task_6(QWidget):
         self.tabWidget.setCurrentIndex(task_index)
 
     def more(self, a):
+        self.pbs[a[1]][a[2]].setStyleSheet('font: 75 12pt')
         self.mor = More(a)
         self.mor.show()
 
@@ -406,7 +418,7 @@ class Task_6(QWidget):
                     self.dtss[i][j].setStyleSheet('background-color: red')
                 if self.cbss[i][j].currentText() == '%Удалить%':
                     kapcha = 0
-                    y, bind, row, positioning, _, _, _, _, _, _, _ = \
+                    y, bind, row, positioning, _, _, _, _, _, _, _, _ = \
                         cur.execute('''SELECT * FROM tasks WHERE row = ? AND positioning = ? AND bind = ?''',
                                     (str(i), str(j), str(self.id))).fetchall()[0]
                     cur.execute("DELETE FROM tasks WHERE id = ?", [(str(y))])
@@ -442,7 +454,7 @@ class Task_6(QWidget):
                 elif not self.cbss[i][j].currentText() == self.tabWidget.tabText(i):
                     tab = self.statusbezadmina.index(self.cbss[i][j].currentText())
                     kapcha = 0
-                    y, bind, row, positioning, c, a, b, d, e, _, _ = \
+                    y, bind, row, positioning, c, a, b, d, e, f, g, z = \
                         cur.execute('''SELECT * FROM tasks WHERE row = ? AND positioning = ? AND bind = ?''',
                                     (str(i), str(j), str(self.id))).fetchall()[0]
                     cur.execute("DELETE FROM tasks WHERE id = ?", [(str(y))])
@@ -459,8 +471,8 @@ class Task_6(QWidget):
                     self.dlina_kalumny[i] -= 1
 
                     bablo = [(str(task_row), str(bind), str(tab), str(self.tabs[tab].rowCount() - 1 - self.poz[tab]), c,
-                              a, b, d, e, '', '')]
-                    cur.executemany("""INSERT INTO tasks VALUES (?,?,?,?,?,?,?,?,?,?,?)""", bablo)
+                              a, b, d, e, f, g, z)]
+                    cur.executemany("""INSERT INTO tasks VALUES (?,?,?,?,?,?,?,?,?,?,?,?)""", bablo)
                     con.commit()
                     self.dlina_kalumny[tab] += 1
                     self.poz[tab] -= 1
@@ -528,7 +540,7 @@ class Task(QWidget):
                                                     'Задача/чат', 'Статус'])
             self.tabWidget.addTab(self.tabs[i], rowTitles[i])
         for i in range(task_row):
-            _, bind, row, self.position, self.sn, self.startdate, self.enddate, _, _, _, _ = \
+            _, bind, row, self.position, self.sn, self.startdate, self.enddate, _, _, _, _, com = \
                 cur.execute('''SELECT * FROM tasks WHERE id = ?''', [(str(i))]).fetchall()[0]
             if bind == self.id:
                 if len(self.startdate) != 10:
@@ -566,6 +578,10 @@ class Task(QWidget):
                 self.dtss[self.c_num][self.rowNum].setReadOnly(True)
                 self.pb_more = QPushButton('Подробнее')
                 self.pbs[self.c_num].append(self.pb_more)
+                self.pbs[self.c_num][-1].setStyleSheet('font: 75 12pt')
+                if com and com != 'none' and user not in com:
+                    self.pbs[self.c_num][-1].setStyleSheet('QPushButton {background-color: blue; color: white;'
+                                                           ' font: 75 12pt}')
                 self.pbs[self.c_num][-1].clicked.connect(lambda checked, a=[bind, row, self.position]: self.more(a))
                 self.cbss[self.c_num].append(QComboBox())
                 self.cbss[self.c_num][-1].addItems(self.status)
@@ -579,6 +595,7 @@ class Task(QWidget):
         self.tabWidget.setCurrentIndex(task_index)
 
     def more(self, a):
+        self.pbs[a[1]][a[2]].setStyleSheet('font: 75 12pt')
         self.mor = More(a)
         self.mor.show()
 
@@ -607,62 +624,16 @@ class Task(QWidget):
 
     def reboot(self):
         global con, cur, task_row, task_index
-        for j in range(len(self.tabs)):
-            try:
-                for i in range(self.tabs[self.tabWidget.currentIndex()].rowCount() - 1, self.dlina_kalumny[j], -1):
-                    a = str(self.dts[j][i].date().year()) + '.' + str(self.dts[j][i].date().month()) + '.' + \
-                        str(self.dts[j][i].date().day())
-                    b = str(self.dtss[j][i].date().year()) + '.' + str(self.dtss[j][i].date().month()) + '.' + \
-                        str(self.dtss[j][i].date().day())
-                    bablo = [(task_row, str(self.id), str(j),
-                              self.tabs[self.tabWidget.currentIndex()].rowCount() - 1 - self.poz[j],
-                              self.cbs[j][i].currentText(), a, b, '', '')]
-                    cur.executemany("""INSERT INTO tasks VALUES (?,?,?,?,?,?,?,?,?)""", bablo)
-                    con.commit()
-                    self.dlina_kalumny[j] += 1
-                    self.poz[j] -= 1
-                    task_row += 1
-            except:
-                pass
         try:
             i = self.tabWidget.currentIndex()
             for j in range(self.tabs[i].rowCount() - 1, -1, -1):
                 if [self.dtss[i][j].date().day(), self.dtss[i][j].date().month(), self.dtss[i][j].date().year()] ==\
                         [datetime.datetime.now().day, datetime.datetime.now().month, datetime.datetime.now().year]:
                     self.dtss[i][j].setStyleSheet('background-color: red')
-                if self.cbss[i][j].currentText() == '%Удалить%':
-                    kapcha = 0
-                    y, bind, row, positioning, _, _, _, _, _ = \
-                        cur.execute('''SELECT * FROM tasks WHERE row = ? AND positioning = ? AND bind = ?''',
-                                    (str(i), str(j), str(self.id))).fetchall()[0]
-                    cur.execute("DELETE FROM tasks WHERE id = ?", [(str(y))])
-                    con.commit()
-                    for h in range(y, task_row):
-                        cur.execute("""UPDATE tasks SET positioning = ? WHERE row = ? AND bind = ? AND id = ?""",
-                                    (str(positioning + kapcha), str(row), str(bind), str(h + 1)))
-                        cur.execute("""UPDATE tasks SET id = ? WHERE id = ?""",
-                                    [str(h), str(h + 1)])
-                        kapcha += 1
-                    con.commit()
-                    self.tabs[i].removeRow(self.dlina_kalumny[i] - j)
-                    task_row -= 1
-                    self.dlina_kalumny[i] -= 1
-                elif self.cbss[i][j].currentText() == '%Обновить%':
-                    a = str(self.dts[i][j].date().year()) + '.' + str(self.dts[i][j].date().month()) + '.' + \
-                        str(self.dts[i][j].date().day())
-                    b = str(self.dtss[i][j].date().year()) + '.' + str(self.dtss[i][j].date().month()) + '.' + \
-                        str(self.dtss[i][j].date().day())
-                    cur.execute("""UPDATE tasks SET startdate = ? WHERE row = ? AND positioning = ? AND bind = ?""",
-                                [a, str(i), str(j), str(self.id)])
-                    cur.execute("""UPDATE tasks SET enddate = ? WHERE row = ? AND positioning = ? AND bind = ?""",
-                                [b, str(i), str(j), str(self.id)])
-                    cur.execute("""UPDATE tasks SET ispoln = ? WHERE row = ? AND positioning = ? AND bind = ?""",
-                                [self.cbs[i][j].currentText(), str(i), str(j), str(self.id)])
-                    con.commit()
-                elif not self.cbss[i][j].currentText() == self.tabWidget.tabText(i):
+                if not self.cbss[i][j].currentText() == self.tabWidget.tabText(i):
                     tab = self.statusbezadmina.index(self.cbss[i][j].currentText())
                     kapcha = 0
-                    y, bind, row, positioning, c, a, b, _, _ = \
+                    y, bind, row, positioning, c, a, b, d, e, f, g, z = \
                         cur.execute('''SELECT * FROM tasks WHERE row = ? AND positioning = ? AND bind = ?''',
                                     (str(i), str(j), str(self.id))).fetchall()[0]
                     cur.execute("DELETE FROM tasks WHERE id = ?", [(str(y))])
@@ -679,8 +650,8 @@ class Task(QWidget):
                     self.dlina_kalumny[i] -= 1
 
                     bablo = [(str(task_row), str(bind), str(tab), str(self.tabs[tab].rowCount() - 1 - self.poz[tab]), c,
-                              a, b, '', '')]
-                    cur.executemany("""INSERT INTO tasks VALUES (?,?,?,?,?,?,?,?,?)""", bablo)
+                              a, b, d, e, f, g, z)]
+                    cur.executemany("""INSERT INTO tasks VALUES (?,?,?,?,?,?,?,?,?,?)""", bablo)
                     con.commit()
                     self.dlina_kalumny[tab] += 1
                     self.poz[tab] -= 1

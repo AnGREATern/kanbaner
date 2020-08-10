@@ -1,4 +1,3 @@
-import random
 import datetime
 import sys
 import sqlite3
@@ -7,7 +6,7 @@ from matplotlib.figure import Figure
 from PyQt5.QtCore import Qt, QDate, QTimer, QSize, QTime
 from PyQt5.QtGui import QFont, QIcon
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QTableWidgetItem, QTreeWidgetItem, QPushButton, \
-    QComboBox, QTableWidget, QSizePolicy, QDateEdit, QLabel, QDesktopWidget
+    QComboBox, QTableWidget, QSizePolicy, QDateEdit, QLabel, QDesktopWidget, QCheckBox
 from PyQt5 import uic, QtWidgets
 from dateutil.relativedelta import relativedelta
 
@@ -194,7 +193,6 @@ class PlotCanvas(FigureCanvas):
 
         ax.bar(self.isp.keys(), [self.isp.get(i) for i in self.isp.keys()])
         ax.set_title('График с нагрузкой персонала')
-        print(self.isp)
         ax1.bar(self.ispF.keys(), [self.ispF.get(i) for i in self.ispF.keys()])
         ax1.set_title('График финансов')
 
@@ -209,7 +207,8 @@ class More(QWidget):
         self.saveText = None
         self.saveChat = None
         self.a = a
-        _, _, _, _, _, _, _, task, chat = cur.execute(f'''SELECT * FROM tasks WHERE bind = {str(a[0])} AND row = {str(a[1])} AND positioning = {str(a[2])}''').fetchall()[0]
+        _, _, _, _, _, _, _, task, chat = cur.execute(f'''SELECT * FROM tasks WHERE bind = {str(a[0])}
+AND row = {str(a[1])} AND positioning = {str(a[2])}''').fetchall()[0]
         if self.role in ['Editor', 'Admin']:
             self.pb_save.clicked.connect(self.save)
         else:
@@ -223,7 +222,8 @@ class More(QWidget):
 
     def save(self):  # Здесь надо сохранять текст из self.teTask в бд
         self.saveText = str(self.teTask.toPlainText())  # Текст из задания, его нужно загрузить в бд
-        cur.execute(f"""UPDATE tasks SET task = '{self.saveText}' WHERE bind = {str(self.a[0])} AND row = {str(self.a[1])} AND positioning = {str(self.a[2])}""")
+        cur.execute(f"""UPDATE tasks SET task = '{self.saveText}' WHERE bind = {str(self.a[0])}
+AND row = {str(self.a[1])} AND positioning = {str(self.a[2])}""")
         con.commit()
 
     def send(self):
@@ -234,11 +234,12 @@ class More(QWidget):
         self.teSend.clear()
         self.saveChat = str(self.teChat.toPlainText())
         cur.execute(
-            f"""UPDATE tasks SET chat = '{self.saveChat}' WHERE bind = {str(self.a[0])} AND row = {str(self.a[1])} AND positioning = {str(self.a[2])}""")
+            f"""UPDATE tasks SET chat = '{self.saveChat}' WHERE bind = {str(self.a[0])} AND row = {str(self.a[1])}
+AND positioning = {str(self.a[2])}""")
         con.commit()
 
 
-class Task(QWidget):
+class Task_6(QWidget):
     global con, cur, task_row, task_index
 
     def __init__(self, rowTitles, name, id):
@@ -264,8 +265,248 @@ class Task(QWidget):
         self.rT = rowTitles[:]
         if self.role == 'Admin':
             self.rT.extend(['%Удалить%', '%Обновить%'])
-        elif self.role == 'Editor':
+        else:
             self.rT.extend(['%Обновить%'])
+        self.status = self.rT
+        # В двумерных списках помещены параметры задач, например self.cbs[Номер вкладки][Номер задачи](с нуля)
+        self.cbs = [[] for _ in range(len(rowTitles))]  # combobox с исполнителями
+        for i in range(len(cur.execute('''SELECT id FROM main''').fetchall())):
+            self.ispolniteli.append(cur.execute('''SELECT SN FROM main''').fetchall()[i][0])
+        self.dts = [[] for _ in range(len(rowTitles))]  # Время начала
+        self.dtss = [[] for _ in range(len(rowTitles))]  # Время конца
+        self.pbs = [[] for _ in range(len(rowTitles))]  # Кнопка подробнее
+        self.cbss = [[] for _ in range(len(rowTitles))]  # combobox со статусом
+        self.chx = [[] for _ in range(len(rowTitles))]
+        self.dlina_kalumny = [-1 for _ in range(len(rowTitles))]
+        for i in range(len(rowTitles)):
+            self.tabs.append(QTableWidget(self))
+            self.tabs[i].setFont(QFont('Segoe UI', 12))
+            self.tabs[i].setColumnCount(6)
+            header = self.tabs[i].horizontalHeader()
+            for y in range(6):
+                header.setSectionResizeMode(y, QtWidgets.QHeaderView.Stretch)
+            self.tabs[i].setHorizontalHeaderLabels(['Исполнитель', 'Время выдачи', 'Срок сдачи',
+                                                    'Задача/чат', 'Статус', 'Уведомления'])
+            self.tabWidget.addTab(self.tabs[i], rowTitles[i])
+        for i in range(task_row):
+            _, bind, row, self.position, self.sn, self.startdate, self.enddate, check_admin, check_editor, _, _ = \
+                cur.execute('''SELECT * FROM tasks WHERE id = ?''', [(str(i))]).fetchall()[0]
+            if bind == self.id:
+                if len(self.startdate) != 10:
+                    if self.startdate[6] == '.':
+                        self.startdate = self.startdate[:5] + '0' + self.startdate[5:]
+                    if len(self.startdate) != 10:
+                        self.startdate = self.startdate[:-1] + '0' + self.startdate[-1]
+                if len(self.enddate) != 10:
+                    if self.enddate[6] == '.':
+                        self.enddate = self.enddate[:5] + '0' + self.enddate[5:]
+                    if len(self.enddate) != 10:
+                        self.enddate = self.enddate[:-1] + '0' + self.enddate[-1]
+                self.startdate1 = QDate.fromString(self.startdate, "yyyy.MM.dd")
+                self.enddate1 = QDate.fromString(self.enddate, "yyyy.MM.dd")
+                self.c_num = row
+                self.rowNum = self.tabs[self.c_num].rowCount()
+                if self.rowNum != 0:
+                    self.tabs[self.c_num].insertRow(0)
+                else:
+                    self.tabs[self.c_num].setRowCount(1)
+                self.cbs[self.c_num].append(QComboBox())
+                self.cbs[self.c_num][-1].addItems(self.ispolniteli)
+                self.cbs[self.c_num][-1].setCurrentIndex(self.ispolniteli.index(self.sn))
+                self.sn = None
+                self.dts[self.c_num].append(QDateEdit())
+                self.dts[self.c_num][self.rowNum].setStyleSheet(
+                    'font: 75 12pt "MS Shell Dlg 2";')
+                self.dtss[self.c_num].append(QDateEdit())
+                self.dtss[self.c_num][self.rowNum].setStyleSheet(
+                    'font: 75 12pt "MS Shell Dlg 2";')
+                self.dts[self.c_num][self.rowNum].setDate(self.startdate1)
+                self.dtss[self.c_num][self.rowNum].setDate(self.enddate1)
+                if self.dtss[self.c_num][self.rowNum].date() < datetime.datetime.now():
+                    self.dtss[self.c_num][self.rowNum].setStyleSheet('background-color: red;'
+                                                                     ' font: 75 12pt "MS Shell Dlg 2";')
+                self.chx[self.c_num].append(QCheckBox())
+                if (self.role == 'Admin' and check_admin == 'True')\
+                        or (self.role == 'Editor' and check_editor == 'True'):
+                    self.chx[self.c_num][-1].setChecked(True)
+                self.pb_more = QPushButton('Подробнее')
+                self.pbs[self.c_num].append(self.pb_more)
+                self.pbs[self.c_num][-1].clicked.connect(lambda checked, a=[bind, row, self.position]: self.more(a))
+                self.cbss[self.c_num].append(QComboBox())
+                self.cbss[self.c_num][-1].addItems(self.status)
+                self.cbss[self.c_num][-1].setCurrentIndex(self.c_num)
+                self.tabs[self.c_num].setCellWidget(0, 0, self.cbs[self.c_num][self.rowNum])
+                self.tabs[self.c_num].setCellWidget(0, 1, self.dts[self.c_num][self.rowNum])
+                self.tabs[self.c_num].setCellWidget(0, 2, self.dtss[self.c_num][self.rowNum])
+                self.tabs[self.c_num].setCellWidget(0, 3, self.pbs[self.c_num][self.rowNum])
+                self.tabs[self.c_num].setCellWidget(0, 4, self.cbss[self.c_num][self.rowNum])
+                self.tabs[self.c_num].setCellWidget(0, 5, self.chx[self.c_num][self.rowNum])
+                self.dlina_kalumny[self.c_num] += 1
+        self.tabWidget.setCurrentIndex(task_index)
+
+    def more(self, a):
+        self.mor = More(a)
+        self.mor.show()
+
+    def addTask(self):
+        self.c_num = self.tabWidget.currentIndex()
+        self.rowNum = self.tabs[self.c_num].rowCount()
+        self.poz[self.c_num] += 1
+        if self.rowNum != 0:
+            self.tabs[self.c_num].insertRow(0)
+        else:
+            self.tabs[self.c_num].setRowCount(1)
+        self.cbs[self.c_num].append(QComboBox())
+        self.cbs[self.c_num][-1].addItems(self.ispolniteli)
+        self.dts[self.c_num].append(QDateEdit(datetime.datetime.now()))
+        self.dtss[self.c_num].append(QDateEdit(datetime.datetime.now()))
+        self.pb_more = QPushButton('Подробнее')
+        self.pbs[self.c_num].append(self.pb_more)
+        self.cbss[self.c_num].append(QComboBox())
+        self.cbss[self.c_num][-1].addItems(self.status)
+        self.cbss[self.c_num][-1].setCurrentIndex(self.c_num)
+        self.chx[self.c_num].append(QCheckBox())
+        self.tabs[self.c_num].setCellWidget(0, 0, self.cbs[self.c_num][self.rowNum])
+        self.tabs[self.c_num].setCellWidget(0, 1, self.dts[self.c_num][self.rowNum])
+        self.tabs[self.c_num].setCellWidget(0, 2, self.dtss[self.c_num][self.rowNum])
+        self.tabs[self.c_num].setCellWidget(0, 3, self.pbs[self.c_num][self.rowNum])
+        self.tabs[self.c_num].setCellWidget(0, 4, self.cbss[self.c_num][self.rowNum])
+        self.tabs[self.c_num].setCellWidget(0, 5, self.chx[self.c_num][self.rowNum])
+
+    def reboot(self):
+        global con, cur, task_row, task_index
+        for j in range(len(self.tabs)):
+            try:
+                for i in range(self.tabs[self.tabWidget.currentIndex()].rowCount() - 1, self.dlina_kalumny[j], -1):
+                    a = str(self.dts[j][i].date().year()) + '.' + str(self.dts[j][i].date().month()) + '.' + \
+                        str(self.dts[j][i].date().day())
+                    b = str(self.dtss[j][i].date().year()) + '.' + str(self.dtss[j][i].date().month()) + '.' + \
+                        str(self.dtss[j][i].date().day())
+                    if self.role == 'Admin':
+                        c = str(self.chx[j][i].isChecked())
+                        d = "False"
+                    else:
+                        d = str(self.chx[j][i].isChecked())
+                        c = "False"
+                    bablo = [(task_row, str(self.id), str(j),
+                              self.tabs[self.tabWidget.currentIndex()].rowCount() - 1 - self.poz[j],
+                              self.cbs[j][i].currentText(), a, b, c, d, '', '')]
+                    cur.executemany("""INSERT INTO tasks VALUES (?,?,?,?,?,?,?,?,?,?,?)""", bablo)
+                    con.commit()
+                    self.dlina_kalumny[j] += 1
+                    self.poz[j] -= 1
+                    task_row += 1
+            except:
+                pass
+        try:
+            i = self.tabWidget.currentIndex()
+            for j in range(self.tabs[i].rowCount() - 1, -1, -1):
+                if [self.dtss[i][j].date().day(), self.dtss[i][j].date().month(), self.dtss[i][j].date().year()] ==\
+                        [datetime.datetime.now().day, datetime.datetime.now().month, datetime.datetime.now().year]:
+                    self.dtss[i][j].setStyleSheet('background-color: red')
+                if self.cbss[i][j].currentText() == '%Удалить%':
+                    kapcha = 0
+                    y, bind, row, positioning, _, _, _, _, _, _, _ = \
+                        cur.execute('''SELECT * FROM tasks WHERE row = ? AND positioning = ? AND bind = ?''',
+                                    (str(i), str(j), str(self.id))).fetchall()[0]
+                    cur.execute("DELETE FROM tasks WHERE id = ?", [(str(y))])
+                    con.commit()
+                    for h in range(y, task_row):
+                        cur.execute("""UPDATE tasks SET positioning = ? WHERE row = ? AND bind = ? AND id = ?""",
+                                    (str(positioning + kapcha), str(row), str(bind), str(h + 1)))
+                        cur.execute("""UPDATE tasks SET id = ? WHERE id = ?""",
+                                    [str(h), str(h + 1)])
+                        kapcha += 1
+                    con.commit()
+                    self.tabs[i].removeRow(self.dlina_kalumny[i] - j)
+                    task_row -= 1
+                    self.dlina_kalumny[i] -= 1
+                elif self.cbss[i][j].currentText() == '%Обновить%':
+                    a = str(self.dts[i][j].date().year()) + '.' + str(self.dts[i][j].date().month()) + '.' + \
+                        str(self.dts[i][j].date().day())
+                    b = str(self.dtss[i][j].date().year()) + '.' + str(self.dtss[i][j].date().month()) + '.' + \
+                        str(self.dtss[i][j].date().day())
+                    cur.execute("""UPDATE tasks SET startdate = ? WHERE row = ? AND positioning = ? AND bind = ?""",
+                                [a, str(i), str(j), str(self.id)])
+                    cur.execute("""UPDATE tasks SET enddate = ? WHERE row = ? AND positioning = ? AND bind = ?""",
+                                [b, str(i), str(j), str(self.id)])
+                    cur.execute("""UPDATE tasks SET ispoln = ? WHERE row = ? AND positioning = ? AND bind = ?""",
+                                [self.cbs[i][j].currentText(), str(i), str(j), str(self.id)])
+                    if self.role == 'Admin':
+                        cur.execute("""UPDATE tasks SET check_admin = ? WHERE row = ? AND positioning = ?
+                         AND bind = ?""", [str(self.chx[i][j].isChecked()), str(i), str(j), str(self.id)])
+                    else:
+                        cur.execute("""UPDATE tasks SET check_editor = ? WHERE row = ? AND positioning = ?
+                         AND bind = ?""", [str(self.chx[i][j].isChecked()), str(i), str(j), str(self.id)])
+                    con.commit()
+                elif not self.cbss[i][j].currentText() == self.tabWidget.tabText(i):
+                    tab = self.statusbezadmina.index(self.cbss[i][j].currentText())
+                    kapcha = 0
+                    y, bind, row, positioning, c, a, b, d, e, _, _ = \
+                        cur.execute('''SELECT * FROM tasks WHERE row = ? AND positioning = ? AND bind = ?''',
+                                    (str(i), str(j), str(self.id))).fetchall()[0]
+                    cur.execute("DELETE FROM tasks WHERE id = ?", [(str(y))])
+                    con.commit()
+                    for h in range(y, task_row):
+                        cur.execute("""UPDATE tasks SET positioning = ? WHERE row = ? AND bind = ? AND id = ?""",
+                                    (str(positioning + kapcha), str(row), str(bind), str(h + 1)))
+                        cur.execute("""UPDATE tasks SET id = ? WHERE id = ?""",
+                                    [str(h), str(h + 1)])
+                        kapcha += 1
+                    con.commit()
+                    self.tabs[i].removeRow(self.dlina_kalumny[i] - j)
+                    task_row -= 1
+                    self.dlina_kalumny[i] -= 1
+
+                    bablo = [(str(task_row), str(bind), str(tab), str(self.tabs[tab].rowCount() - 1 - self.poz[tab]), c,
+                              a, b, d, e, '', '')]
+                    cur.executemany("""INSERT INTO tasks VALUES (?,?,?,?,?,?,?,?,?,?,?)""", bablo)
+                    con.commit()
+                    self.dlina_kalumny[tab] += 1
+                    self.poz[tab] -= 1
+                    task_row += 1
+        except:
+            print('sasatb')
+        for i in range(len(self.tabs)):
+            if self.dlina_kalumny[i] > -1:
+                cur.execute("""UPDATE kanban SET stage = ? WHERE id = ?""",
+                            [self.tabWidget.tabText(i), str(self.id)])
+                con.commit()
+                break
+            elif i == len(self.tabs) - 1:
+                cur.execute("""UPDATE kanban SET stage = ? WHERE id = ?""",
+                            [self.tabWidget.tabText(len(self.tabs) - 1), str(self.id)])
+                cur.execute("""UPDATE kanban SET end_date = ? WHERE id = ?""",
+                            [str(datetime.datetime.strftime(datetime.datetime.now(),
+                                                            "%Y.%m.%d %H:%M:%S")), str(self.id)])
+                con.commit()
+                break
+        task_index = self.tabWidget.currentIndex()
+        self.close()
+        window.new.reboot(self.id)
+
+
+class Task(QWidget):
+    global con, cur, task_row, task_index
+
+    def __init__(self, rowTitles, name, id):
+        super().__init__()
+        uic.loadUi('tasks.ui', self)
+        self.setMouseTracking(True)
+        self.role = cur.execute(f'''SELECT admin FROM main WHERE SN="{user}"''').fetchall()[0][0]
+        self.pb_addT.setParent(None)
+        self.pb_reboot.clicked.connect(self.reboot)
+        self.name = name
+        self.poz = [-1 for _ in range(len(rowTitles))]
+        self.id = id
+        self.mor = None
+        self.c_num = 0
+        self.tabs = []
+        self.rowNum = None
+        self.pb_more = None
+        self.ispolniteli = []  # Переменная хранящая всех сотрудников
+        self.statusbezadmina = rowTitles.copy()
+        self.rT = rowTitles[:]
         self.status = self.rT
         # В двумерных списках помещены параметры задач, например self.cbs[Номер вкладки][Номер задачи](с нуля)
         self.cbs = [[] for _ in range(len(rowTitles))]  # combobox с исполнителями
@@ -287,7 +528,7 @@ class Task(QWidget):
                                                     'Задача/чат', 'Статус'])
             self.tabWidget.addTab(self.tabs[i], rowTitles[i])
         for i in range(task_row):
-            _, bind, row, self.position, self.sn, self.startdate, self.enddate, _, _ = \
+            _, bind, row, self.position, self.sn, self.startdate, self.enddate, _, _, _, _ = \
                 cur.execute('''SELECT * FROM tasks WHERE id = ?''', [(str(i))]).fetchall()[0]
             if bind == self.id:
                 if len(self.startdate) != 10:
@@ -308,14 +549,8 @@ class Task(QWidget):
                     self.tabs[self.c_num].insertRow(0)
                 else:
                     self.tabs[self.c_num].setRowCount(1)
-                if self.role in ['Admin', 'Editor']:
-                    self.cbs[self.c_num].append(QComboBox())
-                    self.cbs[self.c_num][-1].addItems(self.ispolniteli)
-                    self.cbs[self.c_num][-1].setCurrentIndex(self.ispolniteli.index(self.sn))
-                    self.sn = None
-                else:
-                    self.cbs[self.c_num].append(QLabel(self.sn))
-                    self.sn = None
+                self.cbs[self.c_num].append(QLabel(self.sn))
+                self.sn = None
                 self.dts[self.c_num].append(QDateEdit())
                 self.dts[self.c_num][self.rowNum].setStyleSheet(
                     'font: 75 12pt "MS Shell Dlg 2";')
@@ -325,10 +560,10 @@ class Task(QWidget):
                 self.dts[self.c_num][self.rowNum].setDate(self.startdate1)
                 self.dtss[self.c_num][self.rowNum].setDate(self.enddate1)
                 if self.dtss[self.c_num][self.rowNum].date() < datetime.datetime.now():
-                    self.dtss[self.c_num][self.rowNum].setStyleSheet('background-color: red; font: 75 12pt "MS Shell Dlg 2";')
-                if self.role == 'False':
-                    self.dts[self.c_num][self.rowNum].setReadOnly(True)
-                    self.dtss[self.c_num][self.rowNum].setReadOnly(True)
+                    self.dtss[self.c_num][self.rowNum].setStyleSheet('background-color: red;'
+                                                                     ' font: 75 12pt "MS Shell Dlg 2";')
+                self.dts[self.c_num][self.rowNum].setReadOnly(True)
+                self.dtss[self.c_num][self.rowNum].setReadOnly(True)
                 self.pb_more = QPushButton('Подробнее')
                 self.pbs[self.c_num].append(self.pb_more)
                 self.pbs[self.c_num][-1].clicked.connect(lambda checked, a=[bind, row, self.position]: self.more(a))
@@ -392,9 +627,9 @@ class Task(QWidget):
         try:
             i = self.tabWidget.currentIndex()
             for j in range(self.tabs[i].rowCount() - 1, -1, -1):
-                if [self.dtss[i][j].date().day(), self.dtss[i][j].date().month(), self.dtss[i][j].date().year()] == [datetime.datetime.now().day, datetime.datetime.now().month, datetime.datetime.now().year]:
+                if [self.dtss[i][j].date().day(), self.dtss[i][j].date().month(), self.dtss[i][j].date().year()] ==\
+                        [datetime.datetime.now().day, datetime.datetime.now().month, datetime.datetime.now().year]:
                     self.dtss[i][j].setStyleSheet('background-color: red')
-                    print(1)
                 if self.cbss[i][j].currentText() == '%Удалить%':
                     kapcha = 0
                     y, bind, row, positioning, _, _, _, _, _ = \
@@ -758,17 +993,32 @@ class Kanbaner(QMainWindow):
 
     def open(self, *ide):
         try:
-            if [x.row() for x in self.tw.selectedIndexes()]:
-                pos = int(str([x.row() for x in self.tw.selectedIndexes()])[1])
-                self.task = Task(self.rowTitles[pos], cur.execute('''SELECT title FROM kanban WHERE id = ?''',
-                                                                  [(str(self.id - pos))]).fetchall()[0][0],
-                                 self.id - pos)
-                self.task.show()
-            elif ide:
-                pos = ide[0]
-                self.task = Task(self.rowTitles[self.id - pos], cur.execute('''SELECT title FROM kanban WHERE id = ?''',
-                                                                            [(str(pos))]).fetchall()[0][0], pos)
-                self.task.show()
+            if self.role == 'Admin' or self.role == 'Editor':
+                if [x.row() for x in self.tw.selectedIndexes()]:
+                    pos = int(str([x.row() for x in self.tw.selectedIndexes()])[1])
+                    self.task = Task_6(self.rowTitles[pos], cur.execute('''SELECT title FROM kanban WHERE id = ?''',
+                                                                        [(str(self.id - pos))]).fetchall()[0][0],
+                                       self.id - pos)
+                    self.task.show()
+                elif ide:
+                    pos = ide[0]
+                    self.task = Task_6(self.rowTitles[self.id - pos],
+                                       cur.execute('''SELECT title FROM kanban WHERE id = ?''',
+                                                   [(str(pos))]).fetchall()[0][0], pos)
+                    self.task.show()
+            else:
+                if [x.row() for x in self.tw.selectedIndexes()]:
+                    pos = int(str([x.row() for x in self.tw.selectedIndexes()])[1])
+                    self.task = Task(self.rowTitles[pos], cur.execute('''SELECT title FROM kanban WHERE id = ?''',
+                                                                      [(str(self.id - pos))]).fetchall()[0][0],
+                                     self.id - pos)
+                    self.task.show()
+                elif ide:
+                    pos = ide[0]
+                    self.task = Task(self.rowTitles[self.id - pos],
+                                     cur.execute('''SELECT title FROM kanban WHERE id = ?''',
+                                                 [(str(pos))]).fetchall()[0][0], pos)
+                    self.task.show()
         except:
             pass
 

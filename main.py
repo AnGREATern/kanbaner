@@ -339,8 +339,8 @@ class Task_6(QWidget):
                 self.tabs[self.c_num].setCellWidget(0, 1, self.dts[self.c_num][self.rowNum])
                 self.tabs[self.c_num].setCellWidget(0, 2, self.dtss[self.c_num][self.rowNum])
                 self.tabs[self.c_num].setCellWidget(0, 3, self.pbs[self.c_num][self.rowNum])
-                self.tabs[self.c_num].setCellWidget(0, 4, self.cbss[self.c_num][self.rowNum])
-                self.tabs[self.c_num].setCellWidget(0, 5, self.chx[self.c_num][self.rowNum])
+                self.tabs[self.c_num].setCellWidget(0, 5, self.cbss[self.c_num][self.rowNum])
+                self.tabs[self.c_num].setCellWidget(0, 4, self.chx[self.c_num][self.rowNum])
                 self.dlina_kalumny[self.c_num] += 1
         self.tabWidget.setCurrentIndex(task_index)
 
@@ -370,8 +370,8 @@ class Task_6(QWidget):
         self.tabs[self.c_num].setCellWidget(0, 1, self.dts[self.c_num][self.rowNum])
         self.tabs[self.c_num].setCellWidget(0, 2, self.dtss[self.c_num][self.rowNum])
         self.tabs[self.c_num].setCellWidget(0, 3, self.pbs[self.c_num][self.rowNum])
-        self.tabs[self.c_num].setCellWidget(0, 4, self.cbss[self.c_num][self.rowNum])
-        self.tabs[self.c_num].setCellWidget(0, 5, self.chx[self.c_num][self.rowNum])
+        self.tabs[self.c_num].setCellWidget(0, 5, self.cbss[self.c_num][self.rowNum])
+        self.tabs[self.c_num].setCellWidget(0, 4, self.chx[self.c_num][self.rowNum])
 
     def reboot(self):
         global con, cur, task_row, task_index

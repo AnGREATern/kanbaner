@@ -207,7 +207,7 @@ class More(QWidget):
         self.saveText = None
         self.saveChat = None
         self.a = a
-        _, _, _, _, _, _, _, task, chat = cur.execute(f'''SELECT * FROM tasks WHERE bind = {str(a[0])}
+        _, _, _, _, _, _, _, _, _, task, chat = cur.execute(f'''SELECT * FROM tasks WHERE bind = {str(a[0])}
 AND row = {str(a[1])} AND positioning = {str(a[2])}''').fetchall()[0]
         if self.role in ['Editor', 'Admin']:
             self.pb_save.clicked.connect(self.save)

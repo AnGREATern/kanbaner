@@ -584,7 +584,7 @@ class Task(QWidget):
                     'font: 75 12pt "MS Shell Dlg 2";')
                 self.dts[self.c_num][self.rowNum].setDate(self.startdate1)
                 self.dtss[self.c_num][self.rowNum].setDate(self.enddate1)
-                if self.dtss[self.c_num][self.rowNum].date() < datetime.datetime.now():
+                if self.dtss[self.c_num][self.rowNum].date() > datetime.datetime.now():
                     self.dtss[self.c_num][self.rowNum].setStyleSheet('background-color: red;'
                                                                      ' font: 75 12pt "MS Shell Dlg 2";')
                 self.dts[self.c_num][self.rowNum].setReadOnly(True)
@@ -846,10 +846,10 @@ class AllPush(QWidget):
         print(pushs)
         f = None
         for i in range(len(pushs[0])):
-            print(1)
             self.role = cur.execute(f'''SELECT adm FROM main WHERE SN="{user}"''').fetchall()[0][0]
-            print(pushs[6][i].split('-'))
-            if user in pushs[6][i].split('-'):
+            p = str(pushs[6][i]).split('-')
+            print(p)
+            if user in p:
                 lgbt = f'У вас новое сообщение в столбце "{pushs[1][i]}" канбана "{pushs[0][i]}" '
                 self.listWidget.addItem(lgbt)
             if self.role == 'Admin':
@@ -948,6 +948,8 @@ class Kanbaner(QMainWindow):
         memory.close()
 
     def reloadPushing(self):
+        global pushs
+        pushs = []
         self.reloadPush.stop()
         self.reloadPush.start(120000)
         self.rowTitlesR, self.titles, self.rowNum, self.kanbanid, self.com, self.ispolns, self.datesK = [], [], [], [], [], [], []

@@ -484,17 +484,18 @@ class Task_6(QWidget):
         except:
             print('sasatb')
         for i in range(len(self.tabs)):
-            if self.dlina_kalumny[i] > -1:
-                cur.execute("""UPDATE kanban SET stage = ? WHERE id = ?""",
-                            [self.tabWidget.tabText(i), str(self.id)])
-                con.commit()
-                break
-            elif i == len(self.tabs) - 1:
+            if i == (len(self.tabs) - 1):
                 cur.execute("""UPDATE kanban SET stage = ? WHERE id = ?""",
                             [self.tabWidget.tabText(len(self.tabs) - 1), str(self.id)])
                 cur.execute("""UPDATE kanban SET end_date = ? WHERE id = ?""",
-                            [str(datetime.datetime.strftime(datetime.datetime.now(),
-                                                            "%Y.%m.%d %H:%M:%S")), str(self.id)])
+                            [str(datetime.datetime.strftime(datetime.datetime.now(), "%Y.%m.%d %H:%M:%S")),
+                             str(self.id)])
+                con.commit()
+                break
+            elif self.dlina_kalumny[i] > -1:
+                cur.execute("""UPDATE kanban SET stage = ? WHERE id = ?""",
+                            [self.tabWidget.tabText(i), str(self.id)])
+                cur.execute("""UPDATE kanban SET end_date = ? WHERE id = ?""", [str('-'), str(self.id)])
                 con.commit()
                 break
         task_index = self.tabWidget.currentIndex()

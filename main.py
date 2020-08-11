@@ -773,6 +773,9 @@ class Push(QWidget):
         f = "False"
         for i in range(len(pushs[0])):
             self.role = cur.execute(f'''SELECT adm FROM main WHERE SN="{user}"''').fetchall()[0][0]
+            if user in pushs[6][i].split('-'):
+                lgbt = f'У вас новое сообщение в столбце "{pushs[1][i]}" канбана "{pushs[0][i]}" '
+                self.listWidget.addItem(lgbt)
             if self.role == 'Admin':
                 f = pushs[4][i]
             if self.role == 'Editor':
@@ -843,7 +846,12 @@ class AllPush(QWidget):
         print(pushs)
         f = None
         for i in range(len(pushs[0])):
+            print(1)
             self.role = cur.execute(f'''SELECT adm FROM main WHERE SN="{user}"''').fetchall()[0][0]
+            print(pushs[6][i].split('-'))
+            if user in pushs[6][i].split('-'):
+                lgbt = f'У вас новое сообщение в столбце "{pushs[1][i]}" канбана "{pushs[0][i]}" '
+                self.listWidget.addItem(lgbt)
             if self.role == 'Admin':
                 f = pushs[4][i]
             if self.role == 'Editor':
@@ -916,7 +924,7 @@ class Kanbaner(QMainWindow):
         self.allPush = None
         self.finance = None
         self.push = None
-        self.rowTitlesR, self.titles, self.rowNum, self.kanbanid, self.ispolns, self.datesK = [], [], [], [], [], []
+        self.com, self.rowTitlesR, self.titles, self.rowNum, self.kanbanid, self.ispolns, self.datesK = [], [], [], [], [], [], []
         self.reloadPush = QTimer(self)
         self.reloadPush.timeout.connect(self.reloadPushing)
         self.reloadPushing()
@@ -942,7 +950,7 @@ class Kanbaner(QMainWindow):
     def reloadPushing(self):
         self.reloadPush.stop()
         self.reloadPush.start(120000)
-        self.rowTitlesR, self.titles, self.rowNum, self.kanbanid, self.ispolns, self.datesK = [], [], [], [], [], []
+        self.rowTitlesR, self.titles, self.rowNum, self.kanbanid, self.com, self.ispolns, self.datesK = [], [], [], [], [], [], []
         for i in cur.execute('''SELECT * FROM tasks''').fetchall():
             self.rowNum.append(i[2])
             self.kanbanid.append(i[1])
@@ -950,6 +958,7 @@ class Kanbaner(QMainWindow):
             self.datesK.append(i[6])
             self.check_admin.append(i[7])
             self.check_editor.append(i[8])
+            self.com.append(i[11])
         for j in self.kanbanid:
             a = cur.execute(f'''SELECT * FROM kanban WHERE id={str(j)}''').fetchall()
             for i in range(len(a)):
@@ -961,6 +970,7 @@ class Kanbaner(QMainWindow):
         pushs.append(self.datesK)
         pushs.append(self.check_admin)
         pushs.append(self.check_editor)
+        pushs.append(self.com)
 
     def showPush(self):
         self.push = Push()

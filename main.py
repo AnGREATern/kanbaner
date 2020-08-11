@@ -596,7 +596,7 @@ class Task(QWidget):
                     'font: 75 12pt "MS Shell Dlg 2";')
                 self.dts[self.c_num][self.rowNum].setDate(self.startdate1)
                 self.dtss[self.c_num][self.rowNum].setDate(self.enddate1)
-                if self.dtss[self.c_num][self.rowNum].date() > datetime.datetime.now():
+                if self.dtss[self.c_num][self.rowNum].date() < datetime.datetime.now():
                     self.dtss[self.c_num][self.rowNum].setStyleSheet('background-color: red;'
                                                                      ' font: 75 12pt "MS Shell Dlg 2";')
                 self.dts[self.c_num][self.rowNum].setReadOnly(True)

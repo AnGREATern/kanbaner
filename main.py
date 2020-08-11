@@ -772,7 +772,7 @@ class Push(QWidget):
         self.pb_120.clicked.connect(self.sleep120)
         f = "False"
         for i in range(len(pushs[0])):
-            self.role = cur.execute(f'''SELECT admin FROM main WHERE SN="{user}"''').fetchall()[0][0]
+            self.role = cur.execute(f'''SELECT adm FROM main WHERE SN="{user}"''').fetchall()[0][0]
             if self.role == 'Admin':
                 f = pushs[4][i]
             if self.role == 'Editor':
@@ -782,10 +782,10 @@ class Push(QWidget):
                                         int(pushs[3][i].split('.')[1]), int(pushs[3][i].split('.')[2]))
                 now = datetime.datetime.now()
                 if dtl > now:
-                    lwt = f'У {pushs[2][i].split(".")[0]} осталось {str((dtl - now).days)} д. до завершения задания в ' \
+                    lwt = f'У {pushs[2][i].split(".")[0]} осталось {str((dtl - now).days)} д. до завершения задания в '\
                           f'столбце "{pushs[1][i].split(".")[0]}" канбана "{pushs[0][i].split(".")[0]}" '
                 elif dtl < now:
-                    lwt = f'У {pushs[2][i].split(".")[0]} просрочилось на {str((now - dtl).days)} д. задание в столбце' \
+                    lwt = f'У {pushs[2][i].split(".")[0]} просрочилось на {str((now - dtl).days)} д. задание в столбце'\
                           f' "{pushs[1][i].split(".")[0]}" канбана "{pushs[0][i].split(".")[0]}" '
                 else:
                     lwt = f'У {pushs[2][i].split(".")[0]} сегодня завершается задание в столбце' \
@@ -843,7 +843,7 @@ class AllPush(QWidget):
         print(pushs)
         f = None
         for i in range(len(pushs[0])):
-            self.role = cur.execute(f'''SELECT admin FROM main WHERE SN="{user}"''').fetchall()[0][0]
+            self.role = cur.execute(f'''SELECT adm FROM main WHERE SN="{user}"''').fetchall()[0][0]
             if self.role == 'Admin':
                 f = pushs[4][i]
             if self.role == 'Editor':
@@ -853,11 +853,14 @@ class AllPush(QWidget):
                                         int(pushs[3][i].split('.')[2]))
                 now = datetime.datetime.now()
                 if dtl > now:
-                    lwt = f'У {pushs[2][i].split(".")[0]} осталось {str((dtl - now).days)} д. до завершения задания в столбце "{str(pushs[1][i].split(".")[0])}" канбана "{pushs[0][i].split(".")[0]}"'
+                    lwt = f'У {pushs[2][i].split(".")[0]} осталось {str((dtl - now).days)} д. до завершения задания в' \
+                          f' столбце "{str(pushs[1][i].split(".")[0])}" канбана "{pushs[0][i].split(".")[0]}"'
                 elif dtl < now:
-                    lwt = f'У {pushs[2][i].split(".")[0]} просрочилось на {str((now - dtl).days)} д. задание в столбце {str(pushs[1][i].split(".")[0])}" канбана "{pushs[0][i].split(".")[0]}" '
+                    lwt = f'У {pushs[2][i].split(".")[0]} просрочилось на {str((now - dtl).days)} д. задание в' \
+                          f' столбце {str(pushs[1][i].split(".")[0])}" канбана "{pushs[0][i].split(".")[0]}" '
                 else:
-                    lwt = f'У {pushs[2][i].split(".")[0]} сегодня завершается задание в столбце "{str(pushs[1][i].split(".")[0])}" канбана "{pushs[0][i].split(".")[0]}"'
+                    lwt = f'У {pushs[2][i].split(".")[0]} сегодня завершается задание в столбце' \
+                          f' "{str(pushs[1][i].split(".")[0])}" канбана "{pushs[0][i].split(".")[0]}"'
                 self.listWidget.addItem(lwt)
         memory = open('timeE.txt', 'r')
         m = memory.read()
@@ -876,7 +879,8 @@ class Kanbaner(QMainWindow):
 
     def __init__(self):
         super().__init__()
-        self.rowTitlesR, self.titles, self.check_admin, self.rowNum, self.check_editor, self.kanbanid, self.ispolns, self.datesK = [], [], [], [], [], [], [], []
+        self.rowTitlesR, self.titles, self.check_admin, self.rowNum, self.check_editor = [], [], [], [], []
+        self.kanbanid, self.ispolns, self.datesK = [], [], []
         uic.loadUi('main.ui', self)
         self.pb_allPush.setIcon(QIcon('bell.ico'))
         self.pb_allPush.setIconSize(QSize(40, 40))

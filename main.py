@@ -251,6 +251,10 @@ WHERE bind = {str(self.a[0])} AND row = {str(self.a[1])} AND positioning = {str(
 AND positioning = {str(self.a[2])}""")
         con.commit()
 
+    def keyPressEvent(self, event):
+        if event.key() == 16777220:
+            self.send()
+
 
 class Task_6(QWidget):
     global con, cur, task_row, task_index
@@ -258,6 +262,7 @@ class Task_6(QWidget):
     def __init__(self, rowTitles, name, id):
         super().__init__()
         uic.loadUi('tasks.ui', self)
+        self.setWindowTitle(name)
         self.setMouseTracking(True)
         self.role = cur.execute(f'''SELECT adm FROM main WHERE SN="{user}"''').fetchall()[0][0]
         if self.role == 'Admin':
@@ -397,6 +402,12 @@ class Task_6(QWidget):
         self.tabs[self.c_num].setCellWidget(0, 5, self.cbss[self.c_num][self.rowNum])
         self.tabs[self.c_num].setCellWidget(0, 4, self.chx[self.c_num][self.rowNum])
 
+    def keyPressEvent(self, event):
+        if event.key() == 16777220:
+            self.addTask()
+        elif event.key() == Qt.Key_F5:
+            self.reboot()
+
     def reboot(self):
         global con, cur, task_row, task_index
         for j in range(len(self.tabs)):
@@ -518,6 +529,7 @@ class Task(QWidget):
         super().__init__()
         uic.loadUi('tasks.ui', self)
         self.setMouseTracking(True)
+        self.setWindowTitle(name)
         self.role = cur.execute(f'''SELECT adm FROM main WHERE SN="{user}"''').fetchall()[0][0]
         self.pb_addT.setParent(None)
         self.pb_reboot.clicked.connect(self.reboot)
@@ -616,30 +628,9 @@ class Task(QWidget):
         self.mor = More(a)
         self.mor.show()
 
-    def addTask(self):
-        self.c_num = self.tabWidget.currentIndex()
-        self.rowNum = self.tabs[self.c_num].rowCount()
-        self.poz[self.c_num] += 1
-        if self.rowNum != 0:
-            self.tabs[self.c_num].insertRow(0)
-        else:
-            self.tabs[self.c_num].setRowCount(1)
-        self.cbs[self.c_num].append(QComboBox())
-        self.cbs[self.c_num][-1].addItems(self.ispolniteli)
-        self.cbs[self.c_num][-1].setStyleSheet('font: 75 12pt')
-        self.dts[self.c_num].append(QDateEdit(datetime.datetime.now()))
-        self.dtss[self.c_num].append(QDateEdit(datetime.datetime.now()))
-        self.pb_more = QPushButton('Подробнее')
-        self.pbs[self.c_num].append(self.pb_more)
-        self.cbss[self.c_num].append(QComboBox())
-        self.cbss[self.c_num][-1].addItems(self.status)
-        self.cbss[self.c_num][-1].setStyleSheet('font: 75 12pt')
-        self.cbss[self.c_num][-1].setCurrentIndex(self.c_num)
-        self.tabs[self.c_num].setCellWidget(0, 0, self.cbs[self.c_num][self.rowNum])
-        self.tabs[self.c_num].setCellWidget(0, 1, self.dts[self.c_num][self.rowNum])
-        self.tabs[self.c_num].setCellWidget(0, 2, self.dtss[self.c_num][self.rowNum])
-        self.tabs[self.c_num].setCellWidget(0, 3, self.pbs[self.c_num][self.rowNum])
-        self.tabs[self.c_num].setCellWidget(0, 4, self.cbss[self.c_num][self.rowNum])
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_F5:
+            self.reboot()
 
     def reboot(self):
         global con, cur, task_row, task_index

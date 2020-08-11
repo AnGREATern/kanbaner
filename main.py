@@ -770,20 +770,27 @@ class Push(QWidget):
         self.pb_10.clicked.connect(self.sleep10)
         self.pb_30.clicked.connect(self.sleep30)
         self.pb_120.clicked.connect(self.sleep120)
+        f = "False"
         for i in range(len(pushs[0])):
-            dtl = datetime.datetime(int(pushs[3][i].split('.')[0]),
-                                    int(pushs[3][i].split('.')[1]), int(pushs[3][i].split('.')[2]))
-            now = datetime.datetime.now()
-            if dtl > now:
-                lwt = f'У {pushs[2][i].split(".")[0]} осталось {str((dtl - now).days)} д. до завершения задания в ' \
-                      f'столбце "{pushs[1][i].split(".")[0]}" канбана "{pushs[0][i].split(".")[0]}" '
-            elif dtl < now:
-                lwt = f'У {pushs[2][i].split(".")[0]} просрочилось на {str((now - dtl).days)} д. задание в столбце' \
-                      f' "{pushs[1][i].split(".")[0]}" канбана "{pushs[0][i].split(".")[0]}" '
-            else:
-                lwt = f'У {pushs[2][i].split(".")[0]} сегодня завершается задание в столбце' \
-                      f' "{pushs[1][i].split(".")[0]}" канбана "{pushs[0][i].split(".")[0]}"'
-            self.listWidget.addItem(lwt)
+            self.role = cur.execute(f'''SELECT admin FROM main WHERE SN="{user}"''').fetchall()[0][0]
+            if self.role == 'Admin':
+                f = pushs[4][i]
+            if self.role == 'Editor':
+                f = pushs[5][i]
+            if f == "True":
+                dtl = datetime.datetime(int(pushs[3][i].split('.')[0]),
+                                        int(pushs[3][i].split('.')[1]), int(pushs[3][i].split('.')[2]))
+                now = datetime.datetime.now()
+                if dtl > now:
+                    lwt = f'У {pushs[2][i].split(".")[0]} осталось {str((dtl - now).days)} д. до завершения задания в ' \
+                          f'столбце "{pushs[1][i].split(".")[0]}" канбана "{pushs[0][i].split(".")[0]}" '
+                elif dtl < now:
+                    lwt = f'У {pushs[2][i].split(".")[0]} просрочилось на {str((now - dtl).days)} д. задание в столбце' \
+                          f' "{pushs[1][i].split(".")[0]}" канбана "{pushs[0][i].split(".")[0]}" '
+                else:
+                    lwt = f'У {pushs[2][i].split(".")[0]} сегодня завершается задание в столбце' \
+                          f' "{pushs[1][i].split(".")[0]}" канбана "{pushs[0][i].split(".")[0]}"'
+                self.listWidget.addItem(lwt)
         self.timerS = QTimer(self)
         self.timerS.timeout.connect(self.rePush)
         self.timer = QTimer(self)
@@ -833,20 +840,25 @@ class AllPush(QWidget):
     def __init__(self):
         super().__init__()
         uic.loadUi('allPush.ui', self)
+        print(pushs)
+        f = None
         for i in range(len(pushs[0])):
-            dtl = datetime.datetime(int(pushs[3][i].split('.')[0]), int(pushs[3][i].split('.')[1]),
-                                    int(pushs[3][i].split('.')[2]))
-            now = datetime.datetime.now()
-            if dtl > now:
-                lwt = f'У {pushs[2][i].split(".")[0]} осталось {str((dtl - now).days)} д. до завершения задания в ' \
-                      f'столбце "{pushs[1][i].split(".")[0]}" канбана "{pushs[0][i].split(".")[0]}" '
-            elif dtl < now:
-                lwt = f'У {pushs[2][i].split(".")[0]} просрочилось на {str((now - dtl).days)} д. задание в столбце' \
-                      f' "{pushs[1][i].split(".")[0]}" канбана "{pushs[0][i].split(".")[0]}" '
-            else:
-                lwt = f'У {pushs[2][i].split(".")[0]} сегодня завершается задание в столбце' \
-                      f' "{pushs[1][i].split(".")[0]}" канбана "{pushs[0][i].split(".")[0]}"'
-            self.listWidget.addItem(lwt)
+            self.role = cur.execute(f'''SELECT admin FROM main WHERE SN="{user}"''').fetchall()[0][0]
+            if self.role == 'Admin':
+                f = pushs[4][i]
+            if self.role == 'Editor':
+                f = pushs[5][i]
+            if f == "True":
+                dtl = datetime.datetime(int(pushs[3][i].split('.')[0]), int(pushs[3][i].split('.')[1]),
+                                        int(pushs[3][i].split('.')[2]))
+                now = datetime.datetime.now()
+                if dtl > now:
+                    lwt = f'У {pushs[2][i].split(".")[0]} осталось {str((dtl - now).days)} д. до завершения задания в столбце "{str(pushs[1][i].split(".")[0])}" канбана "{pushs[0][i].split(".")[0]}"'
+                elif dtl < now:
+                    lwt = f'У {pushs[2][i].split(".")[0]} просрочилось на {str((now - dtl).days)} д. задание в столбце {str(pushs[1][i].split(".")[0])}" канбана "{pushs[0][i].split(".")[0]}" '
+                else:
+                    lwt = f'У {pushs[2][i].split(".")[0]} сегодня завершается задание в столбце "{str(pushs[1][i].split(".")[0])}" канбана "{pushs[0][i].split(".")[0]}"'
+                self.listWidget.addItem(lwt)
         memory = open('timeE.txt', 'r')
         m = memory.read()
         self.timeEdit.setTime(QTime(int(m.split(':')[0]), int(m.split(':')[1])))
@@ -864,6 +876,7 @@ class Kanbaner(QMainWindow):
 
     def __init__(self):
         super().__init__()
+        self.rowTitlesR, self.titles, self.check_admin, self.rowNum, self.check_editor, self.kanbanid, self.ispolns, self.datesK = [], [], [], [], [], [], [], []
         uic.loadUi('main.ui', self)
         self.pb_allPush.setIcon(QIcon('bell.ico'))
         self.pb_allPush.setIconSize(QSize(40, 40))
@@ -931,6 +944,8 @@ class Kanbaner(QMainWindow):
             self.kanbanid.append(i[1])
             self.ispolns.append(i[4])
             self.datesK.append(i[6])
+            self.check_admin.append(i[7])
+            self.check_editor.append(i[8])
         for j in self.kanbanid:
             a = cur.execute(f'''SELECT * FROM kanban WHERE id={str(j)}''').fetchall()
             for i in range(len(a)):
@@ -940,6 +955,8 @@ class Kanbaner(QMainWindow):
         pushs.append(self.titles)
         pushs.append(self.ispolns)
         pushs.append(self.datesK)
+        pushs.append(self.check_admin)
+        pushs.append(self.check_editor)
 
     def showPush(self):
         self.push = Push()
@@ -967,7 +984,7 @@ class Kanbaner(QMainWindow):
         if len(self.rowTitles[0]) > 1:
             self.id += 1
             cur.executemany("""INSERT INTO kanban VALUES (?,?,?,?,?,?)""",
-                            [(self.id, self.title,
+                            [(self.id, str(self.title),
                               str(datetime.datetime.strftime(datetime.datetime.now(), "%Y.%m.%d %H:%M:%S")),
                               '-', ' '.join(self.rowTitles[0]), self.rowTitles[0][0])])
             con.commit()

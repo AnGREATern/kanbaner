@@ -320,6 +320,7 @@ class Task_6(QWidget):
                 self.cbs[self.c_num].append(QComboBox())
                 self.cbs[self.c_num][-1].addItems(self.ispolniteli)
                 self.cbs[self.c_num][-1].setCurrentIndex(self.ispolniteli.index(self.sn))
+                self.cbs[self.c_num][-1].setStyleSheet('font: 75 12pt')
                 self.sn = None
                 self.dts[self.c_num].append(QDateEdit())
                 self.dts[self.c_num][self.rowNum].setStyleSheet(
@@ -344,6 +345,7 @@ class Task_6(QWidget):
                                                            ' font: 75 12pt}')
                 self.pbs[self.c_num][-1].clicked.connect(lambda checked, a=[bind, row, self.position]: self.more(a))
                 self.cbss[self.c_num].append(QComboBox())
+                self.cbss[self.c_num][-1].setStyleSheet('font: 75 12pt')
                 self.cbss[self.c_num][-1].addItems(self.status)
                 self.cbss[self.c_num][-1].setCurrentIndex(self.c_num)
                 self.tabs[self.c_num].setCellWidget(0, 0, self.cbs[self.c_num][self.rowNum])
@@ -370,12 +372,14 @@ class Task_6(QWidget):
             self.tabs[self.c_num].setRowCount(1)
         self.cbs[self.c_num].append(QComboBox())
         self.cbs[self.c_num][-1].addItems(self.ispolniteli)
+        self.cbs[self.c_num][-1].setStyleSheet('font: 75 12pt')
         self.dts[self.c_num].append(QDateEdit(datetime.datetime.now()))
         self.dtss[self.c_num].append(QDateEdit(datetime.datetime.now()))
         self.pb_more = QPushButton('Подробнее')
         self.pbs[self.c_num].append(self.pb_more)
         self.cbss[self.c_num].append(QComboBox())
         self.cbss[self.c_num][-1].addItems(self.status)
+        self.cbss[self.c_num][-1].setStyleSheet('font: 75 12pt')
         self.cbss[self.c_num][-1].setCurrentIndex(self.c_num)
         self.chx[self.c_num].append(QCheckBox())
         self.tabs[self.c_num].setCellWidget(0, 0, self.cbs[self.c_num][self.rowNum])
@@ -402,8 +406,8 @@ class Task_6(QWidget):
                         c = "False"
                     bablo = [(task_row, str(self.id), str(j),
                               self.tabs[self.tabWidget.currentIndex()].rowCount() - 1 - self.poz[j],
-                              self.cbs[j][i].currentText(), a, b, c, d, '', '')]
-                    cur.executemany("""INSERT INTO tasks VALUES (?,?,?,?,?,?,?,?,?,?,?)""", bablo)
+                              self.cbs[j][i].currentText(), a, b, c, d, '', '', '')]
+                    cur.executemany("""INSERT INTO tasks VALUES (?,?,?,?,?,?,?,?,?,?,?,?)""", bablo)
                     con.commit()
                     self.dlina_kalumny[j] += 1
                     self.poz[j] -= 1
@@ -562,6 +566,7 @@ class Task(QWidget):
                 else:
                     self.tabs[self.c_num].setRowCount(1)
                 self.cbs[self.c_num].append(QLabel(self.sn))
+                self.cbs[self.c_num][-1].setStyleSheet('font: 75 12pt')
                 self.sn = None
                 self.dts[self.c_num].append(QDateEdit())
                 self.dts[self.c_num][self.rowNum].setStyleSheet(
@@ -584,6 +589,7 @@ class Task(QWidget):
                                                            ' font: 75 12pt}')
                 self.pbs[self.c_num][-1].clicked.connect(lambda checked, a=[bind, row, self.position]: self.more(a))
                 self.cbss[self.c_num].append(QComboBox())
+                self.cbss[self.c_num][-1].setStyleSheet('font: 75 12pt')
                 self.cbss[self.c_num][-1].addItems(self.status)
                 self.cbss[self.c_num][-1].setCurrentIndex(self.c_num)
                 self.tabs[self.c_num].setCellWidget(0, 0, self.cbs[self.c_num][self.rowNum])
@@ -609,12 +615,14 @@ class Task(QWidget):
             self.tabs[self.c_num].setRowCount(1)
         self.cbs[self.c_num].append(QComboBox())
         self.cbs[self.c_num][-1].addItems(self.ispolniteli)
+        self.cbs[self.c_num][-1].setStyleSheet('font: 75 12pt')
         self.dts[self.c_num].append(QDateEdit(datetime.datetime.now()))
         self.dtss[self.c_num].append(QDateEdit(datetime.datetime.now()))
         self.pb_more = QPushButton('Подробнее')
         self.pbs[self.c_num].append(self.pb_more)
         self.cbss[self.c_num].append(QComboBox())
         self.cbss[self.c_num][-1].addItems(self.status)
+        self.cbss[self.c_num][-1].setStyleSheet('font: 75 12pt')
         self.cbss[self.c_num][-1].setCurrentIndex(self.c_num)
         self.tabs[self.c_num].setCellWidget(0, 0, self.cbs[self.c_num][self.rowNum])
         self.tabs[self.c_num].setCellWidget(0, 1, self.dts[self.c_num][self.rowNum])

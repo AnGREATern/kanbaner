@@ -205,8 +205,10 @@ class More(QWidget):
     def __init__(self, a):
         super().__init__()
         uic.loadUi('more.ui', self)
-        self.role = cur.execute(f'''SELECT admin FROM main WHERE SN="{user}"''').fetchall()[0][0]
-        cur.execute(f"""UPDATE tasks SET comment = 'none' WHERE bind = {str(a[0])}
+        self.role = cur.execute(f'''SELECT adm FROM main WHERE SN="{user}"''').fetchall()[0][0]
+        if user in a[4]:
+            del a[4][a[4].index(user)]
+        cur.execute(f"""UPDATE tasks SET comment = '{'-'.join(a[4])}' WHERE bind = {str(a[0])}
 AND row = {str(a[1])} AND positioning = {str(a[2])}""")
         con.commit()
         self.saveText = None
@@ -233,8 +235,12 @@ AND row = {str(self.a[1])} AND positioning = {str(self.a[2])}""")
 
     def send(self):
         if str(self.teSend.toPlainText()):
+            com = [self.a[3], cur.execute(f'''SELECT SN FROM main WHERE adm = "Admin"''').fetchall()[0][0],
+                   cur.execute(f'''SELECT SN FROM main WHERE adm = "Editor"''').fetchall()[0][0]]
+            com = list(set(com))
+            del com[com.index(user)]
             self.teChat.append(user + ': ' + str(self.teSend.toPlainText()).rstrip())
-            cur.execute(f"""UPDATE tasks SET comment = '{user}'
+            cur.execute(f"""UPDATE tasks SET comment = '{'-'.join(com)}'
 WHERE bind = {str(self.a[0])} AND row = {str(self.a[1])} AND positioning = {str(self.a[2])}""")
         else:
             self.teSend.setPlaceholderText('Чтобы отправить сообщение, напишите что-нибудь!!!')
@@ -253,7 +259,7 @@ class Task_6(QWidget):
         super().__init__()
         uic.loadUi('tasks.ui', self)
         self.setMouseTracking(True)
-        self.role = cur.execute(f'''SELECT admin FROM main WHERE SN="{user}"''').fetchall()[0][0]
+        self.role = cur.execute(f'''SELECT adm FROM main WHERE SN="{user}"''').fetchall()[0][0]
         if self.role == 'Admin':
             self.pb_addT.clicked.connect(self.addTask)
         else:
@@ -321,7 +327,6 @@ class Task_6(QWidget):
                 self.cbs[self.c_num][-1].addItems(self.ispolniteli)
                 self.cbs[self.c_num][-1].setCurrentIndex(self.ispolniteli.index(self.sn))
                 self.cbs[self.c_num][-1].setStyleSheet('font: 75 12pt')
-                self.sn = None
                 self.dts[self.c_num].append(QDateEdit())
                 self.dts[self.c_num][self.rowNum].setStyleSheet(
                     'font: 75 12pt "MS Shell Dlg 2";')
@@ -340,10 +345,13 @@ class Task_6(QWidget):
                 self.pb_more = QPushButton('Подробнее')
                 self.pbs[self.c_num].append(self.pb_more)
                 self.pbs[self.c_num][-1].setStyleSheet('font: 75 12pt')
-                if com and user not in com and com != 'none':
-                    self.pbs[self.c_num][-1].setStyleSheet('QPushButton {background-color: blue; color: white;'
+                com = com.split('-')
+                if user in com:
+                    self.pbs[self.c_num][-1].setStyleSheet('QPushButton {background-color: rgb(116, 208, 196);'
                                                            ' font: 75 12pt}')
-                self.pbs[self.c_num][-1].clicked.connect(lambda checked, a=[bind, row, self.position]: self.more(a))
+                self.pbs[self.c_num][-1].clicked.connect(lambda checked,
+                                                         a=[bind, row, self.position, self.sn, com]:
+                                                         self.more(a))
                 self.cbss[self.c_num].append(QComboBox())
                 self.cbss[self.c_num][-1].setStyleSheet('font: 75 12pt')
                 self.cbss[self.c_num][-1].addItems(self.status)
@@ -510,7 +518,7 @@ class Task(QWidget):
         super().__init__()
         uic.loadUi('tasks.ui', self)
         self.setMouseTracking(True)
-        self.role = cur.execute(f'''SELECT admin FROM main WHERE SN="{user}"''').fetchall()[0][0]
+        self.role = cur.execute(f'''SELECT adm FROM main WHERE SN="{user}"''').fetchall()[0][0]
         self.pb_addT.setParent(None)
         self.pb_reboot.clicked.connect(self.reboot)
         self.name = name
@@ -568,7 +576,6 @@ class Task(QWidget):
                     self.tabs[self.c_num].setRowCount(1)
                 self.cbs[self.c_num].append(QLabel(self.sn))
                 self.cbs[self.c_num][-1].setStyleSheet('font: 75 12pt')
-                self.sn = None
                 self.dts[self.c_num].append(QDateEdit())
                 self.dts[self.c_num][self.rowNum].setStyleSheet(
                     'font: 75 12pt "MS Shell Dlg 2";')
@@ -585,10 +592,13 @@ class Task(QWidget):
                 self.pb_more = QPushButton('Подробнее')
                 self.pbs[self.c_num].append(self.pb_more)
                 self.pbs[self.c_num][-1].setStyleSheet('font: 75 12pt')
-                if com and com != 'none' and user not in com:
-                    self.pbs[self.c_num][-1].setStyleSheet('QPushButton {background-color: blue; color: white;'
+                com = com.split('-')
+                if user in com:
+                    self.pbs[self.c_num][-1].setStyleSheet('QPushButton {background-color: rgb(116, 208, 196);'
                                                            ' font: 75 12pt}')
-                self.pbs[self.c_num][-1].clicked.connect(lambda checked, a=[bind, row, self.position]: self.more(a))
+                self.pbs[self.c_num][-1].clicked.connect(lambda checked,
+                                                         a=[bind, row, self.position, self.sn, com]:
+                                                         self.more(a))
                 self.cbss[self.c_num].append(QComboBox())
                 self.cbss[self.c_num][-1].setStyleSheet('font: 75 12pt')
                 self.cbss[self.c_num][-1].addItems(self.status)
@@ -857,7 +867,7 @@ class Kanbaner(QMainWindow):
         uic.loadUi('main.ui', self)
         self.pb_allPush.setIcon(QIcon('bell.ico'))
         self.pb_allPush.setIconSize(QSize(40, 40))
-        self.role = cur.execute(f'''SELECT admin FROM main WHERE SN="{user}"''').fetchall()[0][0]
+        self.role = cur.execute(f'''SELECT adm FROM main WHERE SN="{user}"''').fetchall()[0][0]
         self.label.setText(user)
         if self.role == 'Admin':
             self.pb_create.clicked.connect(self.creater)

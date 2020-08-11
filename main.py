@@ -547,7 +547,7 @@ class Task(QWidget):
         for i in range(task_row):
             _, bind, row, self.position, self.sn, self.startdate, self.enddate, _, _, _, _, com = \
                 cur.execute('''SELECT * FROM tasks WHERE id = ?''', [(str(i))]).fetchall()[0]
-            if bind == self.id:
+            if bind == self.id and self.sn == user:
                 if len(self.startdate) != 10:
                     if self.startdate[6] == '.':
                         self.startdate = self.startdate[:5] + '0' + self.startdate[5:]

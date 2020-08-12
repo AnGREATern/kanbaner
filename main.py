@@ -836,12 +836,10 @@ class AllPush(QWidget):
     def __init__(self):
         super().__init__()
         uic.loadUi('allPush.ui', self)
-        print(pushs)
         f = None
         for i in range(len(pushs[0])):
             self.role = cur.execute(f'''SELECT adm FROM main WHERE SN="{user}"''').fetchall()[0][0]
             p = str(pushs[6][i]).split('-')
-            print(p)
             if user in p:
                 lgbt = f'У вас новое сообщение в столбце "{pushs[1][i]}" канбана "{pushs[0][i]}" '
                 self.listWidget.addItem(lgbt)

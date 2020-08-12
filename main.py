@@ -226,6 +226,12 @@ AND row = {str(a[1])} AND positioning = {str(a[2])}''').fetchall()[0]
         self.lastChat = chat  # Сюда нужно выгрузить текст из бд для чата
         self.teTask.setText(self.lastText)
         self.teChat.setText(self.lastChat)
+        self.teSend.textChanged.connect(self.solv)
+
+    def solv(self):
+        if str(self.teSend.toPlainText()):
+            if str(self.teSend.toPlainText())[-1] == '\n':
+                self.send()
 
     def save(self):  # Здесь надо сохранять текст из self.teTask в бд
         self.saveText = str(self.teTask.toPlainText())  # Текст из задания, его нужно загрузить в бд
@@ -234,7 +240,7 @@ AND row = {str(self.a[1])} AND positioning = {str(self.a[2])}""")
         con.commit()
 
     def send(self):
-        if str(self.teSend.toPlainText()):
+        if str(self.teSend.toPlainText().rstrip()):
             com = [self.a[3], cur.execute(f'''SELECT SN FROM main WHERE adm = "Admin"''').fetchall()[0][0],
                    cur.execute(f'''SELECT SN FROM main WHERE adm = "Editor"''').fetchall()[0][0]]
             com = list(set(com))
@@ -250,10 +256,6 @@ WHERE bind = {str(self.a[0])} AND row = {str(self.a[1])} AND positioning = {str(
             f"""UPDATE tasks SET chat = '{self.saveChat}' WHERE bind = {str(self.a[0])} AND row = {str(self.a[1])}
 AND positioning = {str(self.a[2])}""")
         con.commit()
-
-    def keyPressEvent(self, event):
-        if event.key() == 16777220:
-            self.send()
 
 
 class Task_6(QWidget):

@@ -752,7 +752,7 @@ class Push(QWidget):
         super().__init__()
         uic.loadUi('push.ui', self)
         q = QDesktopWidget().availableGeometry()
-        self.move(q.width() - 680, q.height() - 260)
+        self.move(q.width() - 780, q.height() - 290)
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.f = True
         self.pb_10.pressed.connect(self.sleep10p)
@@ -940,9 +940,10 @@ class Kanbaner(QMainWindow):
 
     def reloadPushing(self):
         global pushs
+        f = False
         pushs = []
         self.reloadPush.stop()
-        self.reloadPush.start(120000)
+        self.reloadPush.start(60000)
         self.rowTitlesR, self.titles, self.rowNum, self.kanbanid, self.com, self.ispolns, self.datesK = [], [], [], [], [], [], []
         for i in cur.execute('''SELECT * FROM tasks''').fetchall():
             self.rowNum.append(i[2])
@@ -952,6 +953,9 @@ class Kanbaner(QMainWindow):
             self.check_admin.append(i[7])
             self.check_editor.append(i[8])
             self.com.append(i[11])
+            if i:
+                if user in i[11].split('-'):
+                    f = True
         for j in self.kanbanid:
             a = cur.execute(f'''SELECT * FROM kanban WHERE id={str(j)}''').fetchall()
             for i in range(len(a)):
@@ -964,6 +968,8 @@ class Kanbaner(QMainWindow):
         pushs.append(self.check_admin)
         pushs.append(self.check_editor)
         pushs.append(self.com)
+        if f:
+            self.showPush()
 
     def showPush(self):
         self.push = Push()

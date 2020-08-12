@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>682</width>
+    <width>777</width>
     <height>282</height>
    </rect>
   </property>
@@ -540,7 +540,7 @@
      <property name="font">
       <font>
        <family>Rockwell Extra Bold</family>
-       <pointsize>10</pointsize>
+       <pointsize>12</pointsize>
        <weight>10</weight>
        <italic>false</italic>
        <bold>false</bold>
@@ -552,7 +552,7 @@ border-bottom: 4px solid  rgb(200, 120, 52);
 background-color: rgb(236, 140, 62);
 color: rgb(255, 255, 255);
 margin-top: 3px;
-font: 81 10pt &quot;Rockwell Extra Bold&quot;;</string>
+font: 81 12pt &quot;Rockwell Extra Bold&quot;;</string>
      </property>
     </widget>
    </item>

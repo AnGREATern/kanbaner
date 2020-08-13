@@ -4,14 +4,14 @@ import sqlite3
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from PyQt5.QtCore import Qt, QDate, QTimer, QSize, QTime
-from PyQt5.QtGui import QFont, QIcon, QTextCursor
+from PyQt5.QtGui import QFont, QIcon
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QTableWidgetItem, QTreeWidgetItem, QPushButton, \
     QComboBox, QTableWidget, QSizePolicy, QDateEdit, QLabel, QDesktopWidget, QCheckBox
 from PyQt5 import uic, QtWidgets
 from dateutil.relativedelta import relativedelta
 
 user = None
-con = sqlite3.connect('personal.db')
+con = sqlite3.connect('Y:\kanbaner\personal.db')
 cur = con.cursor()
 task_index = 0
 table_row = len(cur.execute('''SELECT id FROM finance''').fetchall()) + 1
@@ -28,6 +28,7 @@ class Enter(QWidget):
         self.pb_login.clicked.connect(self.switch)
         memory = open('memory.txt', 'r')
         self.le_login.setText(memory.read())
+        self.setWindowIcon(QIcon('icon.ico'))
         memory.close()
         self.new = None
         self.crew = None
@@ -56,12 +57,14 @@ class New(QWidget):
     def __init__(self):
         super().__init__()
         uic.loadUi('create.ui', self)
+        self.setWindowIcon(QIcon('icon.ico'))
 
 
 class Graphics(QWidget):
     def __init__(self):
         super().__init__()
         uic.loadUi('graphics.ui', self)
+        self.setWindowIcon(QIcon('icon.ico'))
         isp1, isp2, isp3 = {}, {}, {}
         self.rowTitlesR, self.titles, self.rowNum, self.kanbanid, self.ispolns, self.datesK = [], [], [], [], [], []
 
@@ -205,6 +208,7 @@ class More(QWidget):
     def __init__(self, a):
         super().__init__()
         uic.loadUi('more.ui', self)
+        self.setWindowIcon(QIcon('icon.ico'))
         self.role = cur.execute(f'''SELECT adm FROM main WHERE SN="{user}"''').fetchall()[0][0]
         if user in a[4]:
             del a[4][a[4].index(user)]
@@ -264,6 +268,7 @@ class Task_6(QWidget):
     def __init__(self, rowTitles, name, id):
         super().__init__()
         uic.loadUi('tasks.ui', self)
+        self.setWindowIcon(QIcon('icon.ico'))
         self.setWindowTitle(name)
         self.setMouseTracking(True)
         self.role = cur.execute(f'''SELECT adm FROM main WHERE SN="{user}"''').fetchall()[0][0]
@@ -530,6 +535,7 @@ class Task(QWidget):
     def __init__(self, rowTitles, name, id):
         super().__init__()
         uic.loadUi('tasks.ui', self)
+        self.setWindowIcon(QIcon('icon.ico'))
         self.setMouseTracking(True)
         self.setWindowTitle(name)
         self.role = cur.execute(f'''SELECT adm FROM main WHERE SN="{user}"''').fetchall()[0][0]
@@ -695,6 +701,7 @@ class Finance(QWidget):
     def __init__(self):
         super().__init__()
         uic.loadUi('finance.ui', self)
+        self.setWindowIcon(QIcon('icon.ico'))
         for y in range(4):
             self.table.horizontalHeader().setSectionResizeMode(y, QtWidgets.QHeaderView.Stretch)
         self.table.setRowCount(table_row)
@@ -753,6 +760,7 @@ class Push(QWidget):
     def __init__(self):
         super().__init__()
         uic.loadUi('push.ui', self)
+        self.setWindowIcon(QIcon('icon.ico'))
         q = QDesktopWidget().availableGeometry()
         self.move(q.width() - 780, q.height() - 290)
         self.setWindowFlags(Qt.FramelessWindowHint)
@@ -836,6 +844,7 @@ class AllPush(QWidget):
     def __init__(self):
         super().__init__()
         uic.loadUi('allPush.ui', self)
+        self.setWindowIcon(QIcon('icon.ico'))
         f = None
         for i in range(len(pushs[0])):
             self.role = cur.execute(f'''SELECT adm FROM main WHERE SN="{user}"''').fetchall()[0][0]
@@ -881,6 +890,7 @@ class Kanbaner(QMainWindow):
         self.rowTitlesR, self.titles, self.check_admin, self.rowNum, self.check_editor = [], [], [], [], []
         self.kanbanid, self.ispolns, self.datesK = [], [], []
         uic.loadUi('main.ui', self)
+        self.setWindowIcon(QIcon('icon.ico'))
         self.pb_allPush.setIcon(QIcon('bell.ico'))
         self.pb_allPush.setIconSize(QSize(40, 40))
         self.role = cur.execute(f'''SELECT adm FROM main WHERE SN="{user}"''').fetchall()[0][0]

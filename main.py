@@ -4,7 +4,7 @@ import sqlite3
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from PyQt5.QtCore import Qt, QDate, QTimer, QSize, QTime
-from PyQt5.QtGui import QFont, QIcon
+from PyQt5.QtGui import QFont, QIcon, QTextCursor
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QTableWidgetItem, QTreeWidgetItem, QPushButton, \
     QComboBox, QTableWidget, QSizePolicy, QDateEdit, QLabel, QDesktopWidget, QCheckBox
 from PyQt5 import uic, QtWidgets
@@ -767,7 +767,7 @@ class Push(QWidget):
         for i in range(len(pushs[0])):
             self.role = cur.execute(f'''SELECT adm FROM main WHERE SN="{user}"''').fetchall()[0][0]
             if user in pushs[6][i].split('-'):
-                lgbt = f'У вас новое сообщение в столбце "{pushs[1][i]}" канбана "{pushs[0][i]}" '
+                lgbt = f'У вас новое сообщение в столбце "{pushs[1][i - 1]}" канбана "{pushs[0][i]}" '
                 self.listWidget.addItem(lgbt)
             if self.role == 'Admin':
                 f = pushs[4][i]
@@ -944,7 +944,7 @@ class Kanbaner(QMainWindow):
         pushs = []
         self.reloadPush.stop()
         self.reloadPush.start(60000)
-        self.rowTitlesR, self.titles, self.rowNum, self.kanbanid, self.com, self.ispolns, self.datesK = [], [], [], [], [], [], []
+        self.rowTitlesR, self.check_admin, self.check_editor, self.titles, self.rowNum, self.kanbanid, self.com, self.ispolns, self.datesK = [], [], [], [], [], [], [], [], []
         for i in cur.execute('''SELECT * FROM tasks''').fetchall():
             self.rowNum.append(i[2])
             self.kanbanid.append(i[1])
@@ -956,11 +956,10 @@ class Kanbaner(QMainWindow):
             if i:
                 if user in i[11].split('-'):
                     f = True
-        for j in self.kanbanid:
-            a = cur.execute(f'''SELECT * FROM kanban WHERE id={str(j)}''').fetchall()
-            for i in range(len(a)):
-                self.titles.append(a[i][1])
-                self.rowTitlesR.append(a[i][4].split()[self.rowNum[i]])
+        for j in range(len(self.kanbanid)):
+            a = cur.execute(f'''SELECT * FROM kanban WHERE id={str(self.kanbanid[j])}''').fetchall()[0]
+            self.titles.append(a[1])
+            self.rowTitlesR.append(a[4].split()[self.rowNum[j]])
         pushs.append(self.rowTitlesR)
         pushs.append(self.titles)
         pushs.append(self.ispolns)

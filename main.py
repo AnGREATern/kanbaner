@@ -11,7 +11,7 @@ from PyQt5 import uic, QtWidgets
 from dateutil.relativedelta import relativedelta
 
 user = None
-con = sqlite3.connect('Y:\kanbaner\personal.db')
+con = sqlite3.connect('personal.db')
 cur = con.cursor()
 task_index = 0
 table_row = len(cur.execute('''SELECT id FROM finance''').fetchall()) + 1
@@ -49,7 +49,7 @@ class Enter(QWidget):
         self.close()
 
     def keyPressEvent(self, event):
-        if event.key() == 16777220:
+        if event.key() == 16777220 or event.key() == 16777221:
             self.switch()
 
 
@@ -410,7 +410,7 @@ class Task_6(QWidget):
         self.tabs[self.c_num].setCellWidget(0, 4, self.chx[self.c_num][self.rowNum])
 
     def keyPressEvent(self, event):
-        if event.key() == 16777220:
+        if event.key() == 16777220 or event.key() == 16777221:
             self.addTask()
         elif event.key() == Qt.Key_F5:
             self.reboot()
@@ -1086,7 +1086,7 @@ class Kanbaner(QMainWindow):
             del self.rowTitles[pos]
 
     def keyPressEvent(self, event):
-        if event.key() == 16777220:
+        if event.key() == 16777220 or event.key() == 16777221:
             self.open()
         elif event.key() == Qt.Key_Backspace and self.role == 'Admin':
             self.delete()

@@ -1007,7 +1007,7 @@ class Kanbaner(QMainWindow):
             self.id += 1
             cur.executemany("""INSERT INTO kanban VALUES (?,?,?,?,?,?)""",
                             [(self.id, str(self.title),
-                              str(datetime.datetime.strftime(datetime.datetime.now(), "%Y.%m.%d %H:%M:%S")),
+                              str(datetime.datetime.strftime(datetime.datetime.now(), "%H:%M:%S %d.%m.%Y")),
                               '-', ' '.join(self.rowTitles[0]), self.rowTitles[0][0])])
             con.commit()
             self.tw.clear()

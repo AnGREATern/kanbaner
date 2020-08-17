@@ -225,12 +225,33 @@ AND row = {str(a[1])} AND positioning = {str(a[2])}''').fetchall()[0]
         else:
             self.pb_save.setParent(None)
             self.teTask.setReadOnly(True)
+        self.reloadChat = QTimer(self)
+        self.reloadChat.timeout.connect(self.reloadChatF)
+        self.reloadChat.start(5000)
         self.pb_send.clicked.connect(self.send)
         self.lastText = task  # Сюда нужно выгрузить текст из бд для задания
         self.lastChat = chat  # Сюда нужно выгрузить текст из бд для чата
         self.teTask.setText(self.lastText)
         self.teChat.setText(self.lastChat)
         self.teSend.textChanged.connect(self.solv)
+
+    def reloadChatF(self):
+        _, bind, row, self.position, self.sn, _, _, _, _, _, _, com = \
+            cur.execute('''SELECT * FROM tasks WHERE id = ?''', [(str(self.a[-1]))]).fetchall()[0]
+        com = com.split('-')
+        a = [bind, row, self.position, self.sn, com, self.a[-1]]
+        if user in a[4]:
+            del a[4][a[4].index(user)]
+        cur.execute(f"""UPDATE tasks SET comment = '{'-'.join(a[4])}' WHERE bind = {str(a[0])}
+        AND row = {str(a[1])} AND positioning = {str(a[2])}""")
+        con.commit()
+        self.saveChat = None
+        self.a = a
+        _, _, _, _, _, _, _, _, _, task, chat, _ = cur.execute(f'''SELECT * FROM tasks WHERE bind = {str(a[0])}
+        AND row = {str(a[1])} AND positioning = {str(a[2])}''').fetchall()[0]
+        self.reloadChat.stop()
+        self.reloadChat.start(5000)
+        self.teChat.setText(chat)
 
     def solv(self):
         if str(self.teSend.toPlainText()):
@@ -314,7 +335,7 @@ class Task_6(QWidget):
                                                     'Задача/чат', 'Уведомления', 'Статус'])
             self.tabWidget.addTab(self.tabs[i], rowTitles[i])
         for i in range(task_row):
-            _, bind, row, self.position, self.sn, self.startdate, self.enddate, check_admin, check_editor, _, _, com = \
+            idishnik, bind, row, self.position, self.sn, self.startdate, self.enddate, check_admin, check_editor, _, _, com = \
                 cur.execute('''SELECT * FROM tasks WHERE id = ?''', [(str(i))]).fetchall()[0]
             if bind == self.id:
                 if len(self.startdate) != 10:
@@ -362,7 +383,7 @@ class Task_6(QWidget):
                     self.pbs[self.c_num][-1].setStyleSheet('QPushButton {background-color: rgb(116, 208, 196);'
                                                            ' font: 75 12pt}')
                 self.pbs[self.c_num][-1].clicked.connect(lambda checked,
-                                                         a=[bind, row, self.position, self.sn, com]:
+                                                         a=[bind, row, self.position, self.sn, com, idishnik]:
                                                          self.more(a))
                 self.cbss[self.c_num].append(QComboBox())
                 self.cbss[self.c_num][-1].setStyleSheet('font: 75 12pt')

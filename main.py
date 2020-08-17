@@ -378,11 +378,13 @@ class Task_6(QWidget):
         self.tabWidget.setCurrentIndex(task_index)
 
     def more(self, a):
+        self.reboot()
         self.pbs[a[1]][a[2]].setStyleSheet('font: 75 12pt')
         self.mor = More(a)
         self.mor.show()
 
     def addTask(self):
+        self.reboot()
         self.c_num = self.tabWidget.currentIndex()
         self.rowNum = self.tabs[self.c_num].rowCount()
         self.poz[self.c_num] += 1
@@ -632,6 +634,7 @@ class Task(QWidget):
         self.tabWidget.setCurrentIndex(task_index)
 
     def more(self, a):
+        self.reboot()
         self.pbs[a[1]][a[2]].setStyleSheet('font: 75 12pt')
         self.mor = More(a)
         self.mor.show()
@@ -1028,6 +1031,7 @@ class Kanbaner(QMainWindow):
                                                                         [(str(self.id - pos))]).fetchall()[0][0],
                                        self.id - pos)
                     self.task.show()
+
                 elif ide:
                     pos = ide[0]
                     self.task = Task_6(self.rowTitles[self.id - pos],

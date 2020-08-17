@@ -384,7 +384,6 @@ class Task_6(QWidget):
         self.mor.show()
 
     def addTask(self):
-        self.reboot()
         self.c_num = self.tabWidget.currentIndex()
         self.rowNum = self.tabs[self.c_num].rowCount()
         self.poz[self.c_num] += 1

@@ -1036,7 +1036,7 @@ class Kanbaner(QMainWindow):
             self.tw.clear()
             for i in range(self.id, 0, -1):
                 _, b, c, q, d, w = cur.execute('''SELECT * FROM kanban WHERE id = ?''', [str(i)]).fetchall()[0]
-                self.tw.addTopLevelItem(QTreeWidgetItem([b, w, c, d]))
+                self.tw.addTopLevelItem(QTreeWidgetItem([b, w, c, q]))
         else:
             del self.rowTitles[0]
         self.title = ''
@@ -1047,11 +1047,16 @@ class Kanbaner(QMainWindow):
             if self.role == 'Admin' or self.role == 'Editor':
                 if [x.row() for x in self.tw.selectedIndexes()]:
                     pos = int(str([x.row() for x in self.tw.selectedIndexes()])[1])
+                    self.tw.clear()
+                    self.id = len(cur.execute('''SELECT id FROM kanban''').fetchall())
+                    for i in range(self.id, 0, -1):
+                        _, b, c, d, e, h = cur.execute('''SELECT * FROM kanban WHERE id = ?''', [str(i)]).fetchall()[0]
+                        self.rowTitles.append(e.split('_'))
+                        self.tw.addTopLevelItem(QTreeWidgetItem([b, h, d, e]))
                     self.task = Task_6(self.rowTitles[pos], cur.execute('''SELECT title FROM kanban WHERE id = ?''',
                                                                         [(str(self.id - pos))]).fetchall()[0][0],
                                        self.id - pos)
                     self.task.show()
-
                 elif ide:
                     pos = ide[0]
                     self.task = Task_6(self.rowTitles[self.id - pos],
@@ -1061,6 +1066,12 @@ class Kanbaner(QMainWindow):
             else:
                 if [x.row() for x in self.tw.selectedIndexes()]:
                     pos = int(str([x.row() for x in self.tw.selectedIndexes()])[1])
+                    self.tw.clear()
+                    self.id = len(cur.execute('''SELECT id FROM kanban''').fetchall())
+                    for i in range(self.id, 0, -1):
+                        _, b, c, d, e, h = cur.execute('''SELECT * FROM kanban WHERE id = ?''', [str(i)]).fetchall()[0]
+                        self.rowTitles.append(e.split('_'))
+                        self.tw.addTopLevelItem(QTreeWidgetItem([b, h, d, e]))
                     self.task = Task(self.rowTitles[pos], cur.execute('''SELECT title FROM kanban WHERE id = ?''',
                                                                       [(str(self.id - pos))]).fetchall()[0][0],
                                      self.id - pos)
@@ -1127,7 +1138,7 @@ class Kanbaner(QMainWindow):
         for i in range(self.id, 0, -1):
             _, b, c, d, e, h = cur.execute('''SELECT * FROM kanban WHERE id = ?''', [str(i)]).fetchall()[0]
             self.rowTitles.append(e.split('_'))
-            self.tw.addTopLevelItem(QTreeWidgetItem([b, h, c, d]))
+            self.tw.addTopLevelItem(QTreeWidgetItem([b, h, d, e]))
         self.open(id)
 
     def exit(self):

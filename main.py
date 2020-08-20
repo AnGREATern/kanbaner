@@ -4,10 +4,10 @@ import sqlite3
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from PyQt5.QtCore import Qt, QDate, QTimer, QSize, QTime
-from PyQt5.QtGui import QFont, QIcon
+from PyQt5.QtGui import QFont, QIcon, QBrush, QColor
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QTableWidgetItem, QTreeWidgetItem, QPushButton, \
     QComboBox, QTableWidget, QSizePolicy, QDateEdit, QLabel, QDesktopWidget, QCheckBox
-from PyQt5 import uic, QtWidgets
+from PyQt5 import uic, QtWidgets, QtGui
 from dateutil.relativedelta import relativedelta
 
 user = None
@@ -77,7 +77,7 @@ class Graphics(QWidget):
             a = cur.execute(f'''SELECT * FROM kanban WHERE id={str(j)}''').fetchall()
             for i in range(len(a)):
                 self.titles.append(a[i][1])
-                self.rowTitlesR.append(a[i][4].split())
+                self.rowTitlesR.append(a[i][4].split('_'))
 
         for i in range(len(self.ispolns)):
             col = 0
@@ -130,6 +130,7 @@ class Graphics(QWidget):
             self.dengi.append(i[4])
         for i in range(len(self.ispolns)):
             col = 0
+            print(self.datesK)
             if datetime.datetime(int(self.datesK[i].split('.')[0]), int(self.datesK[i].split('.')[1]),
                                  int(self.datesK[i].split('.')[2])) + relativedelta(months=+12) >= datetime.datetime.now():
                 col = 3
@@ -938,7 +939,11 @@ class Kanbaner(QMainWindow):
         for i in range(self.id, 0, -1):
             _, b, c, d, e, f = cur.execute('''SELECT * FROM kanban WHERE id = ?''', [str(i)]).fetchall()[0]
             self.rowTitles.append(e.split('_'))
-            self.tw.addTopLevelItem(QTreeWidgetItem([b, f, c, d]))
+            item = QTreeWidgetItem([b, f, c, d])
+            if d != '-':
+                for i in range(4):
+                    item.setBackground(i, QtGui.QBrush(QtGui.QColor("#DBF9CB")))
+            self.tw.addTopLevelItem(item)
         self.gr = None
         self.crew = None
         self.new = None
@@ -992,7 +997,7 @@ class Kanbaner(QMainWindow):
         for j in range(len(self.kanbanid)):
             a = cur.execute(f'''SELECT * FROM kanban WHERE id={str(self.kanbanid[j])}''').fetchall()[0]
             self.titles.append(a[1])
-            self.rowTitlesR.append(a[4].split()[self.rowNum[j]])
+            self.rowTitlesR.append(a[4].split('_')[self.rowNum[j]])
         pushs.append(self.rowTitlesR)
         pushs.append(self.titles)
         pushs.append(self.ispolns)
@@ -1036,7 +1041,11 @@ class Kanbaner(QMainWindow):
             self.tw.clear()
             for i in range(self.id, 0, -1):
                 _, b, c, q, d, w = cur.execute('''SELECT * FROM kanban WHERE id = ?''', [str(i)]).fetchall()[0]
-                self.tw.addTopLevelItem(QTreeWidgetItem([b, w, c, q]))
+                item = QTreeWidgetItem([b, w, c, q])
+                if d != '-':
+                    for i in range(4):
+                        item.setBackground(i, QtGui.QBrush(QtGui.QColor("#DBF9CB")))
+                self.tw.addTopLevelItem(item)
         else:
             del self.rowTitles[0]
         self.title = ''
@@ -1052,7 +1061,11 @@ class Kanbaner(QMainWindow):
                     for i in range(self.id, 0, -1):
                         _, b, c, d, e, h = cur.execute('''SELECT * FROM kanban WHERE id = ?''', [str(i)]).fetchall()[0]
                         self.rowTitles.append(e.split('_'))
-                        self.tw.addTopLevelItem(QTreeWidgetItem([b, h, d, e]))
+                        item = QTreeWidgetItem([b, h, d, e])
+                        if d != '-':
+                            for y in range(4):
+                                item.setBackground(i, QtGui.QBrush(QtGui.QColor("#DBF9CB")))
+                        self.tw.addTopLevelItem(item)
                     self.task = Task_6(self.rowTitles[pos], cur.execute('''SELECT title FROM kanban WHERE id = ?''',
                                                                         [(str(self.id - pos))]).fetchall()[0][0],
                                        self.id - pos)
@@ -1071,7 +1084,11 @@ class Kanbaner(QMainWindow):
                     for i in range(self.id, 0, -1):
                         _, b, c, d, e, h = cur.execute('''SELECT * FROM kanban WHERE id = ?''', [str(i)]).fetchall()[0]
                         self.rowTitles.append(e.split('_'))
-                        self.tw.addTopLevelItem(QTreeWidgetItem([b, h, d, e]))
+                        item = QTreeWidgetItem([b, h, d, e])
+                        if d != '-':
+                            for y in range(4):
+                                item.setBackground(i, QtGui.QBrush(QtGui.QColor("#DBF9CB")))
+                        self.tw.addTopLevelItem(item)
                     self.task = Task(self.rowTitles[pos], cur.execute('''SELECT title FROM kanban WHERE id = ?''',
                                                                       [(str(self.id - pos))]).fetchall()[0][0],
                                      self.id - pos)
@@ -1138,7 +1155,11 @@ class Kanbaner(QMainWindow):
         for i in range(self.id, 0, -1):
             _, b, c, d, e, h = cur.execute('''SELECT * FROM kanban WHERE id = ?''', [str(i)]).fetchall()[0]
             self.rowTitles.append(e.split('_'))
-            self.tw.addTopLevelItem(QTreeWidgetItem([b, h, d, e]))
+            item = QTreeWidgetItem([b, h, c, d])
+            if d != '-':
+                for y in range(4):
+                    item.setBackground(y, QtGui.QBrush(QtGui.QColor("#DBF9CB")))
+            self.tw.addTopLevelItem(item)
         self.open(id)
 
     def exit(self):

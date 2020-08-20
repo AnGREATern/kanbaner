@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1222</width>
+    <width>1523</width>
     <height>830</height>
    </rect>
   </property>
@@ -90,13 +90,13 @@
        <widget class="QPushButton" name="pb_create">
         <property name="minimumSize">
          <size>
-          <width>0</width>
+          <width>200</width>
           <height>50</height>
          </size>
         </property>
         <property name="font">
          <font>
-          <pointsize>12</pointsize>
+          <pointsize>14</pointsize>
          </font>
         </property>
         <property name="text">
@@ -108,13 +108,13 @@
        <widget class="QPushButton" name="pb_graph">
         <property name="minimumSize">
          <size>
-          <width>0</width>
+          <width>350</width>
           <height>50</height>
          </size>
         </property>
         <property name="font">
          <font>
-          <pointsize>12</pointsize>
+          <pointsize>14</pointsize>
          </font>
         </property>
         <property name="text">
@@ -126,13 +126,13 @@
        <widget class="QPushButton" name="pb_finance">
         <property name="minimumSize">
          <size>
-          <width>0</width>
+          <width>300</width>
           <height>50</height>
          </size>
         </property>
         <property name="font">
          <font>
-          <pointsize>12</pointsize>
+          <pointsize>14</pointsize>
          </font>
         </property>
         <property name="text">
@@ -164,13 +164,13 @@
        <widget class="QPushButton" name="pb_login">
         <property name="minimumSize">
          <size>
-          <width>0</width>
+          <width>125</width>
           <height>50</height>
          </size>
         </property>
         <property name="font">
          <font>
-          <pointsize>12</pointsize>
+          <pointsize>14</pointsize>
          </font>
         </property>
         <property name="text">
@@ -482,6 +482,11 @@
       <column>
        <property name="text">
         <string>Дата начала</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Срок сдачи</string>
        </property>
       </column>
       <column>

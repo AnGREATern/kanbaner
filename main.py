@@ -77,22 +77,22 @@ class Graphics(QWidget):
             a = cur.execute(f'''SELECT * FROM kanban WHERE id={str(j)}''').fetchall()
             for i in range(len(a)):
                 self.titles.append(a[i][1])
-                self.rowTitlesR.append(a[i][4].split())
+                self.rowTitlesR.append(a[i][4].split('_'))
 
         for i in range(len(self.ispolns)):
             col = 0
             if self.rowNum[i] == len(self.rowTitlesR[i]) - 1:
                 if datetime.datetime(int(pushs[3][i].split('.')[0]), int(pushs[3][i].split('.')[1]),
-                                     int(pushs[3][i].split('.')[2])) + relativedelta(
-                    months=+12) >= datetime.datetime.now():
+                                     int(pushs[3][i].split('.')[2])) + relativedelta(months=+12)\
+                        >= datetime.datetime.now():
                     col = 3
                 if datetime.datetime(int(pushs[3][i].split('.')[0]), int(pushs[3][i].split('.')[1]),
-                                     int(pushs[3][i].split('.')[2])) + relativedelta(
-                    months=+3) >= datetime.datetime.now():
+                                     int(pushs[3][i].split('.')[2])) + relativedelta(months=+3)\
+                        >= datetime.datetime.now():
                     col = 2
                 if datetime.datetime(int(pushs[3][i].split('.')[0]), int(pushs[3][i].split('.')[1]),
-                                     int(pushs[3][i].split('.')[2])) + relativedelta(
-                    months=+1) >= datetime.datetime.now():
+                                     int(pushs[3][i].split('.')[2])) + relativedelta(months=+1)\
+                        >= datetime.datetime.now():
                     col = 1
                 if col == 1:
                     if not self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.' in isp1.keys():
@@ -546,6 +546,11 @@ class Task_6(QWidget):
                 cur.execute("""UPDATE kanban SET end_date = ? WHERE id = ?""", [str('-'), str(self.id)])
                 con.commit()
                 break
+        lastdata = []
+        for i in cur.execute(f'''SELECT enddate FROM tasks WHERE bind = "{str(self.id)}"''').fetchall():
+            lastdata.append(i[0])
+        cur.execute(f"""UPDATE kanban SET term = '{min(lastdata)}' WHERE id = '{str(self.id)}'""")
+        con.commit()
         task_index = self.tabWidget.currentIndex()
         self.close()
         window.new.reboot(self.id)
@@ -760,7 +765,7 @@ class Finance(QWidget):
         global table_row, con, cur
         if event.key() == Qt.Key_Escape:
             self.close()
-        elif event.key() == 16777220:
+        elif event.key() == 16777220 or event.key() == 16777221:
             try:
                 b = str(self.dtss[-1].date().year()) + '.' + str(self.dtss[-1].date().month()) + '.' + \
                     str(self.dtss[-1].date().day())
@@ -936,9 +941,9 @@ class Kanbaner(QMainWindow):
         self.rowTitles = []
         self.id = len(cur.execute('''SELECT id FROM kanban''').fetchall())
         for i in range(self.id, 0, -1):
-            _, b, c, d, e, f = cur.execute('''SELECT * FROM kanban WHERE id = ?''', [str(i)]).fetchall()[0]
+            _, b, c, d, e, f, q = cur.execute('''SELECT * FROM kanban WHERE id = ?''', [str(i)]).fetchall()[0]
             self.rowTitles.append(e.split('_'))
-            self.tw.addTopLevelItem(QTreeWidgetItem([b, f, c, d]))
+            self.tw.addTopLevelItem(QTreeWidgetItem([b, f, c, q, d]))
         self.gr = None
         self.crew = None
         self.new = None
@@ -992,7 +997,7 @@ class Kanbaner(QMainWindow):
         for j in range(len(self.kanbanid)):
             a = cur.execute(f'''SELECT * FROM kanban WHERE id={str(self.kanbanid[j])}''').fetchall()[0]
             self.titles.append(a[1])
-            self.rowTitlesR.append(a[4].split()[self.rowNum[j]])
+            self.rowTitlesR.append(a[4].split('_')[self.rowNum[j]])
         pushs.append(self.rowTitlesR)
         pushs.append(self.titles)
         pushs.append(self.ispolns)
@@ -1035,8 +1040,8 @@ class Kanbaner(QMainWindow):
             con.commit()
             self.tw.clear()
             for i in range(self.id, 0, -1):
-                _, b, c, q, d, w = cur.execute('''SELECT * FROM kanban WHERE id = ?''', [str(i)]).fetchall()[0]
-                self.tw.addTopLevelItem(QTreeWidgetItem([b, w, c, q]))
+                _, b, c, q, d, w, e = cur.execute('''SELECT * FROM kanban WHERE id = ?''', [str(i)]).fetchall()[0]
+                self.tw.addTopLevelItem(QTreeWidgetItem([b, w, c, e, q]))
         else:
             del self.rowTitles[0]
         self.title = ''
@@ -1050,9 +1055,9 @@ class Kanbaner(QMainWindow):
                     self.tw.clear()
                     self.id = len(cur.execute('''SELECT id FROM kanban''').fetchall())
                     for i in range(self.id, 0, -1):
-                        _, b, c, d, e, h = cur.execute('''SELECT * FROM kanban WHERE id = ?''', [str(i)]).fetchall()[0]
+                        _, b, c, d, e, h, q = cur.execute('''SELECT * FROM kanban WHERE id = ?''', [str(i)]).fetchall()[0]
                         self.rowTitles.append(e.split('_'))
-                        self.tw.addTopLevelItem(QTreeWidgetItem([b, h, d, e]))
+                        self.tw.addTopLevelItem(QTreeWidgetItem([b, h, c, q, d]))
                     self.task = Task_6(self.rowTitles[pos], cur.execute('''SELECT title FROM kanban WHERE id = ?''',
                                                                         [(str(self.id - pos))]).fetchall()[0][0],
                                        self.id - pos)
@@ -1071,7 +1076,7 @@ class Kanbaner(QMainWindow):
                     for i in range(self.id, 0, -1):
                         _, b, c, d, e, h = cur.execute('''SELECT * FROM kanban WHERE id = ?''', [str(i)]).fetchall()[0]
                         self.rowTitles.append(e.split('_'))
-                        self.tw.addTopLevelItem(QTreeWidgetItem([b, h, d, e]))
+                        self.tw.addTopLevelItem(QTreeWidgetItem([b, h, c, d]))
                     self.task = Task(self.rowTitles[pos], cur.execute('''SELECT title FROM kanban WHERE id = ?''',
                                                                       [(str(self.id - pos))]).fetchall()[0][0],
                                      self.id - pos)
@@ -1136,9 +1141,9 @@ class Kanbaner(QMainWindow):
     def reboot(self, id):
         self.tw.clear()
         for i in range(self.id, 0, -1):
-            _, b, c, d, e, h = cur.execute('''SELECT * FROM kanban WHERE id = ?''', [str(i)]).fetchall()[0]
+            _, b, c, d, e, h, q = cur.execute('''SELECT * FROM kanban WHERE id = ?''', [str(i)]).fetchall()[0]
             self.rowTitles.append(e.split('_'))
-            self.tw.addTopLevelItem(QTreeWidgetItem([b, h, d, e]))
+            self.tw.addTopLevelItem(QTreeWidgetItem([b, h, c, q, d]))
         self.open(id)
 
     def exit(self):

@@ -945,8 +945,8 @@ class Kanbaner(QMainWindow):
             self.rowTitles.append(e.split('_'))
             item = QTreeWidgetItem([b, f, c, q, d])
             if d != '-':
-                for i in range(4):
-                    item.setBackground(i, QtGui.QBrush(QtGui.QColor("#DBF9CB")))
+                for y in range(5):
+                    item.setBackground(y, QtGui.QBrush(QtGui.QColor("#DBF9CB")))
             self.tw.addTopLevelItem(item)
         self.gr = None
         self.crew = None
@@ -1047,8 +1047,8 @@ class Kanbaner(QMainWindow):
                 _, b, c, q, d, w, e = cur.execute('''SELECT * FROM kanban WHERE id = ?''', [str(i)]).fetchall()[0]
                 item = QTreeWidgetItem([b, w, c, e, q])
                 if d != '-':
-                    for i in range(4):
-                        item.setBackground(i, QtGui.QBrush(QtGui.QColor("#DBF9CB")))
+                    for y in range(5):
+                        item.setBackground(y, QtGui.QBrush(QtGui.QColor("#DBF9CB")))
                 self.tw.addTopLevelItem(item)
         else:
             del self.rowTitles[0]
@@ -1067,7 +1067,7 @@ class Kanbaner(QMainWindow):
                         self.rowTitles.append(e.split('_'))
                         item = QTreeWidgetItem([b, h, c, q, d])
                         if d != '-':
-                            for y in range(4):
+                            for y in range(5):
                                 item.setBackground(i, QtGui.QBrush(QtGui.QColor("#DBF9CB")))
                         self.tw.addTopLevelItem(item)
                     self.task = Task_6(self.rowTitles[pos], cur.execute('''SELECT title FROM kanban WHERE id = ?''',
@@ -1090,7 +1090,7 @@ class Kanbaner(QMainWindow):
                         self.rowTitles.append(e.split('_'))
                         item = QTreeWidgetItem([b, h, c, d])
                         if d != '-':
-                            for y in range(4):
+                            for y in range(5):
                                 item.setBackground(i, QtGui.QBrush(QtGui.QColor("#DBF9CB")))
                         self.tw.addTopLevelItem(item)
                     self.task = Task(self.rowTitles[pos], cur.execute('''SELECT title FROM kanban WHERE id = ?''',
@@ -1161,7 +1161,7 @@ class Kanbaner(QMainWindow):
             self.rowTitles.append(e.split('_'))
             item = QTreeWidgetItem([b, h, c, q, d])
             if d != '-':
-                for y in range(4):
+                for y in range(5):
                     item.setBackground(y, QtGui.QBrush(QtGui.QColor("#DBF9CB")))
             self.tw.addTopLevelItem(item)
         self.open(id)

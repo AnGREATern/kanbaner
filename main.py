@@ -536,7 +536,7 @@ class Task_6(QWidget):
                 cur.execute("""UPDATE kanban SET stage = ? WHERE id = ?""",
                             [self.tabWidget.tabText(len(self.tabs) - 1), str(self.id)])
                 cur.execute("""UPDATE kanban SET end_date = ? WHERE id = ?""",
-                            [str(datetime.datetime.strftime(datetime.datetime.now(), "%Y.%m.%d %H:%M:%S")),
+                            [str(datetime.datetime.strftime(datetime.datetime.now(), "%H:%M:%S %d.%m.%Y")),
                              str(self.id)])
                 con.commit()
                 break
@@ -715,7 +715,7 @@ class Task(QWidget):
                             [self.tabWidget.tabText(len(self.tabs) - 1), str(self.id)])
                 cur.execute("""UPDATE kanban SET end_date = ? WHERE id = ?""",
                             [str(datetime.datetime.strftime(datetime.datetime.now(),
-                                                            "%Y.%m.%d %H:%M:%S")), str(self.id)])
+                                                            "%H:%M:%S %d.%m.%Y")), str(self.id)])
                 con.commit()
                 break
         task_index = self.tabWidget.currentIndex()
@@ -943,10 +943,25 @@ class Kanbaner(QMainWindow):
         for i in range(self.id, 0, -1):
             _, b, c, d, e, f, q = cur.execute('''SELECT * FROM kanban WHERE id = ?''', [str(i)]).fetchall()[0]
             self.rowTitles.append(e.split('_'))
+            if q != '-':
+                q = '.'.join([q.split('.')[2], q.split('.')[1], q.split('.')[0]])
+            if d != '-':
+                debil = d.split()[1]
+            print(1)
             item = QTreeWidgetItem([b, f, c, q, d])
             if d != '-':
-                for y in range(5):
-                    item.setBackground(y, QtGui.QBrush(QtGui.QColor("#DBF9CB")))
+                if q != '-':
+                    print(datetime.datetime(int(debil.split('.')[2]), int(debil.split('.')[1]), int(debil.split('.')[0])))
+                    if datetime.datetime(int(q.split('.')[2]), int(q.split('.')[1]), int(q.split('.')[0])) >= datetime.datetime(int(debil.split('.')[2]), int(debil.split('.')[1]), int(debil.split('.')[0])):
+                        print(3)
+                        for y in range(5):
+                            item.setBackground(y, QtGui.QBrush(QtGui.QColor("#DBF9CB")))
+                        print(3)
+                    else:
+                        for y in range(5):
+                            item.setBackground(y, QtGui.QBrush(QtGui.QColor("#BE272F")))
+                        print(3)
+
             self.tw.addTopLevelItem(item)
         self.gr = None
         self.crew = None
@@ -1037,16 +1052,20 @@ class Kanbaner(QMainWindow):
         self.rowTitles[0].append('Готово')
         if len(self.rowTitles[0]) > 1:
             self.id += 1
-            cur.executemany("""INSERT INTO kanban VALUES (?,?,?,?,?,?)""",
+            print(str(datetime.datetime.strftime(datetime.datetime.now(), "%H:%M:%S %d.%m.%Y ")))
+            cur.executemany("""INSERT INTO kanban VALUES (?,?,?,?,?,?,?)""",
                             [(self.id, str(self.title),
-                              str(datetime.datetime.strftime(datetime.datetime.now(), "%H:%M:%S %d.%m.%Y")),
-                              '-', '_'.join(self.rowTitles[0]), self.rowTitles[0][0])])
+                              str(datetime.datetime.strftime(datetime.datetime.now(), "%H:%M:%S %d.%m.%Y ")),
+                              '-', '_'.join(self.rowTitles[0]), self.rowTitles[0][0], '-')])
+            print(2)
             con.commit()
             self.tw.clear()
             for i in range(self.id, 0, -1):
                 _, b, c, q, d, w, e = cur.execute('''SELECT * FROM kanban WHERE id = ?''', [str(i)]).fetchall()[0]
+                if e != '-':
+                    e = '.'.join([e.split('.')[2], e.split('.')[1], e.split('.')[0]])
                 item = QTreeWidgetItem([b, w, c, e, q])
-                if d != '-':
+                if q != '-':
                     for y in range(5):
                         item.setBackground(y, QtGui.QBrush(QtGui.QColor("#DBF9CB")))
                 self.tw.addTopLevelItem(item)
@@ -1065,10 +1084,12 @@ class Kanbaner(QMainWindow):
                     for i in range(self.id, 0, -1):
                         _, b, c, d, e, h, q = cur.execute('''SELECT * FROM kanban WHERE id = ?''', [str(i)]).fetchall()[0]
                         self.rowTitles.append(e.split('_'))
+                        if q != '-':
+                            q = '.'.join([q.split('.')[2], q.split('.')[1], q.split('.')[0]])
                         item = QTreeWidgetItem([b, h, c, q, d])
                         if d != '-':
                             for y in range(5):
-                                item.setBackground(i, QtGui.QBrush(QtGui.QColor("#DBF9CB")))
+                                item.setBackground(y, QtGui.QBrush(QtGui.QColor("#DBF9CB")))
                         self.tw.addTopLevelItem(item)
                     self.task = Task_6(self.rowTitles[pos], cur.execute('''SELECT title FROM kanban WHERE id = ?''',
                                                                         [(str(self.id - pos))]).fetchall()[0][0],
@@ -1088,10 +1109,12 @@ class Kanbaner(QMainWindow):
                     for i in range(self.id, 0, -1):
                         _, b, c, d, e, h = cur.execute('''SELECT * FROM kanban WHERE id = ?''', [str(i)]).fetchall()[0]
                         self.rowTitles.append(e.split('_'))
+                        if h != '-':
+                            h = '.'.join([h.split('.')[2], h.split('.')[1], h.split('.')[0]])
                         item = QTreeWidgetItem([b, h, c, d])
                         if d != '-':
                             for y in range(5):
-                                item.setBackground(i, QtGui.QBrush(QtGui.QColor("#DBF9CB")))
+                                item.setBackground(y, QtGui.QBrush(QtGui.QColor("#DBF9CB")))
                         self.tw.addTopLevelItem(item)
                     self.task = Task(self.rowTitles[pos], cur.execute('''SELECT title FROM kanban WHERE id = ?''',
                                                                       [(str(self.id - pos))]).fetchall()[0][0],

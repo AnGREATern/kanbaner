@@ -574,9 +574,19 @@ class Task_6(QWidget):
                 con.commit()
                 break
         lastdata = []
-        for i in cur.execute(f'''SELECT enddate FROM tasks WHERE bind = "{str(self.id)}"''').fetchall():
+        for i in cur.execute(f'''SELECT enddate FROM tasks WHERE bind = "{str(self.id)}" AND row < "{str(len(self.tabs) - 1)}"''').fetchall():
             lastdata.append(i[0])
-        cur.execute(f"""UPDATE kanban SET term = '{min(lastdata)}' WHERE id = '{str(self.id)}'""")
+        if lastdata:
+            cur.execute(f"""UPDATE kanban SET term = '{min(lastdata)}' WHERE id = '{str(self.id)}'""")
+        else:
+            lastdata = []
+            for i in cur.execute(
+                    f'''SELECT enddate FROM tasks WHERE bind = "{str(self.id)}" AND row = "{str(len(self.tabs) - 1)}"''').fetchall():
+                lastdata.append(i[0])
+            if lastdata:
+                cur.execute(f"""UPDATE kanban SET term = '{max(lastdata)}' WHERE id = '{str(self.id)}'""")
+            else:
+                cur.execute(f"""UPDATE kanban SET term = '-' WHERE id = '{str(self.id)}'""")
         con.commit()
         task_index = self.tabWidget.currentIndex()
         self.close()
@@ -1070,7 +1080,7 @@ class Kanbaner(QMainWindow):
 
     def re(self):
         if [x.row() for x in self.tw.selectedIndexes()]:
-            pos = self.id - int(str([x.row() for x in self.tw.selectedIndexes()])[1])
+            pos = self.id - int([x.row() for x in self.tw.selectedIndexes()][0])
             self.change = Change(pos)
             self.change.show()
             self.change.pb_complete.clicked.connect(self.revvod)
@@ -1081,7 +1091,7 @@ class Kanbaner(QMainWindow):
 
     def revvod(self):
         try:
-            pos = int(str([x.row() for x in self.tw.selectedIndexes()])[1])
+            pos = int([x.row() for x in self.tw.selectedIndexes()][0])
             stage = self.rowTitles[pos].index(cur.execute('''SELECT stage FROM kanban WHERE id = ?''', [str(self.id - pos)]).fetchall()[0][0])
             self.rowTitlesBad.clear()
             self.rowTitlesBad.extend([self.change.le2.text(), self.change.le3.text(), self.change.le4.text(), self.change.le5.text(),
@@ -1185,7 +1195,7 @@ class Kanbaner(QMainWindow):
         try:
             if self.role == 'Admin' or self.role == 'Editor':
                 if [x.row() for x in self.tw.selectedIndexes()]:
-                    pos = int(str([x.row() for x in self.tw.selectedIndexes()])[1])
+                    pos = int([x.row() for x in self.tw.selectedIndexes()][0])
                     self.tw.clear()
                     self.id = len(cur.execute('''SELECT id FROM kanban''').fetchall())
                     for i in range(self.id, 0, -1):
@@ -1226,7 +1236,7 @@ class Kanbaner(QMainWindow):
                     self.task.show()
             else:
                 if [x.row() for x in self.tw.selectedIndexes()]:
-                    pos = int(str([x.row() for x in self.tw.selectedIndexes()])[1])
+                    pos = int([x.row() for x in self.tw.selectedIndexes()][0])
                     self.tw.clear()
                     self.id = len(cur.execute('''SELECT id FROM kanban''').fetchall())
                     for i in range(self.id, 0, -1):
@@ -1274,7 +1284,7 @@ class Kanbaner(QMainWindow):
     def delete(self):
         global task_row
         if [x.row() for x in self.tw.selectedIndexes()]:
-            pos = int(str([x.row() for x in self.tw.selectedIndexes()])[1])
+            pos = int([x.row() for x in self.tw.selectedIndexes()][0])
             i = self.id - pos
             row = len(self.rowTitles[pos])
             for p in range(row):

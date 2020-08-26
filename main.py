@@ -83,15 +83,15 @@ class Graphics(QWidget):
             col = 0
             if self.rowNum[i] == len(self.rowTitlesR[i]) - 1:
                 if datetime.datetime(int(pushs[3][i].split('.')[0]), int(pushs[3][i].split('.')[1]),
-                                     int(pushs[3][i].split('.')[2])) + relativedelta(months=+12)\
+                                     int(pushs[3][i].split('.')[2])) + relativedelta(months=+12) \
                         >= datetime.datetime.now():
                     col = 3
                 if datetime.datetime(int(pushs[3][i].split('.')[0]), int(pushs[3][i].split('.')[1]),
-                                     int(pushs[3][i].split('.')[2])) + relativedelta(months=+3)\
+                                     int(pushs[3][i].split('.')[2])) + relativedelta(months=+3) \
                         >= datetime.datetime.now():
                     col = 2
                 if datetime.datetime(int(pushs[3][i].split('.')[0]), int(pushs[3][i].split('.')[1]),
-                                     int(pushs[3][i].split('.')[2])) + relativedelta(months=+1)\
+                                     int(pushs[3][i].split('.')[2])) + relativedelta(months=+1) \
                         >= datetime.datetime.now():
                     col = 1
                 if col == 1:
@@ -131,13 +131,16 @@ class Graphics(QWidget):
         for i in range(len(self.ispolns)):
             col = 0
             if datetime.datetime(int(self.datesK[i].split('.')[0]), int(self.datesK[i].split('.')[1]),
-                                 int(self.datesK[i].split('.')[2])) + relativedelta(months=+12) >= datetime.datetime.now():
+                                 int(self.datesK[i].split('.')[2])) + relativedelta(
+                months=+12) >= datetime.datetime.now():
                 col = 3
             if datetime.datetime(int(self.datesK[i].split('.')[0]), int(self.datesK[i].split('.')[1]),
-                                 int(self.datesK[i].split('.')[2])) + relativedelta(months=+3) >= datetime.datetime.now():
+                                 int(self.datesK[i].split('.')[2])) + relativedelta(
+                months=+3) >= datetime.datetime.now():
                 col = 2
             if datetime.datetime(int(self.datesK[i].split('.')[0]), int(self.datesK[i].split('.')[1]),
-                                 int(self.datesK[i].split('.')[2])) + relativedelta(months=+1) >= datetime.datetime.now():
+                                 int(self.datesK[i].split('.')[2])) + relativedelta(
+                months=+1) >= datetime.datetime.now():
                 col = 1
             if col == 1:
                 if not self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.' in ispF1.keys():
@@ -372,7 +375,7 @@ class Task_6(QWidget):
                     self.dtss[self.c_num][self.rowNum].setStyleSheet('background-color: red;'
                                                                      ' font: 75 12pt "MS Shell Dlg 2";')
                 self.chx[self.c_num].append(QCheckBox())
-                if (self.role == 'Admin' and check_admin == 'True')\
+                if (self.role == 'Admin' and check_admin == 'True') \
                         or (self.role == 'Editor' and check_editor == 'True'):
                     self.chx[self.c_num][-1].setChecked(True)
                 self.pb_more = QPushButton('Подробнее')
@@ -383,7 +386,7 @@ class Task_6(QWidget):
                     self.pbs[self.c_num][-1].setStyleSheet('QPushButton {background-color: rgb(116, 208, 196);'
                                                            ' font: 75 12pt}')
                 self.pbs[self.c_num][-1].clicked.connect(lambda checked,
-                                                         a=[bind, row, self.position, self.sn, com, idishnik]:
+                                                                a=[bind, row, self.position, self.sn, com, idishnik]:
                                                          self.more(a))
                 self.cbss[self.c_num].append(QComboBox())
                 self.cbss[self.c_num][-1].setStyleSheet('font: 75 12pt')
@@ -465,7 +468,7 @@ class Task_6(QWidget):
         try:
             i = self.tabWidget.currentIndex()
             for j in range(self.tabs[i].rowCount() - 1, -1, -1):
-                if [self.dtss[i][j].date().day(), self.dtss[i][j].date().month(), self.dtss[i][j].date().year()] ==\
+                if [self.dtss[i][j].date().day(), self.dtss[i][j].date().month(), self.dtss[i][j].date().year()] == \
                         [datetime.datetime.now().day, datetime.datetime.now().month, datetime.datetime.now().year]:
                     self.dtss[i][j].setStyleSheet('background-color: red')
                 if self.cbss[i][j].currentText() == '%Удалить%':
@@ -644,7 +647,7 @@ class Task(QWidget):
                     self.pbs[self.c_num][-1].setStyleSheet('QPushButton {background-color: rgb(116, 208, 196);'
                                                            ' font: 75 12pt}')
                 self.pbs[self.c_num][-1].clicked.connect(lambda checked,
-                                                         a=[bind, row, self.position, self.sn, com]:
+                                                                a=[bind, row, self.position, self.sn, com]:
                                                          self.more(a))
                 self.cbss[self.c_num].append(QComboBox())
                 self.cbss[self.c_num][-1].setStyleSheet('font: 75 12pt')
@@ -673,7 +676,7 @@ class Task(QWidget):
         try:
             i = self.tabWidget.currentIndex()
             for j in range(self.tabs[i].rowCount() - 1, -1, -1):
-                if [self.dtss[i][j].date().day(), self.dtss[i][j].date().month(), self.dtss[i][j].date().year()] ==\
+                if [self.dtss[i][j].date().day(), self.dtss[i][j].date().month(), self.dtss[i][j].date().year()] == \
                         [datetime.datetime.now().day, datetime.datetime.now().month, datetime.datetime.now().year]:
                     self.dtss[i][j].setStyleSheet('background-color: red')
                 if not self.cbss[i][j].currentText() == self.tabWidget.tabText(i):
@@ -814,10 +817,10 @@ class Push(QWidget):
                                         int(pushs[3][i].split('.')[1]), int(pushs[3][i].split('.')[2]))
                 now = datetime.datetime.now()
                 if dtl > now:
-                    lwt = f'У {pushs[2][i].split(".")[0]} осталось {str((dtl - now).days)} д. до завершения задания в '\
+                    lwt = f'У {pushs[2][i].split(".")[0]} осталось {str((dtl - now).days)} д. до завершения задания в ' \
                           f'столбце "{pushs[1][i].split(".")[0]}" канбана "{pushs[0][i].split(".")[0]}" '
                 elif dtl < now:
-                    lwt = f'У {pushs[2][i].split(".")[0]} просрочилось на {str((now - dtl).days)} д. задание в столбце'\
+                    lwt = f'У {pushs[2][i].split(".")[0]} просрочилось на {str((now - dtl).days)} д. задание в столбце' \
                           f' "{pushs[1][i].split(".")[0]}" канбана "{pushs[0][i].split(".")[0]}" '
                 else:
                     lwt = f'У {pushs[2][i].split(".")[0]} сегодня завершается задание в столбце' \
@@ -950,12 +953,21 @@ class Kanbaner(QMainWindow):
             item = QTreeWidgetItem([b, f, c, q, d])
             if d != '-':
                 if q != '-':
-                    if datetime.datetime(int(q.split('.')[2]), int(q.split('.')[1]), int(q.split('.')[0])) >= datetime.datetime(int(debil.split('.')[2]), int(debil.split('.')[1]), int(debil.split('.')[0])):
+                    if datetime.datetime(int(q.split('.')[2]), int(q.split('.')[1]),
+                                         int(q.split('.')[0])) >= datetime.datetime(int(debil.split('.')[2]),
+                                                                                    int(debil.split('.')[1]),
+                                                                                    int(debil.split('.')[0])):
                         for y in range(5):
                             item.setBackground(y, QtGui.QBrush(QtGui.QColor("#DBF9CB")))
                     else:
                         for y in range(5):
                             item.setBackground(y, QtGui.QBrush(QtGui.QColor("#BE272F")))
+                else:
+                    for y in range(5):
+                        item.setBackground(y, QtGui.QBrush(QtGui.QColor("#FFFFFF")))
+            else:
+                for y in range(5):
+                    item.setBackground(y, QtGui.QBrush(QtGui.QColor("#FFFFFF")))
             self.tw.addTopLevelItem(item)
         self.gr = None
         self.crew = None
@@ -1070,6 +1082,12 @@ class Kanbaner(QMainWindow):
                         else:
                             for y in range(5):
                                 item.setBackground(y, QtGui.QBrush(QtGui.QColor("#BE272F")))
+                    else:
+                        for y in range(5):
+                            item.setBackground(y, QtGui.QBrush(QtGui.QColor("#FFFFFF")))
+                else:
+                    for y in range(5):
+                        item.setBackground(y, QtGui.QBrush(QtGui.QColor("#FFFFFF")))
                 self.tw.addTopLevelItem(item)
         else:
             del self.rowTitles[0]
@@ -1084,7 +1102,8 @@ class Kanbaner(QMainWindow):
                     self.tw.clear()
                     self.id = len(cur.execute('''SELECT id FROM kanban''').fetchall())
                     for i in range(self.id, 0, -1):
-                        _, b, c, d, e, h, q = cur.execute('''SELECT * FROM kanban WHERE id = ?''', [str(i)]).fetchall()[0]
+                        _, b, c, d, e, h, q = cur.execute('''SELECT * FROM kanban WHERE id = ?''', [str(i)]).fetchall()[
+                            0]
                         self.rowTitles.append(e.split('_'))
                         if q != '-':
                             q = '.'.join([q.split('.')[2], q.split('.')[1], q.split('.')[0]])
@@ -1095,12 +1114,18 @@ class Kanbaner(QMainWindow):
                             if q != '-':
                                 if datetime.datetime(int(q.split('.')[2]), int(q.split('.')[1]),
                                                      int(q.split('.')[0])) >= datetime.datetime(
-                                        int(debil.split('.')[2]), int(debil.split('.')[1]), int(debil.split('.')[0])):
+                                    int(debil.split('.')[2]), int(debil.split('.')[1]), int(debil.split('.')[0])):
                                     for y in range(5):
                                         item.setBackground(y, QtGui.QBrush(QtGui.QColor("#DBF9CB")))
                                 else:
                                     for y in range(5):
                                         item.setBackground(y, QtGui.QBrush(QtGui.QColor("#BE272F")))
+                            else:
+                                for y in range(5):
+                                    item.setBackground(y, QtGui.QBrush(QtGui.QColor("#FFFFFF")))
+                        else:
+                            for y in range(5):
+                                item.setBackground(y, QtGui.QBrush(QtGui.QColor("#FFFFFF")))
                         self.tw.addTopLevelItem(item)
                     self.task = Task_6(self.rowTitles[pos], cur.execute('''SELECT title FROM kanban WHERE id = ?''',
                                                                         [(str(self.id - pos))]).fetchall()[0][0],
@@ -1118,7 +1143,8 @@ class Kanbaner(QMainWindow):
                     self.tw.clear()
                     self.id = len(cur.execute('''SELECT id FROM kanban''').fetchall())
                     for i in range(self.id, 0, -1):
-                        _, b, c, d, e, h, q = cur.execute('''SELECT * FROM kanban WHERE id = ?''', [str(i)]).fetchall()[0]
+                        _, b, c, d, e, h, q = cur.execute('''SELECT * FROM kanban WHERE id = ?''', [str(i)]).fetchall()[
+                            0]
                         if q != '-':
                             q = '.'.join([q.split('.')[2], q.split('.')[1], q.split('.')[0]])
                         if d != '-':
@@ -1134,6 +1160,12 @@ class Kanbaner(QMainWindow):
                                 else:
                                     for y in range(5):
                                         item.setBackground(y, QtGui.QBrush(QtGui.QColor("#BE272F")))
+                            else:
+                                for y in range(5):
+                                    item.setBackground(y, QtGui.QBrush(QtGui.QColor("#FFFFFF")))
+                        else:
+                            for y in range(5):
+                                item.setBackground(y, QtGui.QBrush(QtGui.QColor("#FFFFFF")))
                         self.tw.addTopLevelItem(item)
                     self.task = Task(self.rowTitles[pos], cur.execute('''SELECT title FROM kanban WHERE id = ?''',
                                                                       [(str(self.id - pos))]).fetchall()[0][0],
@@ -1216,6 +1248,12 @@ class Kanbaner(QMainWindow):
                     else:
                         for y in range(5):
                             item.setBackground(y, QtGui.QBrush(QtGui.QColor("#BE272F")))
+                else:
+                    for y in range(5):
+                        item.setBackground(y, QtGui.QBrush(QtGui.QColor("#FFFFFF")))
+            else:
+                for y in range(5):
+                    item.setBackground(y, QtGui.QBrush(QtGui.QColor("#FFFFFF")))
             self.tw.addTopLevelItem(item)
         self.open(id)
 

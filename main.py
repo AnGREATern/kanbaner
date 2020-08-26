@@ -4,7 +4,7 @@ import sqlite3
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from PyQt5.QtCore import Qt, QDate, QTimer, QSize, QTime
-from PyQt5.QtGui import QFont, QIcon, QBrush, QColor
+from PyQt5.QtGui import QFont, QIcon
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QTableWidgetItem, QTreeWidgetItem, QPushButton, \
     QComboBox, QTableWidget, QSizePolicy, QDateEdit, QLabel, QDesktopWidget, QCheckBox
 from PyQt5 import uic, QtWidgets, QtGui
@@ -58,6 +58,30 @@ class New(QWidget):
         super().__init__()
         uic.loadUi('create.ui', self)
         self.setWindowIcon(QIcon('icon.ico'))
+
+
+class Change(QWidget):
+    def __init__(self, pos):
+        super().__init__()
+        uic.loadUi('create.ui', self)
+        self.setWindowIcon(QIcon('icon.ico'))
+        self.setWindowTitle('Изменить')
+        self.rowTitles = cur.execute('''SELECT row_titles FROM kanban WHERE id = ?''', [str(pos)]).fetchall()[0][
+                             0].split('_')[:-1]
+        self.title = cur.execute('''SELECT title FROM kanban WHERE id = ?''', [str(pos)]).fetchall()[0][
+                             0]
+        try:
+            self.leName.setText(self.title)
+            self.le2.insert(self.rowTitles[0])
+            self.le3.setText(self.rowTitles[1])
+            self.le4.setText(self.rowTitles[2])
+            self.le5.setText(self.rowTitles[3])
+            self.le6.setText(self.rowTitles[4])
+            self.le7.setText(self.rowTitles[5])
+            self.le8.setText(self.rowTitles[6])
+            self.le9.setText(self.rowTitles[7])
+        except:
+            pass
 
 
 class Graphics(QWidget):
@@ -928,11 +952,13 @@ class Kanbaner(QMainWindow):
         self.label.setText(user)
         if self.role == 'Admin':
             self.pb_create.clicked.connect(self.creater)
+            self.pb_re.clicked.connect(self.re)
             self.pb_delete.clicked.connect(self.delete)
             self.pb_finance.clicked.connect(self.cash)
             self.pb_graph.clicked.connect(self.graphics)
         else:
             self.pb_create.setParent(None)
+            self.pb_re.setParent(None)
             self.pb_finance.setParent(None)
             self.pb_delete.setParent(None)
             self.pb_graph.setParent(None)
@@ -1042,9 +1068,70 @@ class Kanbaner(QMainWindow):
         self.new.show()
         self.new.pb_complete.clicked.connect(self.vvod)
 
+    def re(self):
+        if [x.row() for x in self.tw.selectedIndexes()]:
+            pos = self.id - int(str([x.row() for x in self.tw.selectedIndexes()])[1])
+            self.change = Change(pos)
+            self.change.show()
+            self.change.pb_complete.clicked.connect(self.revvod)
+
     def graphics(self):
         self.gr = Graphics()
         self.gr.show()
+
+    def revvod(self):
+        try:
+            pos = int(str([x.row() for x in self.tw.selectedIndexes()])[1])
+            stage = self.rowTitles[pos].index(cur.execute('''SELECT stage FROM kanban WHERE id = ?''', [str(self.id - pos)]).fetchall()[0][0])
+            self.rowTitlesBad.clear()
+            self.rowTitlesBad.extend([self.change.le2.text(), self.change.le3.text(), self.change.le4.text(), self.change.le5.text(),
+                                      self.change.le6.text(), self.change.le7.text(), self.change.le8.text(), self.change.le9.text()])
+            self.title = self.change.leName.text()
+            self.rowTitlesCopy = self.rowTitles.copy()
+            self.rowTitles[pos] = []
+            for i in self.rowTitlesBad:
+                if i:
+                    self.rowTitles[pos].append(i)
+            self.rowTitles[pos].append('Готово')
+            if len(self.rowTitles[pos]) > 1:
+                cur.execute(f"""UPDATE kanban SET title = '{str(self.title)}' WHERE id = '{str(self.id - pos)}'""")
+                cur.execute(
+                    f"""UPDATE kanban SET row_titles = '{'_'.join(self.rowTitles[pos])}' WHERE id = '{str(self.id - pos)}'""")
+                cur.execute(
+                    f"""UPDATE kanban SET stage = '{str(self.rowTitles[pos][stage])}' WHERE id = '{str(self.id - pos)}'""")
+                con.commit()
+                self.tw.clear()
+                for i in range(self.id, 0, -1):
+                    _, b, c, q, d, w, e = cur.execute('''SELECT * FROM kanban WHERE id = ?''', [str(i)]).fetchall()[0]
+                    if e != '-':
+                        e = '.'.join([e.split('.')[2], e.split('.')[1], e.split('.')[0]])
+                    if q != '-':
+                        debil = q.split()[1]
+                    item = QTreeWidgetItem([b, w, c, e, q])
+                    if q != '-':
+                        if e != '-':
+                            if datetime.datetime(int(e.split('.')[2]), int(e.split('.')[1]),
+                                                 int(e.split('.')[0])) >= datetime.datetime(int(debil.split('.')[2]),
+                                                                                            int(debil.split('.')[1]),
+                                                                                            int(debil.split('.')[0])):
+                                for y in range(5):
+                                    item.setBackground(y, QtGui.QBrush(QtGui.QColor("#DBF9CB")))
+                            else:
+                                for y in range(5):
+                                    item.setBackground(y, QtGui.QBrush(QtGui.QColor("#BE272F")))
+                        else:
+                            for y in range(5):
+                                item.setBackground(y, QtGui.QBrush(QtGui.QColor("#FFFFFF")))
+                    else:
+                        for y in range(5):
+                            item.setBackground(y, QtGui.QBrush(QtGui.QColor("#FFFFFF")))
+                    self.tw.addTopLevelItem(item)
+            else:
+                self.rowTitles = self.rowTitlesCopy.copy()
+            self.title = ''
+            self.change.close()
+        except:
+            pass
 
     def vvod(self):
         self.rowTitlesBad.clear()

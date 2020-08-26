@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1523</width>
-    <height>830</height>
+    <height>795</height>
    </rect>
   </property>
   <property name="palette">
@@ -515,6 +515,24 @@
         </property>
         <property name="text">
          <string>Открыть</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pb_re">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>80</height>
+         </size>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>16</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Изменить</string>
         </property>
        </widget>
       </item>

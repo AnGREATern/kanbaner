@@ -293,8 +293,9 @@ AND row = {str(self.a[1])} AND positioning = {str(self.a[2])}""")
 
     def send(self):
         if str(self.teSend.toPlainText().rstrip()):
-            com = [self.a[3], cur.execute(f'''SELECT SN FROM main WHERE adm = "Admin"''').fetchall()[0][0],
-                   cur.execute(f'''SELECT SN FROM main WHERE adm = "Editor"''').fetchall()[0][0]]
+            com = [self.a[3]]
+            com.extend([i[0] for i in cur.execute(f'''SELECT SN FROM main WHERE adm = "Admin"''').fetchall()])
+            com.extend([i[0] for i in cur.execute(f'''SELECT SN FROM main WHERE adm = "Editor"''').fetchall()])
             com = list(set(com))
             del com[com.index(user)]
             self.teChat.append(user + ': ' + str(self.teSend.toPlainText()).rstrip())
@@ -410,7 +411,7 @@ class Task_6(QWidget):
                     self.pbs[self.c_num][-1].setStyleSheet('QPushButton {background-color: rgb(116, 208, 196);'
                                                            ' font: 75 12pt}')
                 self.pbs[self.c_num][-1].clicked.connect(lambda checked,
-                                                                a=[bind, row, self.position, self.sn, com, idishnik]:
+                                                         a=[bind, row, self.position, self.sn, com, idishnik]:
                                                          self.more(a))
                 self.cbss[self.c_num].append(QComboBox())
                 self.cbss[self.c_num][-1].setStyleSheet('font: 75 12pt')

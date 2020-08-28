@@ -6,7 +6,7 @@ from matplotlib.figure import Figure
 from PyQt5.QtCore import Qt, QDate, QTimer, QSize, QTime
 from PyQt5.QtGui import QFont, QIcon
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QTableWidgetItem, QTreeWidgetItem, QPushButton, \
-    QComboBox, QTableWidget, QSizePolicy, QDateEdit, QLabel, QDesktopWidget, QCheckBox
+    QComboBox, QTableWidget, QSizePolicy, QDateEdit, QLabel, QDesktopWidget, QCheckBox, QListWidgetItem
 from PyQt5 import uic, QtWidgets, QtGui
 from dateutil.relativedelta import relativedelta
 
@@ -840,8 +840,11 @@ class Push(QWidget):
         for i in range(len(pushs[0])):
             self.role = cur.execute(f'''SELECT adm FROM main WHERE SN="{user}"''').fetchall()[0][0]
             if user in pushs[6][i].split('-'):
-                lgbt = f'У вас новое сообщение в столбце "{pushs[1][i - 1]}" канбана "{pushs[0][i]}" '
-                self.listWidget.addItem(lgbt)
+                lgbt = f'У вас новое сообщение в столбце "{pushs[1][i]}" канбана "{pushs[0][i - 1]}" '
+                item = QListWidgetItem()
+                item.setText(lgbt)
+                item.setBackground(QtGui.QBrush(QtGui.QColor("#85BBFF")))
+                self.listWidget.addItem(item)
             if self.role == 'Admin':
                 f = pushs[4][i]
             if self.role == 'Editor':
@@ -852,13 +855,13 @@ class Push(QWidget):
                 now = datetime.datetime.now()
                 if dtl > now:
                     lwt = f'У {pushs[2][i].split(".")[0]} осталось {str((dtl - now).days)} д. до завершения задания в ' \
-                          f'столбце "{pushs[1][i].split(".")[0]}" канбана "{pushs[0][i].split(".")[0]}" '
+                          f'столбце "{pushs[0][i].split(".")[0]}" канбана "{pushs[1][i].split(".")[0]}" '
                 elif dtl < now:
                     lwt = f'У {pushs[2][i].split(".")[0]} просрочилось на {str((now - dtl).days)} д. задание в столбце' \
-                          f' "{pushs[1][i].split(".")[0]}" канбана "{pushs[0][i].split(".")[0]}" '
+                          f' "{pushs[0][i].split(".")[0]}" канбана "{pushs[1][i].split(".")[0]}" '
                 else:
                     lwt = f'У {pushs[2][i].split(".")[0]} сегодня завершается задание в столбце' \
-                          f' "{pushs[1][i].split(".")[0]}" канбана "{pushs[0][i].split(".")[0]}"'
+                          f' "{pushs[0][i].split(".")[0]}" канбана "{pushs[1][i].split(".")[0]}"'
                 self.listWidget.addItem(lwt)
         self.timerS = QTimer(self)
         self.timerS.timeout.connect(self.rePush)
@@ -914,8 +917,11 @@ class AllPush(QWidget):
             self.role = cur.execute(f'''SELECT adm FROM main WHERE SN="{user}"''').fetchall()[0][0]
             p = str(pushs[6][i]).split('-')
             if user in p:
-                lgbt = f'У вас новое сообщение в столбце "{pushs[1][i]}" канбана "{pushs[0][i]}" '
-                self.listWidget.addItem(lgbt)
+                lgbt = f'У вас новое сообщение в столбце "{pushs[1][i]}" канбана "{pushs[0][i - 1]}" '
+                item = QListWidgetItem()
+                item.setText(lgbt)
+                item.setBackground(QtGui.QBrush(QtGui.QColor("#DBF9CB")))
+                self.listWidget.addItem(item)
             if self.role == 'Admin':
                 f = pushs[4][i]
             if self.role == 'Editor':
@@ -926,13 +932,13 @@ class AllPush(QWidget):
                 now = datetime.datetime.now()
                 if dtl > now:
                     lwt = f'У {pushs[2][i].split(".")[0]} осталось {str((dtl - now).days)} д. до завершения задания в' \
-                          f' столбце "{str(pushs[1][i].split(".")[0])}" канбана "{pushs[0][i].split(".")[0]}"'
+                          f' столбце "{str(pushs[0][i].split(".")[0])}" канбана "{pushs[1][i].split(".")[0]}"'
                 elif dtl < now:
                     lwt = f'У {pushs[2][i].split(".")[0]} просрочилось на {str((now - dtl).days)} д. задание в' \
-                          f' столбце {str(pushs[1][i].split(".")[0])}" канбана "{pushs[0][i].split(".")[0]}" '
+                          f' столбце {str(pushs[0][i].split(".")[0])}" канбана "{pushs[1][i].split(".")[0]}" '
                 else:
                     lwt = f'У {pushs[2][i].split(".")[0]} сегодня завершается задание в столбце' \
-                          f' "{str(pushs[1][i].split(".")[0])}" канбана "{pushs[0][i].split(".")[0]}"'
+                          f' "{str(pushs[0][i].split(".")[0])}" канбана "{pushs[1][i].split(".")[0]}"'
                 self.listWidget.addItem(lwt)
         memory = open('timeE.txt', 'r')
         m = memory.read()

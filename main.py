@@ -10,6 +10,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QTableWidgetItem
 from PyQt5 import uic, QtWidgets, QtGui
 from dateutil.relativedelta import relativedelta
 
+allPushOpen = False
 user = None
 con = sqlite3.connect('personal.db')
 cur = con.cursor()
@@ -256,11 +257,13 @@ AND row = {str(a[1])} AND positioning = {str(a[2])}''').fetchall()[0]
         self.reloadChat.timeout.connect(self.reloadChatF)
         self.reloadChat.start(5000)
         self.pb_send.clicked.connect(self.send)
-        self.lastText = task  # Сюда нужно выгрузить текст из бд для задания
-        self.lastChat = chat  # Сюда нужно выгрузить текст из бд для чата
+        self.lastText = task
+        self.lastChat = chat
         self.teTask.setText(self.lastText)
         self.teChat.setText(self.lastChat)
         self.teSend.textChanged.connect(self.solv)
+        if allPushOpen:
+            window.new.reloadPushing(True)
 
     def reloadChatF(self):
         _, bind, row, self.position, self.sn, _, _, _, _, _, _, com = \
@@ -819,7 +822,9 @@ class Finance(QWidget):
 class Push(QWidget):
     def __init__(self):
         super().__init__()
+        global allPushOpen
         uic.loadUi('push.ui', self)
+        allPushOpen = True
         self.setWindowIcon(QIcon('icon.ico'))
         q = QDesktopWidget().availableGeometry()
         self.move(q.width() - 780, q.height() - 290)
@@ -857,17 +862,11 @@ class Push(QWidget):
                 self.listWidget.addItem(lwt)
         self.timerS = QTimer(self)
         self.timerS.timeout.connect(self.rePush)
-        self.timer = QTimer(self)
-        self.timer.timeout.connect(self.closeTime)
-        self.timer.start(15000)
-
-    def closeTime(self):
-        if self.f:
-            self.close()
-            self.timer.stop()
 
     def sleep10(self):
         self.f = False
+        global allPushOpen
+        allPushOpen = False
         self.timerS.start(600000)
         self.close()
 
@@ -887,11 +886,15 @@ class Push(QWidget):
                                   '"Rockwell Extra Bold";')
 
     def sleep30(self):
+        global allPushOpen
+        allPushOpen = False
         self.f = False
         self.timerS.start(1800000)
         self.close()
 
     def sleep120(self):
+        global allPushOpen
+        allPushOpen = False
         self.f = False
         self.timerS.start(7200000)
         self.close()
@@ -905,6 +908,7 @@ class AllPush(QWidget):
         super().__init__()
         uic.loadUi('allPush.ui', self)
         self.setWindowIcon(QIcon('icon.ico'))
+
         f = None
         for i in range(len(pushs[0])):
             self.role = cur.execute(f'''SELECT adm FROM main WHERE SN="{user}"''').fetchall()[0][0]
@@ -943,7 +947,7 @@ class AllPush(QWidget):
 
 
 class Kanbaner(QMainWindow):
-    global user, con, cur, pushs
+    global user, con, cur, pushs, allPushOpen
 
     def __init__(self):
         super().__init__()
@@ -1018,9 +1022,19 @@ class Kanbaner(QMainWindow):
         self.timeForPush.start()
         self.showPush()
 
+    def closeEvent(self, event):
+        if allPushOpen:
+            self.closePush()
+        self.close()
+
     def showAllPush(self):
         self.allPush = AllPush()
         self.allPush.show()
+
+    def closePush(self):
+        global allPushOpen
+        self.push.close()
+        allPushOpen = False
 
     def showAllPush1(self):
         memory = open('timeE.txt', 'r')
@@ -1031,12 +1045,11 @@ class Kanbaner(QMainWindow):
             self.timeForPush.stop()
         memory.close()
 
-    def reloadPushing(self):
+    def reloadPushing(self, f=False):
         global pushs
-        f = False
         pushs = []
         self.reloadPush.stop()
-        self.reloadPush.start(60000)
+        self.reloadPush.start(30000)
         self.rowTitlesR, self.check_admin, self.check_editor, self.titles, self.rowNum = [], [], [], [], []
         self.kanbanid, self.com, self.ispolns, self.datesK = [], [], [], []
         for i in cur.execute('''SELECT * FROM tasks''').fetchall():
@@ -1065,6 +1078,8 @@ class Kanbaner(QMainWindow):
             self.showPush()
 
     def showPush(self):
+        if allPushOpen:
+            self.push.close()
         self.push = Push()
         self.push.show()
 

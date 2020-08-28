@@ -265,13 +265,7 @@ AND row = {str(a[1])} AND positioning = {str(a[2])}''').fetchall()[0]
     def reloadChatF(self):
         _, bind, row, self.position, self.sn, _, _, _, _, _, _, com = \
             cur.execute('''SELECT * FROM tasks WHERE id = ?''', [(str(self.a[-1]))]).fetchall()[0]
-        com = com.split('-')
         a = [bind, row, self.position, self.sn, com, self.a[-1]]
-        if user in a[4]:
-            del a[4][a[4].index(user)]
-        cur.execute(f"""UPDATE tasks SET comment = '{'-'.join(a[4])}' WHERE bind = {str(a[0])}
-        AND row = {str(a[1])} AND positioning = {str(a[2])}""")
-        con.commit()
         self.saveChat = None
         self.a = a
         _, _, _, _, _, _, _, _, _, task, chat, _ = cur.execute(f'''SELECT * FROM tasks WHERE bind = {str(a[0])}
@@ -638,7 +632,7 @@ class Task(QWidget):
                                                     'Задача/чат', 'Статус'])
             self.tabWidget.addTab(self.tabs[i], rowTitles[i])
         for i in range(task_row):
-            _, bind, row, self.position, self.sn, self.startdate, self.enddate, _, _, _, _, com = \
+            idishnik, bind, row, self.position, self.sn, self.startdate, self.enddate, _, _, _, _, com = \
                 cur.execute('''SELECT * FROM tasks WHERE id = ?''', [(str(i))]).fetchall()[0]
             if bind == self.id and self.sn == user:
                 if len(self.startdate) != 10:
@@ -682,7 +676,7 @@ class Task(QWidget):
                     self.pbs[self.c_num][-1].setStyleSheet('QPushButton {background-color: rgb(116, 208, 196);'
                                                            ' font: 75 12pt}')
                 self.pbs[self.c_num][-1].clicked.connect(lambda checked,
-                                                                a=[bind, row, self.position, self.sn, com]:
+                                                         a=[bind, row, self.position, self.sn, com, idishnik]:
                                                          self.more(a))
                 self.cbss[self.c_num].append(QComboBox())
                 self.cbss[self.c_num][-1].setStyleSheet('font: 75 12pt')

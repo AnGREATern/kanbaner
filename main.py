@@ -855,19 +855,20 @@ class Push(QWidget):
                 now = datetime.datetime.now()
                 if dtl > now:
                     lwt = f'У {pushs[2][i].split(".")[0]} осталось {str((dtl - now).days)} д. до завершения задания в ' \
-                          f'столбце "{pushs[0][i].split(".")[0]}" канбана "{pushs[1][i].split(".")[0]}"'
+                          f'столбце "{pushs[0][i].split(".")[0]}" канбана "{pushs[1][i]}"'
                 elif dtl < now:
                     lwt = f'У {pushs[2][i].split(".")[0]} просрочилось на {str((now - dtl).days)} д. задание в столбце' \
-                          f' "{pushs[0][i].split(".")[0]}" канбана "{pushs[1][i].split(".")[0]}"'
+                          f' "{pushs[0][i].split(".")[0]}" канбана "{pushs[1][i]}"'
                 else:
                     lwt = f'У {pushs[2][i].split(".")[0]} сегодня завершается задание в столбце' \
-                          f' "{pushs[0][i].split(".")[0]}" канбана "{pushs[1][i].split(".")[0]}"'
+                          f' "{pushs[0][i].split(".")[0]}" канбана "{pushs[1][i]}"'
                 self.listWidget.addItem(lwt)
         self.listWidget.itemClicked.connect(self.listwidgetclicked)
         self.timerS = QTimer(self)
         self.timerS.timeout.connect(self.rePush)
 
     def listwidgetclicked(self, item):
+        print(item.text().split(' канбана ')[-1][1:-1])
         ide = cur.execute(f'''SELECT id FROM kanban WHERE title="{item.text().split(' канбана ')[-1][1:-1]}"''').fetchall()[0][0]
         window.new.open(ide)
 
@@ -1095,8 +1096,7 @@ class Kanbaner(QMainWindow):
         pushs.append(self.check_admin)
         pushs.append(self.check_editor)
         pushs.append(self.com)
-        if f:
-            self.showPush()
+        self.showPush()
 
     def showPush(self):
         if allPushOpen:

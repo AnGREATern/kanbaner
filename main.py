@@ -868,7 +868,6 @@ class Push(QWidget):
         self.timerS.timeout.connect(self.rePush)
 
     def listwidgetclicked(self, item):
-        print(item.text().split(' канбана ')[-1][1:-1])
         ide = cur.execute(f'''SELECT id FROM kanban WHERE title="{item.text().split(' канбана ')[-1][1:-1]}"''').fetchall()[0][0]
         window.new.open(ide)
 

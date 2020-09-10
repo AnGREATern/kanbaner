@@ -953,7 +953,6 @@ class AllPush(QWidget):
         self.pb_save.clicked.connect(self.save)
 
     def listwidgetclicked(self, item):
-        print(item.text().split(' канбана ')[-1][1:-1])
         ide = cur.execute(f'''SELECT id FROM kanban WHERE title="{item.text().split(' канбана ')[-1][1:-1]}"''').fetchall()[0][0]
         window.new.open(ide)
 
@@ -1003,7 +1002,12 @@ class Kanbaner(QMainWindow):
             if d != '-':
                 debil = d.split()[1]
             item = QTreeWidgetItem([b, f, c, q, d])
-            if d != '-':
+            for com in cur.execute('''SELECT comment FROM tasks WHERE bind = ?''', [str(i)]).fetchall():
+                if user in com[0].split('-'):
+                    d = 'close'
+                    for y in range(5):
+                        item.setBackground(y, QtGui.QBrush(QtGui.QColor("#1BC5E3")))
+            if d != '-' and d != 'close':
                 if q != '-':
                     if datetime.datetime(int(q.split('.')[2]), int(q.split('.')[1]),
                                          int(q.split('.')[0])) >= datetime.datetime(int(debil.split('.')[2]),
@@ -1017,7 +1021,7 @@ class Kanbaner(QMainWindow):
                 else:
                     for y in range(5):
                         item.setBackground(y, QtGui.QBrush(QtGui.QColor("#FFFFFF")))
-            else:
+            elif d != 'close':
                 for y in range(5):
                     item.setBackground(y, QtGui.QBrush(QtGui.QColor("#FFFFFF")))
             self.tw.addTopLevelItem(item)
@@ -1145,7 +1149,12 @@ class Kanbaner(QMainWindow):
                     if q != '-':
                         debil = q.split()[1]
                     item = QTreeWidgetItem([b, w, c, e, q])
-                    if q != '-':
+                    for com in cur.execute('''SELECT comment FROM tasks WHERE bind = ?''', [str(i)]).fetchall():
+                        if user in com[0].split('-'):
+                            q = 'close'
+                            for y in range(5):
+                                item.setBackground(y, QtGui.QBrush(QtGui.QColor("#1BC5E3")))
+                    if q != '-' and q != 'close':
                         if e != '-':
                             if datetime.datetime(int(e.split('.')[2]), int(e.split('.')[1]),
                                                  int(e.split('.')[0])) >= datetime.datetime(int(debil.split('.')[2]),
@@ -1159,7 +1168,7 @@ class Kanbaner(QMainWindow):
                         else:
                             for y in range(5):
                                 item.setBackground(y, QtGui.QBrush(QtGui.QColor("#FFFFFF")))
-                    else:
+                    elif q != 'close':
                         for y in range(5):
                             item.setBackground(y, QtGui.QBrush(QtGui.QColor("#FFFFFF")))
                     self.tw.addTopLevelItem(item)
@@ -1195,7 +1204,12 @@ class Kanbaner(QMainWindow):
                 if q != '-':
                     debil = q.split()[1]
                 item = QTreeWidgetItem([b, w, c, e, q])
-                if q != '-':
+                for com in cur.execute('''SELECT comment FROM tasks WHERE bind = ?''', [str(i)]).fetchall():
+                    if user in com[0].split('-'):
+                        q = 'close'
+                        for y in range(5):
+                            item.setBackground(y, QtGui.QBrush(QtGui.QColor("#1BC5E3")))
+                if q != '-' and q != 'close':
                     if e != '-':
                         if datetime.datetime(int(e.split('.')[2]), int(e.split('.')[1]),
                                              int(e.split('.')[0])) >= datetime.datetime(int(debil.split('.')[2]),
@@ -1209,7 +1223,7 @@ class Kanbaner(QMainWindow):
                     else:
                         for y in range(5):
                             item.setBackground(y, QtGui.QBrush(QtGui.QColor("#FFFFFF")))
-                else:
+                elif q != "close":
                     for y in range(5):
                         item.setBackground(y, QtGui.QBrush(QtGui.QColor("#FFFFFF")))
                 self.tw.addTopLevelItem(item)
@@ -1234,7 +1248,12 @@ class Kanbaner(QMainWindow):
                         if d != '-':
                             debil = d.split()[1]
                         item = QTreeWidgetItem([b, h, c, q, d])
-                        if d != '-':
+                        for com in cur.execute('''SELECT comment FROM tasks WHERE bind = ?''', [str(i)]).fetchall():
+                            if user in com[0].split('-'):
+                                d = 'close'
+                                for y in range(5):
+                                    item.setBackground(y, QtGui.QBrush(QtGui.QColor("#1BC5E3")))
+                        if d != '-' and d != 'close':
                             if q != '-':
                                 if datetime.datetime(int(q.split('.')[2]), int(q.split('.')[1]),
                                                      int(q.split('.')[0])) >= datetime.datetime(
@@ -1247,7 +1266,7 @@ class Kanbaner(QMainWindow):
                             else:
                                 for y in range(5):
                                     item.setBackground(y, QtGui.QBrush(QtGui.QColor("#FFFFFF")))
-                        else:
+                        elif d != 'close':
                             for y in range(5):
                                 item.setBackground(y, QtGui.QBrush(QtGui.QColor("#FFFFFF")))
                         self.tw.addTopLevelItem(item)
@@ -1274,7 +1293,12 @@ class Kanbaner(QMainWindow):
                         if d != '-':
                             debil = d.split()[1]
                         item = QTreeWidgetItem([b, h, c, q, d])
-                        if d != '-':
+                        for com in cur.execute('''SELECT comment FROM tasks WHERE bind = ?''', [str(i)]).fetchall():
+                            if user in com[0].split('-'):
+                                d = 'close'
+                                for y in range(5):
+                                    item.setBackground(y, QtGui.QBrush(QtGui.QColor("#1BC5E3")))
+                        if d != '-' and d != 'close':
                             if q != '-':
                                 if datetime.datetime(int(q.split('.')[2]), int(q.split('.')[1]),
                                                      int(q.split('.')[0])) >= datetime.datetime(
@@ -1287,7 +1311,7 @@ class Kanbaner(QMainWindow):
                             else:
                                 for y in range(5):
                                     item.setBackground(y, QtGui.QBrush(QtGui.QColor("#FFFFFF")))
-                        else:
+                        elif d != 'close':
                             for y in range(5):
                                 item.setBackground(y, QtGui.QBrush(QtGui.QColor("#FFFFFF")))
                         self.tw.addTopLevelItem(item)
@@ -1362,7 +1386,12 @@ class Kanbaner(QMainWindow):
             if d != '-':
                 debil = d.split()[1]
             item = QTreeWidgetItem([b, h, c, q, d])
-            if d != '-':
+            for com in cur.execute('''SELECT comment FROM tasks WHERE bind = ?''', [str(i)]).fetchall():
+                if user in com[0].split('-'):
+                    d = 'close'
+                    for y in range(5):
+                        item.setBackground(y, QtGui.QBrush(QtGui.QColor("#1BC5E3")))
+            if d != '-' and d != 'close':
                 if q != '-':
                     if datetime.datetime(int(q.split('.')[2]), int(q.split('.')[1]),
                                          int(q.split('.')[0])) >= datetime.datetime(
@@ -1375,7 +1404,7 @@ class Kanbaner(QMainWindow):
                 else:
                     for y in range(5):
                         item.setBackground(y, QtGui.QBrush(QtGui.QColor("#FFFFFF")))
-            else:
+            elif d != 'close':
                 for y in range(5):
                     item.setBackground(y, QtGui.QBrush(QtGui.QColor("#FFFFFF")))
             self.tw.addTopLevelItem(item)

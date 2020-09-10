@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1523</width>
+    <width>1517</width>
     <height>795</height>
    </rect>
   </property>
@@ -455,7 +455,7 @@
        <bool>false</bool>
       </attribute>
       <attribute name="headerDefaultSectionSize">
-       <number>299</number>
+       <number>270</number>
       </attribute>
       <attribute name="headerHighlightSections">
        <bool>true</bool>
@@ -492,6 +492,15 @@
       <column>
        <property name="text">
         <string>Дата завершения</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string> </string>
+       </property>
+       <property name="icon">
+        <iconset>
+         <normaloff>cloud.ico</normaloff>cloud.ico</iconset>
        </property>
       </column>
      </widget>

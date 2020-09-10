@@ -840,7 +840,7 @@ class Push(QWidget):
         for i in range(len(pushs[0])):
             self.role = cur.execute(f'''SELECT adm FROM main WHERE SN="{user}"''').fetchall()[0][0]
             if user in pushs[6][i].split('-'):
-                lgbt = f'У вас новое сообщение в столбце "{pushs[0][i - 1]}" канбана "{pushs[1][i]}"'
+                lgbt = f'У вас новое сообщение в столбце "{pushs[0][i]}" канбана "{pushs[1][i]}"'
                 item = QListWidgetItem()
                 item.setText(lgbt)
                 item.setBackground(QtGui.QBrush(QtGui.QColor("#85BBFF")))
@@ -854,14 +854,14 @@ class Push(QWidget):
                                         int(pushs[3][i].split('.')[1]), int(pushs[3][i].split('.')[2]))
                 now = datetime.datetime.now()
                 if dtl > now:
-                    lwt = f'У {pushs[2][i].split(".")[0]} осталось {str((dtl - now).days)} д. до завершения задания в ' \
-                          f'столбце "{pushs[0][i].split(".")[0]}" канбана "{pushs[1][i]}"'
+                    lwt = f'У {pushs[2][i]} осталось {str((dtl - now).days)} д. до завершения задания в ' \
+                          f'столбце "{pushs[0][i]}" канбана "{pushs[1][i]}"'
                 elif dtl < now:
-                    lwt = f'У {pushs[2][i].split(".")[0]} просрочилось на {str((now - dtl).days)} д. задание в столбце' \
-                          f' "{pushs[0][i].split(".")[0]}" канбана "{pushs[1][i]}"'
+                    lwt = f'У {pushs[2][i]} просрочилось на {str((now - dtl).days)} д. задание в столбце' \
+                          f' "{pushs[0][i]}" канбана "{pushs[1][i]}"'
                 else:
-                    lwt = f'У {pushs[2][i].split(".")[0]} сегодня завершается задание в столбце' \
-                          f' "{pushs[0][i].split(".")[0]}" канбана "{pushs[1][i]}"'
+                    lwt = f'У {pushs[2][i]} сегодня завершается задание в столбце' \
+                          f' "{pushs[0][i]}" канбана "{pushs[1][i]}"'
                 self.listWidget.addItem(lwt)
         self.listWidget.itemClicked.connect(self.listwidgetclicked)
         self.timerS = QTimer(self)
@@ -922,7 +922,7 @@ class AllPush(QWidget):
             self.role = cur.execute(f'''SELECT adm FROM main WHERE SN="{user}"''').fetchall()[0][0]
             p = str(pushs[6][i]).split('-')
             if user in p:
-                lgbt = f'У вас новое сообщение в столбце "{pushs[0][i - 1]}" канбана "{pushs[1][i]}"'
+                lgbt = f'У вас новое сообщение в столбце "{pushs[0][i]}" канбана "{pushs[1][i]}"'
                 item = QListWidgetItem()
                 item.setText(lgbt)
                 item.setBackground(QtGui.QBrush(QtGui.QColor("#DBF9CB")))
@@ -936,14 +936,14 @@ class AllPush(QWidget):
                                         int(pushs[3][i].split('.')[2]))
                 now = datetime.datetime.now()
                 if dtl > now:
-                    lwt = f'У {pushs[2][i].split(".")[0]} осталось {str((dtl - now).days)} д. до завершения задания в' \
-                          f' столбце "{str(pushs[0][i].split(".")[0])}" канбана "{pushs[1][i].split(".")[0]}"'
+                    lwt = f'У {pushs[2][i]} осталось {str((dtl - now).days)} д. до завершения задания в' \
+                          f' столбце "{str(pushs[0][i])}" канбана "{pushs[1][i]}"'
                 elif dtl < now:
-                    lwt = f'У {pushs[2][i].split(".")[0]} просрочилось на {str((now - dtl).days)} д. задание в' \
-                          f' столбце {str(pushs[0][i].split(".")[0])}" канбана "{pushs[1][i].split(".")[0]}"'
+                    lwt = f'У {pushs[2][i]} просрочилось на {str((now - dtl).days)} д. задание в' \
+                          f' столбце {str(pushs[0][i])}" канбана "{pushs[1][i]}"'
                 else:
-                    lwt = f'У {pushs[2][i].split(".")[0]} сегодня завершается задание в столбце' \
-                          f' "{str(pushs[0][i].split(".")[0])}" канбана "{pushs[1][i].split(".")[0]}"'
+                    lwt = f'У {pushs[2][i]} сегодня завершается задание в столбце' \
+                          f' "{str(pushs[0][i])}" канбана "{pushs[1][i]}"'
                 self.listWidget.addItem(lwt)
         self.listWidget.itemClicked.connect(self.listwidgetclicked)
         memory = open('timeE.txt', 'r')

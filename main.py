@@ -1042,6 +1042,10 @@ class Kanbaner(QMainWindow):
         self.timeForPush.setInterval(1000)
         self.timeForPush.start()
         self.showPush()
+        self.tw.doubleClicked.connect(self.treewidgetclicked)
+
+    def treewidgetclicked(self, item):
+        self.open(item.row())
 
     def closeEvent(self, event):
         if allPushOpen:

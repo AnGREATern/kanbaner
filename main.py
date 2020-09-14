@@ -802,19 +802,20 @@ class Finance(QWidget):
             self.close()
         elif event.key() == 16777220 or event.key() == 16777221:
             try:
-                b = str(self.dtss[-1].date().year()) + '.' + str(self.dtss[-1].date().month()) + '.' + \
-                    str(self.dtss[-1].date().day())
-                bablo = [(str(table_row), self.cbss[-1].currentText(),
-                          self.table.item(table_row - 1, 1).text(), b, self.table.item(table_row - 1, 3).text())]
-                cur.executemany("""INSERT INTO finance VALUES (?,?,?,?,?)""", bablo)
-                con.commit()
-                table_row += 1
-                self.table.setRowCount(table_row)
-                self.dtss.append(QDateEdit(datetime.datetime.now()))
-                self.table.setCellWidget(table_row, 2, self.dtss[-1])
-                self.cbss.append(QComboBox())
-                self.cbss[-1].addItems(self.ispolniteli)
-                self.table.setCellWidget(table_row, 2, self.dtss[-1])
+                if self.table.item(table_row - 1, 3).text().isdigit():
+                    b = str(self.dtss[-1].date().year()) + '.' + str(self.dtss[-1].date().month()) + '.' + \
+                        str(self.dtss[-1].date().day())
+                    bablo = [(str(table_row), self.cbss[-1].currentText(),
+                              self.table.item(table_row - 1, 1).text(), b, self.table.item(table_row - 1, 3).text())]
+                    cur.executemany("""INSERT INTO finance VALUES (?,?,?,?,?)""", bablo)
+                    con.commit()
+                    table_row += 1
+                    self.table.setRowCount(table_row)
+                    self.dtss.append(QDateEdit(datetime.datetime.now()))
+                    self.table.setCellWidget(table_row - 1, 2, self.dtss[-1])
+                    self.cbss.append(QComboBox())
+                    self.cbss[-1].addItems(self.ispolniteli)
+                    self.table.setCellWidget(table_row - 1, 0, self.cbss[-1])
             except:
                 pass
 

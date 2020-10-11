@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QTableWidgetItem
     QComboBox, QTableWidget, QSizePolicy, QDateEdit, QLabel, QDesktopWidget, QCheckBox, QListWidgetItem
 from PyQt5 import uic, QtWidgets, QtGui
 from dateutil.relativedelta import relativedelta
-
+stopPush = False
 allPushOpen = False
 user = None
 con = sqlite3.connect('personal.db')
@@ -873,8 +873,9 @@ class Push(QWidget):
 
     def sleep10(self):
         self.f = False
-        global allPushOpen
+        global allPushOpen, stopPush
         allPushOpen = False
+        stopPush = True
         self.timerS.start(600000)
         self.close()
 
@@ -894,20 +895,24 @@ class Push(QWidget):
                                   '"Rockwell Extra Bold";')
 
     def sleep30(self):
-        global allPushOpen
+        global allPushOpen, stopPush
         allPushOpen = False
+        stopPush = True
         self.f = False
         self.timerS.start(1800000)
         self.close()
 
     def sleep120(self):
-        global allPushOpen
+        global allPushOpen, stopPush
+        stopPush = True
         allPushOpen = False
         self.f = False
         self.timerS.start(7200000)
         self.close()
 
     def rePush(self):
+        global stopPush
+        stopPush = False
         self.show()
 
 
@@ -994,6 +999,7 @@ class Kanbaner(QMainWindow):
         self.rowTitlesBad = []
         self.rowTitles = []
         self.id = len(cur.execute('''SELECT id FROM kanban''').fetchall())
+        self.itemss = []
         for i in range(self.id, 0, -1):
             _, b, c, d, e, f, q = cur.execute('''SELECT * FROM kanban WHERE id = ?''', [str(i)]).fetchall()[0]
             self.rowTitles.append(e.split('_'))
@@ -1001,33 +1007,9 @@ class Kanbaner(QMainWindow):
                 q = '.'.join([q.split('.')[2], q.split('.')[1], q.split('.')[0]])
             if d != '-':
                 debil = d.split()[1]
-            item = QTreeWidgetItem([b, f, c, q, d, ''])
-            for chat in cur.execute('''SELECT chat FROM tasks WHERE bind = ?''', [str(i)]).fetchall():
-                if chat[0].split():
-                    item.setIcon(5, QIcon('cloud.ico'))
-            for com in cur.execute('''SELECT comment FROM tasks WHERE bind = ?''', [str(i)]).fetchall():
-                if user in com[0].split('-'):
-                    d = 'close'
-                    for y in range(6):
-                        item.setBackground(y, QtGui.QBrush(QtGui.QColor("#1BC5E3")))
-            if d != '-' and d != 'close':
-                if q != '-':
-                    if datetime.datetime(int(q.split('.')[2]), int(q.split('.')[1]),
-                                         int(q.split('.')[0])) >= datetime.datetime(int(debil.split('.')[2]),
-                                                                                    int(debil.split('.')[1]),
-                                                                                    int(debil.split('.')[0])):
-                        for y in range(6):
-                            item.setBackground(y, QtGui.QBrush(QtGui.QColor("#DBF9CB")))
-                    else:
-                        for y in range(6):
-                            item.setBackground(y, QtGui.QBrush(QtGui.QColor("#BE272F")))
-                else:
-                    for y in range(6):
-                        item.setBackground(y, QtGui.QBrush(QtGui.QColor("#FFFFFF")))
-            elif d != 'close':
-                for y in range(6):
-                    item.setBackground(y, QtGui.QBrush(QtGui.QColor("#FFFFFF")))
-            self.tw.addTopLevelItem(item)
+            self.itemss.append([b, f, c, q, d, ''])
+        k = 0
+        self.cloud()
         self.gr = None
         self.crew = None
         self.new = None
@@ -1105,10 +1087,11 @@ class Kanbaner(QMainWindow):
         self.showPush()
 
     def showPush(self):
-        if allPushOpen:
-            self.push.close()
-        self.push = Push()
-        self.push.show()
+        if not stopPush:
+            if allPushOpen:
+                self.push.close()
+            self.push = Push()
+            self.push.show()
 
     def creater(self):
         self.new = New()
@@ -1148,39 +1131,7 @@ class Kanbaner(QMainWindow):
                     f"""UPDATE kanban SET stage = '{str(self.rowTitles[pos][stage])}' WHERE id = '{str(self.id - pos)}'""")
                 con.commit()
                 self.tw.clear()
-                for i in range(self.id, 0, -1):
-                    _, b, c, q, d, w, e = cur.execute('''SELECT * FROM kanban WHERE id = ?''', [str(i)]).fetchall()[0]
-                    if e != '-':
-                        e = '.'.join([e.split('.')[2], e.split('.')[1], e.split('.')[0]])
-                    if q != '-':
-                        debil = q.split()[1]
-                    item = QTreeWidgetItem([b, w, c, e, q, ''])
-                    for chat in cur.execute('''SELECT chat FROM tasks WHERE bind = ?''', [str(i)]).fetchall():
-                        if chat[0].split():
-                            item.setIcon(5, QIcon('cloud.ico'))
-                    for com in cur.execute('''SELECT comment FROM tasks WHERE bind = ?''', [str(i)]).fetchall():
-                        if user in com[0].split('-'):
-                            q = 'close'
-                            for y in range(6):
-                                item.setBackground(y, QtGui.QBrush(QtGui.QColor("#1BC5E3")))
-                    if q != '-' and q != 'close':
-                        if e != '-':
-                            if datetime.datetime(int(e.split('.')[2]), int(e.split('.')[1]),
-                                                 int(e.split('.')[0])) >= datetime.datetime(int(debil.split('.')[2]),
-                                                                                            int(debil.split('.')[1]),
-                                                                                            int(debil.split('.')[0])):
-                                for y in range(6):
-                                    item.setBackground(y, QtGui.QBrush(QtGui.QColor("#DBF9CB")))
-                            else:
-                                for y in range(6):
-                                    item.setBackground(y, QtGui.QBrush(QtGui.QColor("#BE272F")))
-                        else:
-                            for y in range(6):
-                                item.setBackground(y, QtGui.QBrush(QtGui.QColor("#FFFFFF")))
-                    elif q != 'close':
-                        for y in range(6):
-                            item.setBackground(y, QtGui.QBrush(QtGui.QColor("#FFFFFF")))
-                    self.tw.addTopLevelItem(item)
+                self.cloud()
             else:
                 self.rowTitles = self.rowTitlesCopy.copy()
             self.title = ''
@@ -1206,36 +1157,7 @@ class Kanbaner(QMainWindow):
                               '-', '_'.join(self.rowTitles[0]), self.rowTitles[0][0], '-')])
             con.commit()
             self.tw.clear()
-            for i in range(self.id, 0, -1):
-                _, b, c, q, d, w, e = cur.execute('''SELECT * FROM kanban WHERE id = ?''', [str(i)]).fetchall()[0]
-                if e != '-':
-                    e = '.'.join([e.split('.')[2], e.split('.')[1], e.split('.')[0]])
-                if q != '-':
-                    debil = q.split()[1]
-                item = QTreeWidgetItem([b, w, c, e, q, ''])
-                for com in cur.execute('''SELECT comment FROM tasks WHERE bind = ?''', [str(i)]).fetchall():
-                    if user in com[0].split('-'):
-                        q = 'close'
-                        for y in range(6):
-                            item.setBackground(y, QtGui.QBrush(QtGui.QColor("#1BC5E3")))
-                if q != '-' and q != 'close':
-                    if e != '-':
-                        if datetime.datetime(int(e.split('.')[2]), int(e.split('.')[1]),
-                                             int(e.split('.')[0])) >= datetime.datetime(int(debil.split('.')[2]),
-                                                                                        int(debil.split('.')[1]),
-                                                                                        int(debil.split('.')[0])):
-                            for y in range(6):
-                                item.setBackground(y, QtGui.QBrush(QtGui.QColor("#DBF9CB")))
-                        else:
-                            for y in range(6):
-                                item.setBackground(y, QtGui.QBrush(QtGui.QColor("#BE272F")))
-                    else:
-                        for y in range(6):
-                            item.setBackground(y, QtGui.QBrush(QtGui.QColor("#FFFFFF")))
-                elif q != "close":
-                    for y in range(6):
-                        item.setBackground(y, QtGui.QBrush(QtGui.QColor("#FFFFFF")))
-                self.tw.addTopLevelItem(item)
+            self.cloud()
         else:
             del self.rowTitles[0]
         self.title = ''
@@ -1248,40 +1170,7 @@ class Kanbaner(QMainWindow):
                     pos = int([x.row() for x in self.tw.selectedIndexes()][0])
                     self.tw.clear()
                     self.id = len(cur.execute('''SELECT id FROM kanban''').fetchall())
-                    for i in range(self.id, 0, -1):
-                        _, b, c, d, e, h, q = cur.execute('''SELECT * FROM kanban WHERE id = ?''', [str(i)]).fetchall()[
-                            0]
-                        self.rowTitles.append(e.split('_'))
-                        if q != '-':
-                            q = '.'.join([q.split('.')[2], q.split('.')[1], q.split('.')[0]])
-                        if d != '-':
-                            debil = d.split()[1]
-                        item = QTreeWidgetItem([b, h, c, q, d, ''])
-                        for chat in cur.execute('''SELECT chat FROM tasks WHERE bind = ?''', [str(i)]).fetchall():
-                            if chat[0].split():
-                                item.setIcon(5, QIcon('cloud.ico'))
-                        for com in cur.execute('''SELECT comment FROM tasks WHERE bind = ?''', [str(i)]).fetchall():
-                            if user in com[0].split('-'):
-                                d = 'close'
-                                for y in range(6):
-                                    item.setBackground(y, QtGui.QBrush(QtGui.QColor("#1BC5E3")))
-                        if d != '-' and d != 'close':
-                            if q != '-':
-                                if datetime.datetime(int(q.split('.')[2]), int(q.split('.')[1]),
-                                                     int(q.split('.')[0])) >= datetime.datetime(
-                                    int(debil.split('.')[2]), int(debil.split('.')[1]), int(debil.split('.')[0])):
-                                    for y in range(6):
-                                        item.setBackground(y, QtGui.QBrush(QtGui.QColor("#DBF9CB")))
-                                else:
-                                    for y in range(6):
-                                        item.setBackground(y, QtGui.QBrush(QtGui.QColor("#BE272F")))
-                            else:
-                                for y in range(6):
-                                    item.setBackground(y, QtGui.QBrush(QtGui.QColor("#FFFFFF")))
-                        elif d != 'close':
-                            for y in range(6):
-                                item.setBackground(y, QtGui.QBrush(QtGui.QColor("#FFFFFF")))
-                        self.tw.addTopLevelItem(item)
+                    self.cloud()
                     self.task = Task_6(self.rowTitles[pos], cur.execute('''SELECT title FROM kanban WHERE id = ?''',
                                                                         [(str(self.id - pos))]).fetchall()[0][0],
                                        self.id - pos)
@@ -1297,36 +1186,7 @@ class Kanbaner(QMainWindow):
                     pos = int([x.row() for x in self.tw.selectedIndexes()][0])
                     self.tw.clear()
                     self.id = len(cur.execute('''SELECT id FROM kanban''').fetchall())
-                    for i in range(self.id, 0, -1):
-                        _, b, c, d, e, h, q = cur.execute('''SELECT * FROM kanban WHERE id = ?''', [str(i)]).fetchall()[
-                            0]
-                        if q != '-':
-                            q = '.'.join([q.split('.')[2], q.split('.')[1], q.split('.')[0]])
-                        if d != '-':
-                            debil = d.split()[1]
-                        item = QTreeWidgetItem([b, h, c, q, d, ''])
-                        for com in cur.execute('''SELECT comment FROM tasks WHERE bind = ?''', [str(i)]).fetchall():
-                            if user in com[0].split('-'):
-                                d = 'close'
-                                for y in range(6):
-                                    item.setBackground(y, QtGui.QBrush(QtGui.QColor("#1BC5E3")))
-                        if d != '-' and d != 'close':
-                            if q != '-':
-                                if datetime.datetime(int(q.split('.')[2]), int(q.split('.')[1]),
-                                                     int(q.split('.')[0])) >= datetime.datetime(
-                                    int(debil.split('.')[2]), int(debil.split('.')[1]), int(debil.split('.')[0])):
-                                    for y in range(6):
-                                        item.setBackground(y, QtGui.QBrush(QtGui.QColor("#DBF9CB")))
-                                else:
-                                    for y in range(6):
-                                        item.setBackground(y, QtGui.QBrush(QtGui.QColor("#BE272F")))
-                            else:
-                                for y in range(6):
-                                    item.setBackground(y, QtGui.QBrush(QtGui.QColor("#FFFFFF")))
-                        elif d != 'close':
-                            for y in range(6):
-                                item.setBackground(y, QtGui.QBrush(QtGui.QColor("#FFFFFF")))
-                        self.tw.addTopLevelItem(item)
+                    self.cloud()
                     self.task = Task(self.rowTitles[pos], cur.execute('''SELECT title FROM kanban WHERE id = ?''',
                                                                       [(str(self.id - pos))]).fetchall()[0][0],
                                      self.id - pos)
@@ -1389,56 +1249,28 @@ class Kanbaner(QMainWindow):
             self.cash()
 
     def reboot(self, id):
-        self.tw.clear()
-        for i in range(self.id, 0, -1):
-            _, b, c, d, e, h, q = cur.execute('''SELECT * FROM kanban WHERE id = ?''', [str(i)]).fetchall()[0]
-            self.rowTitles.append(e.split('_'))
-            if q != '-':
-                q = '.'.join([q.split('.')[2], q.split('.')[1], q.split('.')[0]])
-            if d != '-':
-                debil = d.split()[1]
-            item = QTreeWidgetItem([b, h, c, q, d, ''])
-            for chat in cur.execute('''SELECT chat FROM tasks WHERE bind = ?''', [str(i)]).fetchall():
-                if chat[0].split():
-                    item.setIcon(5, QIcon('cloud.ico'))
-            for com in cur.execute('''SELECT comment FROM tasks WHERE bind = ?''', [str(i)]).fetchall():
-                if user in com[0].split('-'):
-                    d = 'close'
-                    for y in range(6):
-                        item.setBackground(y, QtGui.QBrush(QtGui.QColor("#1BC5E3")))
-            if d != '-' and d != 'close':
-                if q != '-':
-                    if datetime.datetime(int(q.split('.')[2]), int(q.split('.')[1]),
-                                         int(q.split('.')[0])) >= datetime.datetime(
-                        int(debil.split('.')[2]), int(debil.split('.')[1]), int(debil.split('.')[0])):
-                        for y in range(6):
-                            item.setBackground(y, QtGui.QBrush(QtGui.QColor("#DBF9CB")))
-                    else:
-                        for y in range(6):
-                            item.setBackground(y, QtGui.QBrush(QtGui.QColor("#BE272F")))
-                else:
-                    for y in range(6):
-                        item.setBackground(y, QtGui.QBrush(QtGui.QColor("#FFFFFF")))
-            elif d != 'close':
-                for y in range(6):
-                    item.setBackground(y, QtGui.QBrush(QtGui.QColor("#FFFFFF")))
-            self.tw.addTopLevelItem(item)
+        self.cloud()
         self.open(id)
 
     def cloud(self):
         self.tw.clear()
-        for i in range(self.id, 0, -1):
-            _, b, c, d, e, h, q = cur.execute('''SELECT * FROM kanban WHERE id = ?''', [str(i)]).fetchall()[0]
-            self.rowTitles.append(e.split('_'))
-            if q != '-':
-                q = '.'.join([q.split('.')[2], q.split('.')[1], q.split('.')[0]])
+        self.itemsss = []
+        for i in range(len(self.itemss)):
+            if self.itemss[i][-2] == '-':
+                self.itemsss.append(self.itemss[i])
+        for i in range(len(self.itemss)):
+            if self.itemss[i][-2] != '-':
+                self.itemsss.append(self.itemss[i])
+        for i in range(len(self.itemsss)):
+            q, d = self.itemsss[i][-3], self.itemsss[i][-2]
             if d != '-':
                 debil = d.split()[1]
-            item = QTreeWidgetItem([b, h, c, q, d, ''])
-            for chat in cur.execute('''SELECT chat FROM tasks WHERE bind = ?''', [str(i)]).fetchall():
+            item = QTreeWidgetItem(self.itemsss[i])
+            for chat in cur.execute('''SELECT chat FROM tasks WHERE bind = ?''', [str(self.id - i)]).fetchall():
                 if chat[0].split():
                     item.setIcon(5, QIcon('cloud.ico'))
-            for com in cur.execute('''SELECT comment FROM tasks WHERE bind = ?''', [str(i)]).fetchall():
+            for com in cur.execute('''SELECT comment FROM tasks WHERE bind = ?''',
+                                   [str(self.id - i)]).fetchall():
                 if user in com[0].split('-'):
                     d = 'close'
                     for y in range(6):
@@ -1446,8 +1278,9 @@ class Kanbaner(QMainWindow):
             if d != '-' and d != 'close':
                 if q != '-':
                     if datetime.datetime(int(q.split('.')[2]), int(q.split('.')[1]),
-                                         int(q.split('.')[0])) >= datetime.datetime(
-                        int(debil.split('.')[2]), int(debil.split('.')[1]), int(debil.split('.')[0])):
+                                         int(q.split('.')[0])) >= datetime.datetime(int(debil.split('.')[2]),
+                                                                                    int(debil.split('.')[1]),
+                                                                                    int(debil.split('.')[0])):
                         for y in range(6):
                             item.setBackground(y, QtGui.QBrush(QtGui.QColor("#DBF9CB")))
                     else:

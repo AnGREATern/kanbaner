@@ -306,6 +306,7 @@ WHERE bind = {str(self.a[0])} AND row = {str(self.a[1])} AND positioning = {str(
             f"""UPDATE tasks SET chat = '{self.saveChat}' WHERE bind = {str(self.a[0])} AND row = {str(self.a[1])}
 AND positioning = {str(self.a[2])}""")
         con.commit()
+        window.new.cloud()
 
 
 class Task_6(QWidget):
@@ -1425,6 +1426,42 @@ class Kanbaner(QMainWindow):
                     item.setBackground(y, QtGui.QBrush(QtGui.QColor("#FFFFFF")))
             self.tw.addTopLevelItem(item)
         self.open(id)
+
+    def cloud(self):
+        self.tw.clear()
+        for i in range(self.id, 0, -1):
+            _, b, c, d, e, h, q = cur.execute('''SELECT * FROM kanban WHERE id = ?''', [str(i)]).fetchall()[0]
+            self.rowTitles.append(e.split('_'))
+            if q != '-':
+                q = '.'.join([q.split('.')[2], q.split('.')[1], q.split('.')[0]])
+            if d != '-':
+                debil = d.split()[1]
+            item = QTreeWidgetItem([b, h, c, q, d, ''])
+            for chat in cur.execute('''SELECT chat FROM tasks WHERE bind = ?''', [str(i)]).fetchall():
+                if chat[0].split():
+                    item.setIcon(5, QIcon('cloud.ico'))
+            for com in cur.execute('''SELECT comment FROM tasks WHERE bind = ?''', [str(i)]).fetchall():
+                if user in com[0].split('-'):
+                    d = 'close'
+                    for y in range(6):
+                        item.setBackground(y, QtGui.QBrush(QtGui.QColor("#1BC5E3")))
+            if d != '-' and d != 'close':
+                if q != '-':
+                    if datetime.datetime(int(q.split('.')[2]), int(q.split('.')[1]),
+                                         int(q.split('.')[0])) >= datetime.datetime(
+                        int(debil.split('.')[2]), int(debil.split('.')[1]), int(debil.split('.')[0])):
+                        for y in range(6):
+                            item.setBackground(y, QtGui.QBrush(QtGui.QColor("#DBF9CB")))
+                    else:
+                        for y in range(6):
+                            item.setBackground(y, QtGui.QBrush(QtGui.QColor("#BE272F")))
+                else:
+                    for y in range(6):
+                        item.setBackground(y, QtGui.QBrush(QtGui.QColor("#FFFFFF")))
+            elif d != 'close':
+                for y in range(6):
+                    item.setBackground(y, QtGui.QBrush(QtGui.QColor("#FFFFFF")))
+            self.tw.addTopLevelItem(item)
 
     def exit(self):
         self.enter = Enter()

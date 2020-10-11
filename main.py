@@ -999,7 +999,6 @@ class Kanbaner(QMainWindow):
         self.rowTitlesBad = []
         self.rowTitles = []
         self.id = len(cur.execute('''SELECT id FROM kanban''').fetchall())
-
         self.cloud()
         self.gr = None
         self.crew = None
@@ -1121,7 +1120,6 @@ class Kanbaner(QMainWindow):
                 cur.execute(
                     f"""UPDATE kanban SET stage = '{str(self.rowTitles[pos][stage])}' WHERE id = '{str(self.id - pos)}'""")
                 con.commit()
-                self.tw.clear()
                 self.cloud()
             else:
                 self.rowTitles = self.rowTitlesCopy.copy()
@@ -1147,7 +1145,6 @@ class Kanbaner(QMainWindow):
                               str(datetime.datetime.strftime(datetime.datetime.now(), "%H:%M:%S %d.%m.%Y ")),
                               '-', '_'.join(self.rowTitles[0]), self.rowTitles[0][0], '-')])
             con.commit()
-            self.tw.clear()
             self.cloud()
         else:
             del self.rowTitles[0]
@@ -1159,7 +1156,6 @@ class Kanbaner(QMainWindow):
             if self.role == 'Admin' or self.role == 'Editor':
                 if [x.row() for x in self.tw.selectedIndexes()]:
                     pos = int([x.row() for x in self.tw.selectedIndexes()][0])
-                    self.tw.clear()
                     self.id = len(cur.execute('''SELECT id FROM kanban''').fetchall())
                     self.cloud()
                     self.task = Task_6(self.rowTitles[pos], cur.execute('''SELECT title FROM kanban WHERE id = ?''',
@@ -1175,7 +1171,6 @@ class Kanbaner(QMainWindow):
             else:
                 if [x.row() for x in self.tw.selectedIndexes()]:
                     pos = int([x.row() for x in self.tw.selectedIndexes()][0])
-                    self.tw.clear()
                     self.id = len(cur.execute('''SELECT id FROM kanban''').fetchall())
                     self.cloud()
                     self.task = Task(self.rowTitles[pos], cur.execute('''SELECT title FROM kanban WHERE id = ?''',

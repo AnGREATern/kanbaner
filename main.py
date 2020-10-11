@@ -999,16 +999,7 @@ class Kanbaner(QMainWindow):
         self.rowTitlesBad = []
         self.rowTitles = []
         self.id = len(cur.execute('''SELECT id FROM kanban''').fetchall())
-        self.itemss = []
-        for i in range(self.id, 0, -1):
-            _, b, c, d, e, f, q = cur.execute('''SELECT * FROM kanban WHERE id = ?''', [str(i)]).fetchall()[0]
-            self.rowTitles.append(e.split('_'))
-            if q != '-':
-                q = '.'.join([q.split('.')[2], q.split('.')[1], q.split('.')[0]])
-            if d != '-':
-                debil = d.split()[1]
-            self.itemss.append([b, f, c, q, d, ''])
-        k = 0
+
         self.cloud()
         self.gr = None
         self.crew = None
@@ -1254,6 +1245,13 @@ class Kanbaner(QMainWindow):
 
     def cloud(self):
         self.tw.clear()
+        self.itemss = []
+        for i in range(self.id, 0, -1):
+            _, b, c, d, e, f, q = cur.execute('''SELECT * FROM kanban WHERE id = ?''', [str(i)]).fetchall()[0]
+            self.rowTitles.append(e.split('_'))
+            if q != '-':
+                q = '.'.join([q.split('.')[2], q.split('.')[1], q.split('.')[0]])
+            self.itemss.append([b, f, c, q, d, ''])
         self.itemsss = []
         for i in range(len(self.itemss)):
             if self.itemss[i][-2] == '-':

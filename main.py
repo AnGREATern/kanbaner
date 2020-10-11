@@ -84,6 +84,10 @@ class Change(QWidget):
         except:
             pass
 
+    def keyPressEvent(self, event):
+        if event.key() == 16777220 or event.key() == 16777221:
+            window.new.revvod()
+
 
 class Graphics(QWidget):
     def __init__(self):
@@ -1233,6 +1237,8 @@ class Kanbaner(QMainWindow):
             self.graphics()
         elif event.key() == Qt.Key_E and self.role == 'Admin':
             self.cash()
+        elif event.key() == Qt.Key_Escape:
+            self.close()
 
     def reboot(self, id):
         self.cloud()

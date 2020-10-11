@@ -92,7 +92,6 @@ class Graphics(QWidget):
         self.setWindowIcon(QIcon('icon.ico'))
         isp1, isp2, isp3 = {}, {}, {}
         self.rowTitlesR, self.titles, self.rowNum, self.kanbanid, self.ispolns, self.datesK = [], [], [], [], [], []
-
         for i in cur.execute('''SELECT * FROM tasks''').fetchall():
             self.rowNum.append(i[2])
             self.kanbanid.append(i[1])
@@ -108,16 +107,15 @@ class Graphics(QWidget):
             col = 0
             if self.rowNum[i] == len(self.rowTitlesR[i]) - 1:
                 if datetime.datetime(int(pushs[3][i].split('.')[0]), int(pushs[3][i].split('.')[1]),
-                                     int(pushs[3][i].split('.')[2])) + relativedelta(months=+12) \
+                                     1) + relativedelta(months=+12) \
                         >= datetime.datetime.now():
                     col = 3
                 if datetime.datetime(int(pushs[3][i].split('.')[0]), int(pushs[3][i].split('.')[1]),
-                                     int(pushs[3][i].split('.')[2])) + relativedelta(months=+3) \
+                                     1) + relativedelta(months=+3) \
                         >= datetime.datetime.now():
                     col = 2
-                if datetime.datetime(int(pushs[3][i].split('.')[0]), int(pushs[3][i].split('.')[1]),
-                                     int(pushs[3][i].split('.')[2])) + relativedelta(months=+1) \
-                        >= datetime.datetime.now():
+                if datetime.datetime(int(self.datesK[i].split('.')[0]), int(self.datesK[i].split('.')[1]),
+                                     1) + relativedelta(months=+1) >= datetime.datetime.now():
                     col = 1
                 if col == 1:
                     if not self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.' in isp1.keys():
@@ -156,15 +154,15 @@ class Graphics(QWidget):
         for i in range(len(self.ispolns)):
             col = 0
             if datetime.datetime(int(self.datesK[i].split('.')[0]), int(self.datesK[i].split('.')[1]),
-                                 int(self.datesK[i].split('.')[2])) + relativedelta(
+                                 1) + relativedelta(
                 months=+12) >= datetime.datetime.now():
                 col = 3
             if datetime.datetime(int(self.datesK[i].split('.')[0]), int(self.datesK[i].split('.')[1]),
-                                 int(self.datesK[i].split('.')[2])) + relativedelta(
+                                 1) + relativedelta(
                 months=+3) >= datetime.datetime.now():
                 col = 2
             if datetime.datetime(int(self.datesK[i].split('.')[0]), int(self.datesK[i].split('.')[1]),
-                                 int(self.datesK[i].split('.')[2])) + relativedelta(
+                                 1) + relativedelta(
                 months=+1) >= datetime.datetime.now():
                 col = 1
             if col == 1:

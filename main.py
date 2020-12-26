@@ -1,6 +1,8 @@
 import datetime
 import sys
 import sqlite3
+
+import numpy as np
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from PyQt5.QtCore import Qt, QDate, QTimer, QSize, QTime
@@ -9,6 +11,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QTableWidgetItem
     QComboBox, QTableWidget, QSizePolicy, QDateEdit, QLabel, QDesktopWidget, QCheckBox, QListWidgetItem
 from PyQt5 import uic, QtWidgets, QtGui
 from dateutil.relativedelta import relativedelta
+
 stopPush = False
 allPushOpen = False
 user = None
@@ -70,7 +73,7 @@ class Change(QWidget):
         self.rowTitles = cur.execute('''SELECT row_titles FROM kanban WHERE id = ?''', [str(pos)]).fetchall()[0][
                              0].split('_')[:-1]
         self.title = cur.execute('''SELECT title FROM kanban WHERE id = ?''', [str(pos)]).fetchall()[0][
-                             0]
+            0]
         try:
             self.leName.setText(self.title)
             self.le2.insert(self.rowTitles[0])
@@ -219,10 +222,28 @@ class PlotCanvas(FigureCanvas):
     def bar(self):
         ax = self.figure.add_subplot(212)
         ax1 = self.figure.add_subplot(211)
+        x = self.isp.keys()
+        y1 = [self.isp.get(i) for i in self.isp.keys()]
+        y2 = [y1[i] + 2 for i in range(len(y1))]
 
-        ax.bar(self.isp.keys(), [self.isp.get(i) for i in self.isp.keys()])
+        color_rectangle = [0.20, 0.79, 0.79]
+
+        ax.bar(x, y1, color=color_rectangle, width=0.5)
+
+        color_rectangle = [0.44, 0.86, 0.86, 0.5]
+        ax.bar(x, y2, color=color_rectangle)
+
+        ax.set_facecolor('seashell')
         ax.set_title('График с нагрузкой персонала')
-        ax1.bar(self.ispF.keys(), [self.ispF.get(i) for i in self.ispF.keys()])
+        x = self.ispF.keys()
+        y1 = [self.ispF.get(i) for i in self.ispF.keys()]
+        y2 = [y1[i] + 20000 for i in range(len(y1))]
+        ax1.bar(x, y1, color=color_rectangle, width=0.5)
+
+        color_rectangle = [0.44, 0.86, 0.86, 0.5]
+        ax1.bar(x, y2, color=color_rectangle)
+
+        ax1.set_facecolor('seashell')
         ax1.set_title('График финансов')
 
         self.draw()
@@ -407,7 +428,7 @@ class Task_6(QWidget):
                     self.pbs[self.c_num][-1].setStyleSheet('QPushButton {background-color: rgb(116, 208, 196);'
                                                            ' font: 75 12pt}')
                 self.pbs[self.c_num][-1].clicked.connect(lambda checked,
-                                                         a=[bind, row, self.position, self.sn, com, idishnik]:
+                                                                a=[bind, row, self.position, self.sn, com, idishnik]:
                                                          self.more(a))
                 self.cbss[self.c_num].append(QComboBox())
                 self.cbss[self.c_num][-1].setStyleSheet('font: 75 12pt')
@@ -571,7 +592,8 @@ class Task_6(QWidget):
                 con.commit()
                 break
         lastdata = []
-        for i in cur.execute(f'''SELECT enddate FROM tasks WHERE bind = "{str(self.id)}" AND row < "{str(len(self.tabs) - 1)}"''').fetchall():
+        for i in cur.execute(
+                f'''SELECT enddate FROM tasks WHERE bind = "{str(self.id)}" AND row < "{str(len(self.tabs) - 1)}"''').fetchall():
             lastdata.append(i[0])
         if lastdata:
             cur.execute(f"""UPDATE kanban SET term = '{min(lastdata)}' WHERE id = '{str(self.id)}'""")
@@ -678,7 +700,7 @@ class Task(QWidget):
                     self.pbs[self.c_num][-1].setStyleSheet('QPushButton {background-color: rgb(116, 208, 196);'
                                                            ' font: 75 12pt}')
                 self.pbs[self.c_num][-1].clicked.connect(lambda checked,
-                                                         a=[bind, row, self.position, self.sn, com, idishnik]:
+                                                                a=[bind, row, self.position, self.sn, com, idishnik]:
                                                          self.more(a))
                 self.cbss[self.c_num].append(QComboBox())
                 self.cbss[self.c_num][-1].setStyleSheet('font: 75 12pt')
@@ -868,10 +890,15 @@ class Push(QWidget):
         self.timerS.timeout.connect(self.rePush)
 
     def listwidgetclicked(self, item):
-        ide = cur.execute(f'''SELECT id FROM kanban WHERE title="{item.text().split(' канбана ')[-1][1:-1]}"''').fetchall()[0][0]
+        ide = \
+        cur.execute(f'''SELECT id FROM kanban WHERE title="{item.text().split(' канбана ')[-1][1:-1]}"''').fetchall()[
+            0][0]
         window.new.open(ide)
 
     def sleep10(self):
+        self.pb_10.setStyleSheet('border-radius: 5px;\nborder-bottom: 4px solid  rgb(200, 120, '
+                                 '52);\nbackground-color: rgb(236, 140, 62);\ncolor: rgb(255, 255, 255);\nmargin-top: '
+                                 '3px;\nfont: 81 10pt "Rockwell Extra Bold";')
         self.f = False
         global allPushOpen, stopPush
         allPushOpen = False
@@ -895,6 +922,9 @@ class Push(QWidget):
                                   '"Rockwell Extra Bold";')
 
     def sleep30(self):
+        self.pb_30.setStyleSheet('border-radius: 5px;\nborder-bottom: 4px solid  rgb(200, 120, '
+                                 '52);\nbackground-color: rgb(236, 140, 62);\ncolor: rgb(255, 255, 255);\nmargin-top: '
+                                 '3px;\nfont: 81 10pt "Rockwell Extra Bold";')
         global allPushOpen, stopPush
         allPushOpen = False
         stopPush = True
@@ -903,6 +933,9 @@ class Push(QWidget):
         self.close()
 
     def sleep120(self):
+        self.pb_120.setStyleSheet('border-radius: 5px;\nborder-bottom: 4px solid  rgb(200, 120, '
+                                  '52);\nbackground-color: rgb(236, 140, 62);\ncolor: rgb(255, 255, 255);\nmargin-top: '
+                                  '3px;\nfont: 81 10pt "Rockwell Extra Bold";')
         global allPushOpen, stopPush
         stopPush = True
         allPushOpen = False
@@ -958,7 +991,9 @@ class AllPush(QWidget):
         self.pb_save.clicked.connect(self.save)
 
     def listwidgetclicked(self, item):
-        ide = cur.execute(f'''SELECT id FROM kanban WHERE title="{item.text().split(' канбана ')[-1][1:-1]}"''').fetchall()[0][0]
+        ide = \
+        cur.execute(f'''SELECT id FROM kanban WHERE title="{item.text().split(' канбана ')[-1][1:-1]}"''').fetchall()[
+            0][0]
         window.new.open(ide)
 
     def save(self):
@@ -1074,7 +1109,6 @@ class Kanbaner(QMainWindow):
         pushs.append(self.check_admin)
         pushs.append(self.check_editor)
         pushs.append(self.com)
-        self.showPush()
 
     def showPush(self):
         if not stopPush:
@@ -1102,10 +1136,12 @@ class Kanbaner(QMainWindow):
     def revvod(self):
         try:
             pos = int([x.row() for x in self.tw.selectedIndexes()][0])
-            stage = self.rowTitles[pos].index(cur.execute('''SELECT stage FROM kanban WHERE id = ?''', [str(self.id - pos)]).fetchall()[0][0])
+            stage = self.rowTitles[pos].index(
+                cur.execute('''SELECT stage FROM kanban WHERE id = ?''', [str(self.id - pos)]).fetchall()[0][0])
             self.rowTitlesBad.clear()
-            self.rowTitlesBad.extend([self.change.le2.text(), self.change.le3.text(), self.change.le4.text(), self.change.le5.text(),
-                                      self.change.le6.text(), self.change.le7.text(), self.change.le8.text(), self.change.le9.text()])
+            self.rowTitlesBad.extend(
+                [self.change.le2.text(), self.change.le3.text(), self.change.le4.text(), self.change.le5.text(),
+                 self.change.le6.text(), self.change.le7.text(), self.change.le8.text(), self.change.le9.text()])
             self.title = self.change.leName.text()
             self.rowTitlesCopy = self.rowTitles.copy()
             self.rowTitles[pos] = []

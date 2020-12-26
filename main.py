@@ -1,7 +1,7 @@
 import datetime
 import sys
 import sqlite3
-
+import LabelBars
 import numpy as np
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
@@ -21,60 +21,6 @@ task_index = 0
 table_row = len(cur.execute('''SELECT id FROM finance''').fetchall()) + 1
 task_row = len(cur.execute('''SELECT id FROM tasks''').fetchall())
 pushs = []
-
-
-def label_bars(ax, bars, text_format, **kwargs):
-    """
-    Attaches a label on every bar of a regular or horizontal bar chart
-    """
-    ys = [bar.get_y() for bar in bars]
-    y_is_constant = all(
-        y == ys[0] for y in ys)  # -> regular bar chart, since all all bars start on the same y level (0)
-
-    if y_is_constant:
-        _label_bar(ax, bars, text_format, **kwargs)
-    else:
-        _label_barh(ax, bars, text_format, **kwargs)
-
-
-def _label_bar(ax, bars, text_format, **kwargs):
-    """
-    Attach a text label to each bar displaying its y value
-    """
-    max_y_value = ax.get_ylim()[1]
-    inside_distance = max_y_value * 0.05
-    outside_distance = max_y_value * 0.01
-
-    for bar in bars:
-        text = text_format.format(bar.get_height())
-        text_x = bar.get_x() + bar.get_width() / 2
-
-        is_inside = bar.get_height() >= max_y_value * 0.15
-        if is_inside:
-            color = "white"
-            text_y = bar.get_height() - inside_distance
-        else:
-            color = "black"
-            text_y = bar.get_height() + outside_distance
-
-        ax.text(text_x, text_y, text, ha='center', va='bottom', color="black", **kwargs)
-
-
-def _label_barh(ax, bars, text_format, **kwargs):
-    """
-    Attach a text label to each bar displaying its y value
-    Note: label always outside. otherwise it's too hard to control as numbers can be very long
-    """
-    max_x_value = ax.get_xlim()[1]
-    distance = max_x_value * 0.0025
-
-    for bar in bars:
-        text = text_format.format(bar.get_width())
-
-        text_x = bar.get_width() + distance
-        text_y = bar.get_y() + bar.get_height() / 2
-
-        ax.text(text_x, text_y, text, va='center', **kwargs)
 
 
 class Enter(QWidget):
@@ -280,32 +226,31 @@ class PlotCanvas(FigureCanvas):
     def bar(self):
         ax = self.figure.add_subplot(212)
         ax1 = self.figure.add_subplot(211)
+
         x = self.isp.keys()
         y1 = [self.isp.get(i) for i in self.isp.keys()]
         y2 = [np.random.randint(1, 50, size=50)[0] for i in range(len(y1))]
 
         color_rectangle = [0.20, 0.79, 0.79]
-
         bar1 = ax.bar(x, y1, color=color_rectangle)
-
         color_rectangle = [0.44, 0.86, 0.86, 0]
         ax.bar(x, y2, color=color_rectangle, edgecolor=[0.83, 0, 0.3])
         color_rectangle = [0.20, 0.79, 0.79]
         ax.set_facecolor('seashell')
         ax.set_title('График с нагрузкой персонала')
+
         x = self.ispF.keys()
         y1 = [self.ispF.get(i) for i in self.ispF.keys()]
         y2 = [y1[i] + 20000 for i in range(len(y1))]
-        bar = ax1.bar(x, y1, color=color_rectangle)
 
+        bar = ax1.bar(x, y1, color=color_rectangle)
         color_rectangle = [0.44, 0.86, 0.86, 0]
         ax1.bar(x, y2, color=color_rectangle, edgecolor=[0.83, 0, 0.3])
-
         ax1.set_facecolor('seashell')
         ax1.set_title('График финансов')
-        value_format = "{:}"  # displaying values as percentage with one fractional digit
-        label_bars(ax1, bar, value_format)
-        label_bars(ax, bar1, value_format)
+        value_format = "{}"  # displaying values as percentage with one fractional digit
+        LabelBars.label_bars(ax1, bar, value_format)
+        LabelBars.label_bars(ax, bar1, value_format)
         self.draw()
 
 

@@ -74,6 +74,21 @@
        </property>
       </widget>
      </item>
+     <item>
+      <widget class="QCheckBox" name="checkBox">
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Включить уведомления</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
    <item>

@@ -28,7 +28,8 @@ def label_bars(ax, bars, text_format, **kwargs):
     Attaches a label on every bar of a regular or horizontal bar chart
     """
     ys = [bar.get_y() for bar in bars]
-    y_is_constant = all(y == ys[0] for y in ys)  # -> regular bar chart, since all all bars start on the same y level (0)
+    y_is_constant = all(
+        y == ys[0] for y in ys)  # -> regular bar chart, since all all bars start on the same y level (0)
 
     if y_is_constant:
         _label_bar(ax, bars, text_format, **kwargs)
@@ -281,14 +282,14 @@ class PlotCanvas(FigureCanvas):
         ax1 = self.figure.add_subplot(211)
         x = self.isp.keys()
         y1 = [self.isp.get(i) for i in self.isp.keys()]
-        y2 = [np.random.randint(1, 50, size = 50)[0] for i in range(len(y1))]
+        y2 = [np.random.randint(1, 50, size=50)[0] for i in range(len(y1))]
 
         color_rectangle = [0.20, 0.79, 0.79]
 
         bar1 = ax.bar(x, y1, color=color_rectangle)
 
         color_rectangle = [0.44, 0.86, 0.86, 0]
-        ax.bar(x, y2, color=color_rectangle, edgecolor = 'red')
+        ax.bar(x, y2, color=color_rectangle, edgecolor=[0.83, 0, 0.3])
         color_rectangle = [0.20, 0.79, 0.79]
         ax.set_facecolor('seashell')
         ax.set_title('График с нагрузкой персонала')
@@ -298,7 +299,7 @@ class PlotCanvas(FigureCanvas):
         bar = ax1.bar(x, y1, color=color_rectangle)
 
         color_rectangle = [0.44, 0.86, 0.86, 0]
-        ax1.bar(x, y2, color=color_rectangle, edgecolor = 'red')
+        ax1.bar(x, y2, color=color_rectangle, edgecolor=[0.83, 0, 0.3])
 
         ax1.set_facecolor('seashell')
         ax1.set_title('График финансов')
@@ -950,8 +951,9 @@ class Push(QWidget):
 
     def listwidgetclicked(self, item):
         ide = \
-        cur.execute(f'''SELECT id FROM kanban WHERE title="{item.text().split(' канбана ')[-1][1:-1]}"''').fetchall()[
-            0][0]
+            cur.execute(
+                f'''SELECT id FROM kanban WHERE title="{item.text().split(' канбана ')[-1][1:-1]}"''').fetchall()[
+                0][0]
         window.new.open(ide)
 
     def sleep10(self):
@@ -1051,8 +1053,9 @@ class AllPush(QWidget):
 
     def listwidgetclicked(self, item):
         ide = \
-        cur.execute(f'''SELECT id FROM kanban WHERE title="{item.text().split(' канбана ')[-1][1:-1]}"''').fetchall()[
-            0][0]
+            cur.execute(
+                f'''SELECT id FROM kanban WHERE title="{item.text().split(' канбана ')[-1][1:-1]}"''').fetchall()[
+                0][0]
         window.new.open(ide)
 
     def save(self):

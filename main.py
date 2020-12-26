@@ -1002,7 +1002,6 @@ class AllPush(QWidget):
 
     def cBoxCheck(self, state):
         global StatePush
-        print(1)
         if state == Qt.Checked:
             print(2)
             StatePush = True
@@ -1073,6 +1072,10 @@ class Kanbaner(QMainWindow):
         self.timeForPush.setInterval(1000)
         self.timeForPush.start()
         self.showPush()
+        self.col = cur.execute('''SELECT value FROM main_column''').fetchall()
+        for i in range(6):
+            self.tw.setColumnWidth(i, self.col[i][0])
+        # self.tw.resizeColumnToContents(i)
         self.tw.doubleClicked.connect(self.treewidgetclicked)
 
     def treewidgetclicked(self, item):
@@ -1145,7 +1148,6 @@ class Kanbaner(QMainWindow):
                     self.push.close()
                 self.push = Push()
                 self.push.show()
-                print(1)
 
     def creater(self):
         self.new = New()
@@ -1255,6 +1257,11 @@ class Kanbaner(QMainWindow):
     def cash(self):
         self.finance = Finance()
         self.finance.show()
+
+    def closeEvent(self, event):
+        for i in range(len(self.col)):
+            cur.execute(f'''UPDATE main_column SET value = "{self.tw.columnWidth(i)}" WHERE id = "{i}"''')
+        con.commit()
 
     def delete(self):
         global task_row

@@ -1,6 +1,9 @@
 import datetime
 import sys
 import sqlite3
+
+from PyQt5.uic.properties import QtCore
+
 import LabelBars
 import numpy as np
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
@@ -11,7 +14,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QTableWidgetItem
     QComboBox, QTableWidget, QSizePolicy, QDateEdit, QLabel, QDesktopWidget, QCheckBox, QListWidgetItem
 from PyQt5 import uic, QtWidgets, QtGui
 from dateutil.relativedelta import relativedelta
-
+StatePush = True
 stopPush = False
 allPushOpen = False
 user = None
@@ -995,6 +998,18 @@ class AllPush(QWidget):
         self.timeEdit.setTime(QTime(int(m.split(':')[0]), int(m.split(':')[1])))
         memory.close()
         self.pb_save.clicked.connect(self.save)
+        self.cBox.stateChanged.connect(lambda state=self.cBox.isChecked(): self.cBoxCheck(state))
+
+    def cBoxCheck(self, state):
+        global StatePush
+        print(1)
+        if state == Qt.Checked:
+            print(2)
+            StatePush = True
+        else:
+            StatePush = False
+            if allPushOpen:
+                window.new.closePush()
 
     def listwidgetclicked(self, item):
         ide = \
@@ -1088,9 +1103,9 @@ class Kanbaner(QMainWindow):
 
     def reloadPushing(self, f=False):
         global pushs
-        pushs = []
+        pushs1 = []
         self.reloadPush.stop()
-        self.reloadPush.start(30000)
+        self.reloadPush.start(10000)
         self.rowTitlesR, self.check_admin, self.check_editor, self.titles, self.rowNum = [], [], [], [], []
         self.kanbanid, self.com, self.ispolns, self.datesK = [], [], [], []
         for i in cur.execute('''SELECT * FROM tasks''').fetchall():
@@ -1108,20 +1123,29 @@ class Kanbaner(QMainWindow):
             a = cur.execute(f'''SELECT * FROM kanban WHERE id={str(self.kanbanid[j])}''').fetchall()[0]
             self.titles.append(a[1])
             self.rowTitlesR.append(a[4].split('_')[self.rowNum[j]])
-        pushs.append(self.rowTitlesR)
-        pushs.append(self.titles)
-        pushs.append(self.ispolns)
-        pushs.append(self.datesK)
-        pushs.append(self.check_admin)
-        pushs.append(self.check_editor)
-        pushs.append(self.com)
+        pushs1.append(self.rowTitlesR)
+        pushs1.append(self.titles)
+        pushs1.append(self.ispolns)
+        pushs1.append(self.datesK)
+        pushs1.append(self.check_admin)
+        pushs1.append(self.check_editor)
+        pushs1.append(self.com)
+        if pushs is None:
+            pushs = []
+        if pushs != pushs1:
+            pushs = pushs1.copy()
+            self.showPush()
+        else:
+            pushs = pushs1.copy()
 
     def showPush(self):
-        if not stopPush:
-            if allPushOpen:
-                self.push.close()
-            self.push = Push()
-            self.push.show()
+        if StatePush:
+            if not stopPush:
+                if allPushOpen:
+                    self.push.close()
+                self.push = Push()
+                self.push.show()
+                print(1)
 
     def creater(self):
         self.new = New()

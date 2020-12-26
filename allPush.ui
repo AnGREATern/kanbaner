@@ -75,7 +75,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QCheckBox" name="checkBox">
+      <widget class="QCheckBox" name="cBox">
        <property name="font">
         <font>
          <pointsize>12</pointsize>

@@ -14,6 +14,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QTableWidgetItem
     QComboBox, QTableWidget, QSizePolicy, QDateEdit, QLabel, QDesktopWidget, QCheckBox, QListWidgetItem
 from PyQt5 import uic, QtWidgets, QtGui
 from dateutil.relativedelta import relativedelta
+
 StatePush = True
 stopPush = False
 allPushOpen = False
@@ -849,6 +850,52 @@ class Finance(QWidget):
                 pass
 
 
+class Plans(QWidget):
+    global con, cur
+
+    def __init__(self):
+        super().__init__()
+        uic.loadUi('plans.ui', self)
+        self.setWindowIcon(QIcon('icon.ico'))
+        self.prib = 0
+        for y in range(2):
+            self.pl_table.horizontalHeader().setSectionResizeMode(y, QtWidgets.QHeaderView.Stretch)
+        self.isp = len(cur.execute('''SELECT id FROM main''').fetchall())
+        self.pl_table.setRowCount(self.isp)
+        for i in range(1, self.isp + 1):
+            _, sn, plan, _ = cur.execute(f'''SELECT * FROM main WHERE id = "{i}"''').fetchall()[0]
+            self.pl_table.setItem(i - 1, 0, QTableWidgetItem(sn))
+            if plan:
+                self.pl_table.setItem(i - 1, 1, QTableWidgetItem(str(plan)))
+
+    def keyPressEvent(self, event):
+        global con, cur
+        if event.key() == Qt.Key_Escape:
+            self.close()
+        elif event.key() == 16777220 or event.key() == 16777221:
+            self.prib += 1
+            self.pl_table.setRowCount(self.isp + self.prib)
+
+    def closeEvent(self, event):
+        for i in range(1, self.isp + 1):
+            try:
+                cur.execute(f'''UPDATE main SET SN = "{self.pl_table.item(i - 1, 0).text()}" WHERE id = "{i}"''')
+                cur.execute(f'''UPDATE main SET plan = "{self.pl_table.item(i - 1, 1).text()}" WHERE id = "{i}"''')
+            except:
+                pass
+        for i in range(self.isp + 1, self.isp + self.prib + 1):
+            try:
+                a = self.pl_table.item(i - 1, 1).text()
+            except:
+                a = ''
+            try:
+                bablo = [(str(i), self.pl_table.item(i - 1, 0).text(), a, 'False')]
+                cur.executemany("""INSERT INTO main VALUES (?,?,?,?)""", bablo)
+            except:
+                pass
+        con.commit()
+
+
 class Push(QWidget):
     def __init__(self):
         super().__init__()
@@ -1046,6 +1093,7 @@ class Kanbaner(QMainWindow):
             self.pb_re.setParent(None)
             self.pb_finance.setParent(None)
             self.pb_delete.setParent(None)
+        self.pb_plans.clicked.connect(self.plan)
         self.pb_graph.clicked.connect(self.graphics)
         self.pb_open.clicked.connect(self.open)
         self.pb_login.clicked.connect(self.exit)
@@ -1082,6 +1130,9 @@ class Kanbaner(QMainWindow):
         self.open(item.row())
 
     def closeEvent(self, event):
+        for i in range(len(self.col)):
+            cur.execute(f'''UPDATE main_column SET value = "{self.tw.columnWidth(i)}" WHERE id = "{i}"''')
+        con.commit()
         if allPushOpen:
             self.closePush()
         self.close()
@@ -1258,10 +1309,9 @@ class Kanbaner(QMainWindow):
         self.finance = Finance()
         self.finance.show()
 
-    def closeEvent(self, event):
-        for i in range(len(self.col)):
-            cur.execute(f'''UPDATE main_column SET value = "{self.tw.columnWidth(i)}" WHERE id = "{i}"''')
-        con.commit()
+    def plan(self):
+        self.plans = Plans()
+        self.plans.show()
 
     def delete(self):
         global task_row

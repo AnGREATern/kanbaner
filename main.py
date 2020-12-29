@@ -868,15 +868,20 @@ class Plans(QWidget):
             if plan:
                 self.pl_table.setItem(i - 1, 1, QTableWidgetItem(str(plan)))
 
-    def keyPressEvent(self, event):
-        global con, cur
-        if event.key() == Qt.Key_Escape:
-            self.close()
-        elif event.key() == 16777220 or event.key() == 16777221:
-            self.prib += 1
-            self.pl_table.setRowCount(self.isp + self.prib)
+    def delete(self):
+        self.upd()
+        if [x.row() for x in self.pl_table.selectedIndexes()]:
+            pos = int([x.row() for x in self.pl_table.selectedIndexes()][0]) + 1
+            if pos == self.isp:
+                self.isp -= 1
+                self.reboot()
 
-    def closeEvent(self, event):
+    def reboot(self):
+        self.pl_table.clear()
+        self.pl_table.setRowCount(self.isp)
+        self.pl_table.setHorizontalHeaderLabels(['Фамилия, имя', 'План'])
+
+    def upd(self):
         for i in range(1, self.isp + 1):
             try:
                 cur.execute(f'''UPDATE main SET SN = "{self.pl_table.item(i - 1, 0).text()}" WHERE id = "{i}"''')
@@ -891,9 +896,23 @@ class Plans(QWidget):
             try:
                 bablo = [(str(i), self.pl_table.item(i - 1, 0).text(), a, 'False')]
                 cur.executemany("""INSERT INTO main VALUES (?,?,?,?)""", bablo)
+                self.isp += 1
             except:
                 pass
         con.commit()
+
+    def keyPressEvent(self, event):
+        global con, cur
+        if event.key() == Qt.Key_Escape:
+            self.close()
+        elif event.key() == 16777220 or event.key() == 16777221:
+            self.prib += 1
+            self.pl_table.setRowCount(self.isp + self.prib)
+        elif event.key() == Qt.Key_Delete:
+            self.delete()
+
+    def closeEvent(self, event):
+        self.upd()
 
 
 class Push(QWidget):

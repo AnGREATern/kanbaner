@@ -11,7 +11,7 @@ from matplotlib.figure import Figure
 from PyQt5.QtCore import Qt, QDate, QTimer, QSize, QTime
 from PyQt5.QtGui import QFont, QIcon
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QTableWidgetItem, QTreeWidgetItem, QPushButton, \
-    QComboBox, QTableWidget, QSizePolicy, QDateEdit, QLabel, QDesktopWidget, QCheckBox, QListWidgetItem
+    QComboBox, QTableWidget, QSizePolicy, QDateEdit, QLabel, QDesktopWidget, QCheckBox, QListWidgetItem, QVBoxLayout
 from PyQt5 import uic, QtWidgets, QtGui
 from dateutil.relativedelta import relativedelta
 
@@ -103,6 +103,7 @@ class Graphics(QWidget):
         self.setWindowIcon(QIcon('icon.ico'))
         isp1, isp2, isp3 = {}, {}, {}
         self.rowTitlesR, self.titles, self.rowNum, self.kanbanid, self.ispolns, self.datesK = [], [], [], [], [], []
+        self.pb_graph.clicked.connect(self.graphC)
         for i in cur.execute('''SELECT * FROM tasks''').fetchall():
             self.rowNum.append(i[2])
             self.kanbanid.append(i[1])
@@ -117,16 +118,22 @@ class Graphics(QWidget):
         for i in range(len(self.ispolns)):
             col = 0
             if self.rowNum[i] == len(self.rowTitlesR[i]) - 1:
-                if datetime.datetime(int(pushs[3][i].split('.')[0]), int(pushs[3][i].split('.')[1]),
-                                     1) + relativedelta(months=+12) \
+                if datetime.datetime(int(pushs[3][i].split('.')[0]), int(pushs[3][i].split('.')[1]), 1) + relativedelta(
+                        months=+12) \
                         >= datetime.datetime.now():
                     col = 3
-                if datetime.datetime(int(pushs[3][i].split('.')[0]), int(pushs[3][i].split('.')[1]),
-                                     1) + relativedelta(months=+3) \
-                        >= datetime.datetime.now():
+                if int(pushs[3][i].split('.')[0]) == int(datetime.datetime.now().year) and \
+                        (int(pushs[3][i].split('.')[1]) in [1, 2, 3] and int(datetime.datetime.now().month) in [1, 2, 3]
+                         or int(pushs[3][i].split('.')[1]) in [4, 5, 6] and int(datetime.datetime.now().month) in [4, 5,
+                                                                                                                   6]
+                         or int(pushs[3][i].split('.')[1]) in [7, 8, 9] and int(datetime.datetime.now().month) in [7, 8,
+                                                                                                                   9]
+                         or int(pushs[3][i].split('.')[1]) in [10, 11, 12] and int(datetime.datetime.now().month) in [
+                             10, 11, 12]):
                     col = 2
                 if datetime.datetime(int(self.datesK[i].split('.')[0]), int(self.datesK[i].split('.')[1]),
-                                     1) + relativedelta(months=+1) >= datetime.datetime.now():
+                                     1) + relativedelta(months=+1) \
+                        >= datetime.datetime.now():
                     col = 1
                 if col == 1:
                     if not self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.' in isp1.keys():
@@ -168,9 +175,13 @@ class Graphics(QWidget):
                                  1) + relativedelta(
                 months=+12) >= datetime.datetime.now():
                 col = 3
-            if datetime.datetime(int(self.datesK[i].split('.')[0]), int(self.datesK[i].split('.')[1]),
-                                 1) + relativedelta(
-                months=+3) >= datetime.datetime.now():
+            if int(self.datesK[i].split('.')[0]) == int(datetime.datetime.now().year) and \
+                    (int(self.datesK[i].split('.')[1]) in [1, 2, 3] and int(datetime.datetime.now().month) in [1, 2, 3]
+                     or int(self.datesK[i].split('.')[1]) in [4, 5, 6] and int(datetime.datetime.now().month) in [4, 5, 6]
+                     or int(self.datesK[i].split('.')[1]) in [7, 8, 9] and int(datetime.datetime.now().month) in [7, 8, 9]
+                     or int(self.datesK[i].split('.')[1]) in [10, 11, 12] and int(datetime.datetime.now().month) in [10,
+                                                                                                                  11,
+                                                                                                                  12]):
                 col = 2
             if datetime.datetime(int(self.datesK[i].split('.')[0]), int(self.datesK[i].split('.')[1]),
                                  1) + relativedelta(
@@ -210,6 +221,46 @@ class Graphics(QWidget):
         self.tabWidget.addTab(m1, 'За квартал')
         self.tabWidget.addTab(m2, 'За год')
 
+    def graphC(self):
+        d1, d2 = self.dateEdit1.date().toPyDate(), self.dateEdit2.date().toPyDate()
+        isp, ispF = {}, {}
+        self.rowTitlesR, self.titles, self.rowNum, self.kanbanid, self.ispolns, self.datesK = [], [], [], [], [], []
+        self.pb_graph.clicked.connect(self.graphC)
+        for i in cur.execute('''SELECT * FROM tasks''').fetchall():
+            self.rowNum.append(i[2])
+            self.kanbanid.append(i[1])
+            self.ispolns.append(i[4])
+            self.datesK.append(i[6])
+        for j in self.kanbanid:
+            a = cur.execute(f'''SELECT * FROM kanban WHERE id={str(j)}''').fetchall()
+            for i in range(len(a)):
+                self.titles.append(a[i][1])
+                self.rowTitlesR.append(a[i][4].split('_'))
+        for i in range(len(self.ispolns)):
+            if self.rowNum[i] == len(self.rowTitlesR[i]) - 1:
+                if d2 >= datetime.date(int(pushs[3][i].split('.')[0]), int(pushs[3][i].split('.')[1]), 1) and datetime.date(int(pushs[3][i].split('.')[0]), int(pushs[3][i].split('.')[1]), 1) >= d1:
+                    if not self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.' in isp.keys():
+                        isp[self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.'] = 1
+                    else:
+                        isp[self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.'] += 1
+        self.dengi, self.ispolns, self.datesK = [], [], []
+
+        for i in cur.execute('''SELECT * FROM finance''').fetchall():
+            self.ispolns.append(i[1])
+            self.datesK.append(i[3])
+            self.dengi.append(i[4])
+        for i in range(len(self.ispolns)):
+            if d2 >= datetime.date(int(self.datesK[i].split('.')[0]), int(self.datesK[i].split('.')[1]), 1) >= d1:
+                if not self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.' in ispF.keys():
+                    ispF[self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.'] = self.dengi[i]
+                else:
+                    ispF[self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.'] += self.dengi[i]
+        m = PlotCanvas(self, width=50, height=4, isp=isp, ispF=ispF)
+        if not self.vl.takeAt(2) is None:
+            self.m.deleteLater()
+        self.m = m
+        self.vl.addWidget(m, 1)
+
 
 class PlotCanvas(FigureCanvas):
     def __init__(self, parent=None, width=5, height=4, isp=None, ispF=None, dpi=80):
@@ -233,13 +284,9 @@ class PlotCanvas(FigureCanvas):
 
         x = self.isp.keys()
         y1 = [self.isp.get(i) for i in self.isp.keys()]
-        y2 = [np.random.randint(1, 50, size=50)[0] for i in range(len(y1))]
 
         color_rectangle = [0.20, 0.79, 0.79]
         bar1 = ax.bar(x, y1, color=color_rectangle)
-        color_rectangle = [0.44, 0.86, 0.86, 0]
-        ax.bar(x, y2, color=color_rectangle, edgecolor=[0.83, 0, 0.3])
-        color_rectangle = [0.20, 0.79, 0.79]
         ax.set_facecolor('seashell')
         ax.set_title('График с нагрузкой персонала')
 

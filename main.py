@@ -872,9 +872,17 @@ class Plans(QWidget):
         self.upd()
         if [x.row() for x in self.pl_table.selectedIndexes()]:
             pos = int([x.row() for x in self.pl_table.selectedIndexes()][0]) + 1
-            if pos == self.isp:
-                self.isp -= 1
-                self.reboot()
+            self.isp -= 1
+            self.reboot()
+            cur.execute("DELETE FROM main WHERE id = ?", [(str(pos))])
+            for j in range(pos, self.isp + 1):
+                cur.execute("""UPDATE main SET id = ? WHERE id = ?""", [str(j), str(j + 1)])
+            con.commit()
+            for i in range(1, self.isp + 1):
+                _, sn, plan, _ = cur.execute(f'''SELECT * FROM main WHERE id = "{i}"''').fetchall()[0]
+                self.pl_table.setItem(i - 1, 0, QTableWidgetItem(sn))
+                if plan:
+                    self.pl_table.setItem(i - 1, 1, QTableWidgetItem(str(plan)))
 
     def reboot(self):
         self.pl_table.clear()

@@ -214,9 +214,19 @@ class Graphics(QWidget):
                     ispF1[self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.'] = self.dengi[i]
                 else:
                     ispF1[self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.'] += self.dengi[i]
-        m = PlotCanvas(self, width=50, height=4, isp=isp3, ispF=ispF3)
-        m1 = PlotCanvas(self, width=50, height=4, isp=isp2, ispF=ispF2)
-        m2 = PlotCanvas(self, width=50, height=4, isp=isp1, ispF=ispF1)
+        self.ispolnsD = {}
+        for i in cur.execute('''SELECT * FROM main''').fetchall():
+            if i[-2] is None:
+                self.ispolnsD[i[1]] = 0
+            else:
+                self.ispolnsD[i[1]] = i[-2]
+        m = PlotCanvas(self, width=50, height=4, isp=isp3, ispF=ispF3, isd=self.ispolnsD)
+        for i in self.ispolnsD:
+            self.ispolnsD[i] = self.ispolnsD[i] * 3
+        m1 = PlotCanvas(self, width=50, height=4, isp=isp2, ispF=ispF2, isd=self.ispolnsD)
+        for i in self.ispolnsD:
+            self.ispolnsD[i] = self.ispolnsD[i] * 3
+        m2 = PlotCanvas(self, width=50, height=4, isp=isp1, ispF=ispF1, isd=self.ispolnsD)
         self.tabWidget.addTab(m, 'За месяц')
         self.tabWidget.addTab(m1, 'За квартал')
         self.tabWidget.addTab(m2, 'За год')
@@ -255,7 +265,16 @@ class Graphics(QWidget):
                     ispF[self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.'] = self.dengi[i]
                 else:
                     ispF[self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.'] += self.dengi[i]
-        m = PlotCanvas(self, width=50, height=4, isp=isp, ispF=ispF)
+        self.ispolnsD = {}
+        for i in cur.execute('''SELECT * FROM main''').fetchall():
+            if i[-2] is None:
+                self.ispolnsD[i[1]] = 0
+            else:
+                self.ispolnsD[i[1]] = i[-2]
+        dd = d2 - d1
+        for i in self.ispolnsD:
+            self.ispolnsD[i] = self.ispolnsD[i] * dd.days // 30
+        m = PlotCanvas(self, width=50, height=4, isp=isp, ispF=ispF, isd=self.ispolnsD)
         if not self.vl.takeAt(2) is None:
             self.m.deleteLater()
         self.m = m
@@ -263,7 +282,7 @@ class Graphics(QWidget):
 
 
 class PlotCanvas(FigureCanvas):
-    def __init__(self, parent=None, width=5, height=4, isp=None, ispF=None, dpi=80):
+    def __init__(self, parent=None, width=5, height=4, isp=None, ispF=None, isd=None, dpi=80):
         if isp is None:
             isp = []
         fig = Figure(figsize=(width, height), dpi=dpi)
@@ -271,6 +290,7 @@ class PlotCanvas(FigureCanvas):
         self.axes1 = fig.add_subplot(211)
         self.isp = isp
         self.ispF = ispF
+        self.isd = isd
         FigureCanvas.__init__(self, fig)
         self.setParent(parent)
 
@@ -284,16 +304,19 @@ class PlotCanvas(FigureCanvas):
 
         x = self.isp.keys()
         y1 = [self.isp.get(i) for i in self.isp.keys()]
-
         color_rectangle = [0.20, 0.79, 0.79]
         bar1 = ax.bar(x, y1, color=color_rectangle)
         ax.set_facecolor('seashell')
         ax.set_title('График с нагрузкой персонала')
-
-        x = self.ispF.keys()
-        y1 = [self.ispF.get(i) for i in self.ispF.keys()]
-        y2 = [y1[i] + 20000 for i in range(len(y1))]
-
+        y1 = []
+        x = [str(list(self.isd.keys())[i].split()[0] + ' ' + list(self.isd.keys())[i].split()[1][0] + '.') for i in
+              range(len(list(self.isd.keys())))]
+        for i in range(len(x)):
+            if x[i] in self.ispF:
+                y1.append(self.ispF[x[i]])
+            else:
+                y1.append(0)
+        y2 = [self.isd.get(i) for i in self.isd.keys()]
         bar = ax1.bar(x, y1, color=color_rectangle)
         color_rectangle = [0.44, 0.86, 0.86, 0]
         ax1.bar(x, y2, color=color_rectangle, edgecolor=[0.83, 0, 0.3])

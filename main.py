@@ -248,7 +248,8 @@ class Graphics(QWidget):
                 self.rowTitlesR.append(a[i][4].split('_'))
         for i in range(len(self.ispolns)):
             if self.rowNum[i] == len(self.rowTitlesR[i]) - 1:
-                if d2 >= datetime.date(int(pushs[3][i].split('.')[0]), int(pushs[3][i].split('.')[1]), 1) and datetime.date(int(pushs[3][i].split('.')[0]), int(pushs[3][i].split('.')[1]), 1) >= d1:
+                if d2 >= datetime.date(int(pushs[3][i].split('.')[0]), int(pushs[3][i].split('.')[1]), 1)\
+                        and datetime.date(int(pushs[3][i].split('.')[0]), int(pushs[3][i].split('.')[1]), 1) >= d1:
                     if not self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.' in isp.keys():
                         isp[self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.'] = 1
                     else:
@@ -683,6 +684,17 @@ class Task_6(QWidget):
                 lastdata.append(i[0])
             if lastdata:
                 cur.execute(f"""UPDATE kanban SET term = '{max(lastdata)}' WHERE id = '{str(self.id)}'""")
+                if self.id > 1:
+                    cur.execute(f"""UPDATE kanban SET id = '0' WHERE id = '{str(self.id)}'""")
+                    con.commit()
+                    for i in range(self.id - 1, 0, -1):
+                        if cur.execute(f'''SELECT end_date FROM kanban WHERE id = "{str(i)}"''').fetchall()[0][0] == '-':
+                            cur.execute(f"""UPDATE kanban SET id = '{str(i + 1)}' WHERE id = '{str(i)}'""")
+                            con.commit()
+                        else:
+                            cur.execute(f"""UPDATE kanban SET id = '{str(i + 1)}' WHERE id = '0'""")
+                            self.id = i
+                            break
             else:
                 cur.execute(f"""UPDATE kanban SET term = '-' WHERE id = '{str(self.id)}'""")
         con.commit()
@@ -1219,8 +1231,7 @@ class Kanbaner(QMainWindow):
         self.showPush()
         self.col = cur.execute('''SELECT value FROM main_column''').fetchall()
         for i in range(6):
-            self.tw.setColumnWidth(i, self.col[i][0])
-        # self.tw.resizeColumnToContents(i)
+            self.tw.setColumnWidth(i, self.col[i][0])  # self.tw.resizeColumnToContents(i)
         self.tw.doubleClicked.connect(self.treewidgetclicked)
 
     def treewidgetclicked(self, item):
@@ -1372,7 +1383,6 @@ class Kanbaner(QMainWindow):
             if self.role == 'Admin' or self.role == 'Editor':
                 if [x.row() for x in self.tw.selectedIndexes()]:
                     pos = int([x.row() for x in self.tw.selectedIndexes()][0])
-                    self.id = len(cur.execute('''SELECT id FROM kanban''').fetchall())
                     self.cloud()
                     self.task = Task_6(self.rowTitles[pos], cur.execute('''SELECT title FROM kanban WHERE id = ?''',
                                                                         [(str(self.id - pos))]).fetchall()[0][0],
@@ -1387,7 +1397,6 @@ class Kanbaner(QMainWindow):
             else:
                 if [x.row() for x in self.tw.selectedIndexes()]:
                     pos = int([x.row() for x in self.tw.selectedIndexes()][0])
-                    self.id = len(cur.execute('''SELECT id FROM kanban''').fetchall())
                     self.cloud()
                     self.task = Task(self.rowTitles[pos], cur.execute('''SELECT title FROM kanban WHERE id = ?''',
                                                                       [(str(self.id - pos))]).fetchall()[0][0],
@@ -1462,20 +1471,20 @@ class Kanbaner(QMainWindow):
 
     def cloud(self):
         self.tw.clear()
-        self.itemss = []
+        #self.itemss = []
+        self.itemsss = []
         for i in range(self.id, 0, -1):
             _, b, c, d, e, f, q = cur.execute('''SELECT * FROM kanban WHERE id = ?''', [str(i)]).fetchall()[0]
             self.rowTitles.append(e.split('_'))
             if q != '-':
                 q = '.'.join([q.split('.')[2], q.split('.')[1], q.split('.')[0]])
-            self.itemss.append([b, f, c, q, d, ''])
-        self.itemsss = []
-        for i in range(len(self.itemss)):
-            if self.itemss[i][-2] == '-':
-                self.itemsss.append(self.itemss[i])
-        for i in range(len(self.itemss)):
-            if self.itemss[i][-2] != '-':
-                self.itemsss.append(self.itemss[i])
+            self.itemsss.append([b, f, c, q, d, ''])
+        #for i in range(len(self.itemss)):
+        #    if self.itemss[i][-2] == '-':
+        #        self.itemsss.append(self.itemss[i])
+        #for i in range(len(self.itemss)):
+        #    if self.itemss[i][-2] != '-':
+        #        self.itemsss.append(self.itemss[i])
         for i in range(len(self.itemsss)):
             q, d = self.itemsss[i][-3], self.itemsss[i][-2]
             if d != '-':

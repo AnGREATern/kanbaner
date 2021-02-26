@@ -1471,24 +1471,24 @@ class Kanbaner(QMainWindow):
 
     def cloud(self):
         self.tw.clear()
-        #self.itemss = []
         self.itemsss = []
         for i in range(self.id, 0, -1):
             _, b, c, d, e, f, q = cur.execute('''SELECT * FROM kanban WHERE id = ?''', [str(i)]).fetchall()[0]
             self.rowTitles.append(e.split('_'))
+            if d != '-':
+                d = d.split()[1]
+            if c != '-':
+                c = c.split()[1]
             if q != '-':
-                q = '.'.join([q.split('.')[2], q.split('.')[1], q.split('.')[0]])
+                if len(q.split('.')[1]) == 1:
+                    q = '.'.join([q.split('.')[2], '0' + q.split('.')[1], q.split('.')[0]])
+                else:
+                    q = '.'.join([q.split('.')[2], q.split('.')[1], q.split('.')[0]])
             self.itemsss.append([b, f, c, q, d, ''])
-        #for i in range(len(self.itemss)):
-        #    if self.itemss[i][-2] == '-':
-        #        self.itemsss.append(self.itemss[i])
-        #for i in range(len(self.itemss)):
-        #    if self.itemss[i][-2] != '-':
-        #        self.itemsss.append(self.itemss[i])
         for i in range(len(self.itemsss)):
             q, d = self.itemsss[i][-3], self.itemsss[i][-2]
             if d != '-':
-                debil = d.split()[1]
+                debil = d
             item = QTreeWidgetItem(self.itemsss[i])
             for chat in cur.execute('''SELECT chat FROM tasks WHERE bind = ?''', [str(self.id - i)]).fetchall():
                 if chat[0].split():

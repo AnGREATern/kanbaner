@@ -417,12 +417,13 @@ AND positioning = {str(self.a[2])}""")
 class Task_6(QWidget):
     global con, cur, task_row, task_index
 
-    def __init__(self, rowTitles, name, id):
+    def __init__(self, name, id):
         super().__init__()
         uic.loadUi('tasks.ui', self)
         self.setWindowIcon(QIcon('icon.ico'))
         self.setWindowTitle(name)
         self.setMouseTracking(True)
+        rowTitles = cur.execute('''SELECT row_titles FROM kanban WHERE id = ?''', [str(id)]).fetchall()[0][0].split('_')
         self.role = cur.execute(f'''SELECT adm FROM main WHERE SN="{user}"''').fetchall()[0][0]
         if self.role == 'Admin':
             self.pb_addT.clicked.connect(self.addTask)
@@ -692,13 +693,16 @@ class Task_6(QWidget):
                 cur.execute(f"""UPDATE kanban SET term = '{max(lastdata)}' WHERE id = '{str(self.id)}'""")
                 if self.id > 1:
                     cur.execute(f"""UPDATE kanban SET id = '0' WHERE id = '{str(self.id)}'""")
+                    cur.execute(f"""UPDATE tasks SET bind = '0' WHERE id = '{str(self.id)}'""")
                     con.commit()
                     for i in range(self.id - 1, -1, -1):
                         if cur.execute(f'''SELECT end_date FROM kanban WHERE id = "{str(i)}"''').fetchall()[0][0] == '-':
                             cur.execute(f"""UPDATE kanban SET id = '{str(i + 1)}' WHERE id = '{str(i)}'""")
+                            cur.execute(f"""UPDATE tasks SET bind = '{str(i + 1)}' WHERE id = '{str(i)}'""")
                             con.commit()
                         else:
                             cur.execute(f"""UPDATE kanban SET id = '{str(i + 1)}' WHERE id = '0'""")
+                            cur.execute(f"""UPDATE tasks SET bind = '{str(i + 1)}' WHERE id = '0'""")
                             self.id = i + 1
                             break
             else:
@@ -712,13 +716,14 @@ class Task_6(QWidget):
 class Task(QWidget):
     global con, cur, task_row, task_index
 
-    def __init__(self, rowTitles, name, id):
+    def __init__(self, name, id):
         super().__init__()
         uic.loadUi('tasks.ui', self)
         self.setWindowIcon(QIcon('icon.ico'))
         self.setMouseTracking(True)
         self.setWindowTitle(name)
         self.role = cur.execute(f'''SELECT adm FROM main WHERE SN="{user}"''').fetchall()[0][0]
+        rowTitles = cur.execute('''SELECT row_titles FROM kanban WHERE id = ?''', [str(id)]).fetchall()[0][0].split('_')
         self.pb_addT.setParent(None)
         self.pb_reboot.clicked.connect(self.reboot)
         self.name = name
@@ -1398,28 +1403,24 @@ class Kanbaner(QMainWindow):
                 if [x.row() for x in self.tw.selectedIndexes()]:
                     pos = int([x.row() for x in self.tw.selectedIndexes()][0])
                     self.cloud()
-                    self.task = Task_6(self.rowTitles[pos], cur.execute('''SELECT title FROM kanban WHERE id = ?''',
-                                                                        [(str(self.id - pos))]).fetchall()[0][0],
-                                       self.id - pos)
+                    self.task = Task_6(cur.execute('''SELECT title FROM kanban WHERE id = ?''',
+                                                   [(str(self.id - pos))]).fetchall()[0][0], self.id - pos)
                     self.task.show()
                 elif ide:
                     pos = ide[0]
-                    self.task = Task_6(self.rowTitles[self.id - pos],
-                                       cur.execute('''SELECT title FROM kanban WHERE id = ?''',
+                    self.task = Task_6(cur.execute('''SELECT title FROM kanban WHERE id = ?''',
                                                    [(str(pos))]).fetchall()[0][0], pos)
                     self.task.show()
             else:
                 if [x.row() for x in self.tw.selectedIndexes()]:
                     pos = int([x.row() for x in self.tw.selectedIndexes()][0])
                     self.cloud()
-                    self.task = Task(self.rowTitles[pos], cur.execute('''SELECT title FROM kanban WHERE id = ?''',
-                                                                      [(str(self.id - pos))]).fetchall()[0][0],
-                                     self.id - pos)
+                    self.task = Task(cur.execute('''SELECT title FROM kanban WHERE id = ?''',
+                                                 [(str(self.id - pos))]).fetchall()[0][0], self.id - pos)
                     self.task.show()
                 elif ide:
                     pos = ide[0]
-                    self.task = Task(self.rowTitles[self.id - pos],
-                                     cur.execute('''SELECT title FROM kanban WHERE id = ?''',
+                    self.task = Task(cur.execute('''SELECT title FROM kanban WHERE id = ?''',
                                                  [(str(pos))]).fetchall()[0][0], pos)
                     self.task.show()
         except:

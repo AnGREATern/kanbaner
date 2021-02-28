@@ -1,22 +1,17 @@
 import datetime
 import sys
 import sqlite3
-
-from PyQt5.uic.properties import QtCore
-
 import LabelBars
-import numpy as np
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from PyQt5.QtCore import Qt, QDate, QTimer, QSize, QTime
 from PyQt5.QtGui import QFont, QIcon
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QTableWidgetItem, QTreeWidgetItem, QPushButton, \
-    QComboBox, QTableWidget, QSizePolicy, QDateEdit, QLabel, QDesktopWidget, QCheckBox, QListWidgetItem, QVBoxLayout
+    QComboBox, QTableWidget, QSizePolicy, QDateEdit, QLabel, QDesktopWidget, QCheckBox, QListWidgetItem
 from PyQt5 import uic, QtWidgets, QtGui
 from dateutil.relativedelta import relativedelta
 
 memory = open('cbs.txt', 'r')
-
 if memory.read() == "True":
     StatePush = True
 else:
@@ -254,8 +249,8 @@ class Graphics(QWidget):
                 self.rowTitlesR.append(a[i][4].split('_'))
         for i in range(len(self.ispolns)):
             if self.rowNum[i] == len(self.rowTitlesR[i]) - 1:
-                if d2 >= datetime.date(int(pushs[3][i].split('.')[0]), int(pushs[3][i].split('.')[1]), 1)\
-                        and datetime.date(int(pushs[3][i].split('.')[0]), int(pushs[3][i].split('.')[1]), 1) >= d1:
+
+                if d2 >= datetime.date(int(pushs[3][i].split('.')[0]), int(pushs[3][i].split('.')[1]), int(pushs[3][i].split('.')[2])) >= d1:
                     if not self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.' in isp.keys():
                         isp[self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.'] = 1
                     else:
@@ -267,7 +262,7 @@ class Graphics(QWidget):
             self.datesK.append(i[3])
             self.dengi.append(i[4])
         for i in range(len(self.ispolns)):
-            if d2 >= datetime.date(int(self.datesK[i].split('.')[0]), int(self.datesK[i].split('.')[1]), 1) >= d1:
+            if d2 >= datetime.date(int(self.datesK[i].split('.')[0]), int(self.datesK[i].split('.')[1]), int(self.datesK[i].split('.')[2])) >= d1:
                 if not self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.' in ispF.keys():
                     ispF[self.ispolns[i].split()[0] + ' ' + self.ispolns[i].split()[1][0] + '.'] = self.dengi[i]
                 else:

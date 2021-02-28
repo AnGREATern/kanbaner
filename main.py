@@ -693,7 +693,7 @@ class Task_6(QWidget):
                 if self.id > 1:
                     cur.execute(f"""UPDATE kanban SET id = '0' WHERE id = '{str(self.id)}'""")
                     con.commit()
-                    for i in range(self.id - 1, 0, -1):
+                    for i in range(self.id - 1, -1, -1):
                         if cur.execute(f'''SELECT end_date FROM kanban WHERE id = "{str(i)}"''').fetchall()[0][0] == '-':
                             cur.execute(f"""UPDATE kanban SET id = '{str(i + 1)}' WHERE id = '{str(i)}'""")
                             con.commit()

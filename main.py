@@ -693,7 +693,7 @@ class Task_6(QWidget):
                             con.commit()
                         else:
                             cur.execute(f"""UPDATE kanban SET id = '{str(i + 1)}' WHERE id = '0'""")
-                            self.id = i
+                            self.id = i + 1
                             break
             else:
                 cur.execute(f"""UPDATE kanban SET term = '-' WHERE id = '{str(self.id)}'""")

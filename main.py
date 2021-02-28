@@ -15,7 +15,13 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QTableWidgetItem
 from PyQt5 import uic, QtWidgets, QtGui
 from dateutil.relativedelta import relativedelta
 
-StatePush = True
+memory = open('cbs.txt', 'r')
+
+if memory.read() == "True":
+    StatePush = True
+else:
+    StatePush = False
+memory.close()
 stopPush = False
 allPushOpen = False
 user = None
@@ -1117,6 +1123,7 @@ class Push(QWidget):
 class AllPush(QWidget):
     def __init__(self):
         super().__init__()
+        global StatePush
         uic.loadUi('allPush.ui', self)
         self.setWindowIcon(QIcon('icon.ico'))
 
@@ -1153,18 +1160,24 @@ class AllPush(QWidget):
         m = memory.read()
         self.timeEdit.setTime(QTime(int(m.split(':')[0]), int(m.split(':')[1])))
         memory.close()
+        if StatePush:
+            self.cBox.setChecked(True)
+        else:
+            self.cBox.setChecked(False)
         self.pb_save.clicked.connect(self.save)
         self.cBox.stateChanged.connect(lambda state=self.cBox.isChecked(): self.cBoxCheck(state))
 
     def cBoxCheck(self, state):
         global StatePush
         if state == Qt.Checked:
-            print(2)
             StatePush = True
         else:
             StatePush = False
             if allPushOpen:
                 window.new.closePush()
+        memory = open('cbs.txt', 'w')
+        memory.write(str(StatePush))
+        memory.close()
 
     def listwidgetclicked(self, item):
         ide = \

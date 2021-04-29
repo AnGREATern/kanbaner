@@ -20,7 +20,7 @@ memory.close()
 stopPush = False
 allPushOpen = False
 user = None
-con = sqlite3.connect('personal123.db')
+con = sqlite3.connect('G:\Kanbaner\personal.db')
 cur = con.cursor()
 task_index = 0
 table_row = len(cur.execute('''SELECT id FROM finance''').fetchall()) + 1
@@ -701,6 +701,7 @@ class Task_6(QWidget):
                             con.commit()
                         else:
                             cur.execute(f"""UPDATE kanban SET id = '{str(i + 1)}' WHERE id = '0'""")
+                            cur.execute(f"""UPDATE tasks SET bind = '{str(i + 1)}' WHERE bind = '{str(self.id)}'""")
                             self.id = i + 1
                             break
             else:

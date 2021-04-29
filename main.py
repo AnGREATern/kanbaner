@@ -20,7 +20,7 @@ memory.close()
 stopPush = False
 allPushOpen = False
 user = None
-con = sqlite3.connect('personal.db')
+con = sqlite3.connect('personal123.db')
 cur = con.cursor()
 task_index = 0
 table_row = len(cur.execute('''SELECT id FROM finance''').fetchall()) + 1
@@ -365,6 +365,11 @@ AND row = {str(a[1])} AND positioning = {str(a[2])}''').fetchall()[0]
         if allPushOpen:
             window.new.reloadPushing(True)
 
+    def closeEvent(self, event):
+        self.task = Task_6(cur.execute('''SELECT title FROM kanban WHERE id = ?''',
+                                       [(str(self.id - pos))]).fetchall()[0][0], self.id - pos)
+        self.task.reboot()
+
     def reloadChatF(self):
         _, bind, row, self.position, self.sn, _, _, _, _, _, _, com = \
             cur.execute('''SELECT * FROM tasks WHERE id = ?''', [(str(self.a[-1]))]).fetchall()[0]
@@ -688,16 +693,14 @@ class Task_6(QWidget):
                 cur.execute(f"""UPDATE kanban SET term = '{max(lastdata)}' WHERE id = '{str(self.id)}'""")
                 if self.id > 1:
                     cur.execute(f"""UPDATE kanban SET id = '0' WHERE id = '{str(self.id)}'""")
-                    cur.execute(f"""UPDATE tasks SET bind = '0' WHERE id = '{str(self.id)}'""")
                     con.commit()
                     for i in range(self.id - 1, -1, -1):
                         if cur.execute(f'''SELECT end_date FROM kanban WHERE id = "{str(i)}"''').fetchall()[0][0] == '-':
                             cur.execute(f"""UPDATE kanban SET id = '{str(i + 1)}' WHERE id = '{str(i)}'""")
-                            cur.execute(f"""UPDATE tasks SET bind = '{str(i + 1)}' WHERE id = '{str(i)}'""")
+                            cur.execute(f"""UPDATE tasks SET bind = '{str(i + 1)}' WHERE bind = '{str(i)}'""")
                             con.commit()
                         else:
                             cur.execute(f"""UPDATE kanban SET id = '{str(i + 1)}' WHERE id = '0'""")
-                            cur.execute(f"""UPDATE tasks SET bind = '{str(i + 1)}' WHERE id = '0'""")
                             self.id = i + 1
                             break
             else:
@@ -955,6 +958,8 @@ class Plans(QWidget):
             self.pl_table.setItem(i - 1, 0, QTableWidgetItem(sn))
             if plan:
                 self.pl_table.setItem(i - 1, 1, QTableWidgetItem(str(plan)))
+            else:
+                self.pl_table.setItem(i - 1, 1, QTableWidgetItem(str(0)))
 
     def delete(self):
         self.upd()
